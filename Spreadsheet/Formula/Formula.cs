@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Formulas
 {
@@ -37,7 +38,118 @@ namespace Formulas
         /// </summary>
         public Formula(String formula)
         {
+            String lpPattern = @"\(";
+            String rpPattern = @"\)";
+            String opPattern = @"[\+\-*/]";
+            String varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
+            String doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: e[\+-]?\d+)?";
+
+            int rparen = 0;
+            int lparen = 0;
+            bool areTokens = false;
+            bool isfirstToken = true;
+            IEnumerable<String> tokens = GetTokens(formula);
+            int index = 1;
+            int size = tokens.Count();
+            bool previousisOPorOp = false;
+            bool previousisNumCPVar = false;
+
+            foreach (string token in tokens)
+            {
+                areTokens = true;
+
+                if (Regex.IsMatch(token, lpPattern) || Regex.IsMatch(token, varPattern) || Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace) || Regex.IsMatch(token, rpPattern) || Regex.IsMatch(token, opPattern))
+                {
+                    if (isfirstToken)
+                    {
+                        isfirstToken = false;
+                        if (Regex.IsMatch(token, lpPattern) || Regex.IsMatch(token, varPattern) || Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace))
+                        {
+                            if (Regex.IsMatch(token, lpPattern))
+                            {
+                                previousisOPorOp = true;
+                                lparen++;
+                            }
+                            else
+                            {
+                                previousisNumCPVar = true;
+                            }
+                        }
+                        else
+                        {
+                            throw new FormulaFormatException("The first token of a formula must be a number, a variable, or an opening parenthesis.");
+                        }
+                        index++;
+                    }
+                    else
+                    {
+                        if(previousisNumCPVar)
+                        {
+                            if (Regex.IsMatch(token, opPattern) || Regex.IsMatch(token, lpPattern))
+                            {
+                                previousisOPorOp = true;
+                                previousisNumCPVar = false;
+                            }
+                            else
+                            {
+                                throw new FormulaFormatException("Any token that immediately follows an opening parenthesis or an operator must be either a number, a variable, or an opening parenthesis.");
+                            }
+                        }
+                        else if(previousisOPorOp)
+                        {
+                            if (Regex.IsMatch(token, varPattern) || Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace) || Regex.IsMatch(token, rpPattern))
+                            {
+                                previousisNumCPVar = true;
+                                previousisOPorOp = false;
+                            }
+                            else
+                            {
+                                throw new FormulaFormatException("Any token that immediately follows a number, a variable, or a closing parenthesis must be either an operator or a closing parenthesis.");
+                            }
+                        }
+
+                        if (index == size)
+                        {
+                            if (!Regex.IsMatch(token, rpPattern) || !Regex.IsMatch(token, varPattern) || !Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace))
+                            {
+                                throw new FormulaFormatException("The last token of a formula must be a number, a variable, or a closing parenthesis.");
+                            }
+                        }
+
+                        if (Regex.IsMatch(token, lpPattern))
+                        {
+                            lparen++;
+                        }
+                        else if (Regex.IsMatch(token, rpPattern))
+                        {
+                            rparen++;
+                        }
+
+                        if (rparen > lparen)
+                        {
+                            throw new FormulaFormatException("Number of closing parentheses is greater than opening parentheses.");
+                        }
+                        index++;
+                    }
+                }
+                else
+                {
+                    throw new FormulaFormatException("Invalid token in Formula.");
+                }
+            }
+
+            if (lparen != rparen)
+            {
+                throw new FormulaFormatException("Number of parentheses are not equal.");
+            }
+
+
+            if (areTokens == false)
+            {
+                throw new FormulaFormatException("No tokens have been entered.");
+            }
         }
+
         /// <summary>
         /// Evaluates this Formula, using the Lookup delegate to determine the values of variables.  (The
         /// delegate takes a variable name as a parameter and returns its value (if it has one) or throws
