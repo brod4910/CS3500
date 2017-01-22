@@ -43,6 +43,7 @@ namespace Formulas
             String opPattern = @"[\+\-*/]";
             String varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
             String doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: e[\+-]?\d+)?";
+            String numPattern = @"[0-9]*";
 
             int rparen = 0;
             int lparen = 0;
@@ -85,32 +86,32 @@ namespace Formulas
                     {
                         if(previousisNumCPVar)
                         {
-                            if (Regex.IsMatch(token, opPattern) || Regex.IsMatch(token, lpPattern))
+                            if (Regex.IsMatch(token, opPattern) || Regex.IsMatch(token, rpPattern))
                             {
                                 previousisOPorOp = true;
                                 previousisNumCPVar = false;
                             }
                             else
                             {
-                                throw new FormulaFormatException("Any token that immediately follows an opening parenthesis or an operator must be either a number, a variable, or an opening parenthesis.");
+                                throw new FormulaFormatException("Any token that immediately follows a number, a variable, or a closing parenthesis must be either an operator or a closing parenthesis.");
                             }
                         }
                         else if(previousisOPorOp)
                         {
-                            if (Regex.IsMatch(token, varPattern) || Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace) || Regex.IsMatch(token, rpPattern))
+                            if (Regex.IsMatch(token, varPattern) || Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace) || Regex.IsMatch(token, lpPattern))
                             {
                                 previousisNumCPVar = true;
                                 previousisOPorOp = false;
                             }
                             else
                             {
-                                throw new FormulaFormatException("Any token that immediately follows a number, a variable, or a closing parenthesis must be either an operator or a closing parenthesis.");
+                                throw new FormulaFormatException("Any token that immediately follows an opening parenthesis or an operator must be either a number, a variable, or an opening parenthesis.");
                             }
                         }
 
                         if (index == size)
                         {
-                            if (!Regex.IsMatch(token, rpPattern) || !Regex.IsMatch(token, varPattern) || !Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace))
+                            if (Regex.IsMatch(token, opPattern) || Regex.IsMatch(token, lpPattern))
                             {
                                 throw new FormulaFormatException("The last token of a formula must be a number, a variable, or a closing parenthesis.");
                             }
