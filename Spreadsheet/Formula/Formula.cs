@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace Formulas
 {
+
     /// <summary>
     /// Represents formulas written in standard infix notation using standard precedence
     /// rules.  Provides a means to evaluate Formulas.  Formulas can be composed of
@@ -16,6 +17,8 @@ namespace Formulas
     /// </summary>
     public class Formula
     {
+        private IEnumerable<String> formula;
+
         /// <summary>
         /// Creates a Formula from a string that consists of a standard infix expression composed
         /// from non-negative floating-point numbers (using C#-like syntax for double/int literals), 
@@ -43,7 +46,6 @@ namespace Formulas
             String opPattern = @"[\+\-*/]";
             String varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
             String doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: e[\+-]?\d+)?";
-            String numPattern = @"[0-9]*";
 
             int rparen = 0;
             int lparen = 0;
@@ -52,8 +54,11 @@ namespace Formulas
             IEnumerable<String> tokens = GetTokens(formula);
             int index = 1;
             int size = tokens.Count();
-            bool previousisOPorOp = false;
-            bool previousisNumCPVar = false;
+            string prevToken = null;
+            bool previsLP = false;
+            bool previsOper = false;
+            bool previsRP = false;
+            bool previsVarNum = false;
 
             foreach (string token in tokens)
             {
@@ -68,44 +73,30 @@ namespace Formulas
                         {
                             if (Regex.IsMatch(token, lpPattern))
                             {
-                                previousisOPorOp = true;
                                 lparen++;
                             }
-                            else
-                            {
-                                previousisNumCPVar = true;
-                            }
+                            prevToken = token;
+                            index++;
                         }
                         else
                         {
                             throw new FormulaFormatException("The first token of a formula must be a number, a variable, or an opening parenthesis.");
                         }
-                        index++;
                     }
                     else
                     {
-                        if(previousisNumCPVar)
+                        if (Regex.IsMatch(prevToken, lpPattern) || Regex.IsMatch(prevToken, opPattern))
                         {
-                            if (Regex.IsMatch(token, opPattern) || Regex.IsMatch(token, rpPattern))
-                            {
-                                previousisOPorOp = true;
-                                previousisNumCPVar = false;
-                            }
-                            else
-                            {
-                                throw new FormulaFormatException("Any token that immediately follows a number, a variable, or a closing parenthesis must be either an operator or a closing parenthesis.");
-                            }
-                        }
-                        else if(previousisOPorOp)
-                        {
-                            if (Regex.IsMatch(token, varPattern) || Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace) || Regex.IsMatch(token, lpPattern))
-                            {
-                                previousisNumCPVar = true;
-                                previousisOPorOp = false;
-                            }
-                            else
+                            if (Regex.IsMatch(token, rpPattern) || Regex.IsMatch(token, opPattern))
                             {
                                 throw new FormulaFormatException("Any token that immediately follows an opening parenthesis or an operator must be either a number, a variable, or an opening parenthesis.");
+                            }
+                        }
+                        else
+                        {
+                            if (Regex.IsMatch(token, lpPattern) || Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace) || Regex.IsMatch(token, varPattern))
+                            {
+                                throw new FormulaFormatException("Any token that immediately follows a number, a variable, or a closing parenthesis must be either an operator or a closing parenthesis.");
                             }
                         }
 
@@ -120,16 +111,20 @@ namespace Formulas
                         if (Regex.IsMatch(token, lpPattern))
                         {
                             lparen++;
+                            previsLP = true;
                         }
                         else if (Regex.IsMatch(token, rpPattern))
                         {
                             rparen++;
+                            previsRP = true;
                         }
 
                         if (rparen > lparen)
                         {
                             throw new FormulaFormatException("Number of closing parentheses is greater than opening parentheses.");
                         }
+
+                        prevToken = token;
                         index++;
                     }
                 }
@@ -149,6 +144,8 @@ namespace Formulas
             {
                 throw new FormulaFormatException("No tokens have been entered.");
             }
+
+            this.formula = tokens;
         }
 
         /// <summary>
@@ -162,7 +159,198 @@ namespace Formulas
         /// </summary>
         public double Evaluate(Lookup lookup)
         {
-            return 0;
+            String lpPattern = @"\(";
+            String rpPattern = @"\)";
+            String opPattern = @"[\+\-*/]";
+            String varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
+            String doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: e[\+-]?\d+)?";
+
+            string oper;
+            double value1;
+            double value2;
+
+            Stack<String> opStack = new Stack<String>();
+
+            Stack<Double> valueStack = new Stack<Double>();
+
+            foreach(string token in formula)
+            {
+                if(Regex.IsMatch(token, opPattern))
+                {
+                    if(opStack.Count != 0)
+                    {
+
+                        if (opStack.Peek().Equals("+") || opStack.Peek().Equals("-"))
+                        {
+                            oper = opStack.Pop();
+                            value2 = valueStack.Pop();
+                            value1 = valueStack.Pop();
+
+                            if (oper.Equals("+"))
+                            {
+                                valueStack.Push(value1 + value2);
+                            }
+                            else
+                            {
+                                valueStack.Push(value1 - value2);
+                            }
+                        }
+                        else
+                        {
+                            opStack.Push(token);
+                        }
+                    }
+                    else
+                    {
+                        opStack.Push(token);
+                    }
+                }
+                else if(Regex.IsMatch(token, varPattern))
+                {
+                    if (opStack.Count != 0)
+                    {
+                        if (opStack.Peek().Equals("*") || opStack.Peek().Equals("/"))
+                        {
+                            oper = opStack.Pop();
+                            value2 = lookup(token);
+                            value1 = valueStack.Pop();
+
+                            if (oper.Equals("*"))
+                            {
+                                valueStack.Push(value1 * value2);
+                            }
+                            else
+                            {
+                                if (value2 == 0)
+                                {
+                                    throw new FormulaEvaluationException("Division by zero has occured.");
+                                }
+                                else
+                                {
+                                    valueStack.Push(value1 / value2);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            valueStack.Push(lookup(token));
+                        }
+                    }
+                    else
+                    {
+                        valueStack.Push(lookup(token));
+                    }
+                }
+                else if(Regex.IsMatch(token, lpPattern))
+                {
+                    opStack.Push(token);
+                }
+                else if(Regex.IsMatch(token, rpPattern))
+                {
+                    if (opStack.Count != 0)
+                    {
+                        if (opStack.Peek().Equals("+") || opStack.Peek().Equals("-"))
+                        {
+                            oper = opStack.Pop();
+                            value2 = valueStack.Pop();
+                            value1 = valueStack.Pop();
+
+                            if (oper.Equals("+"))
+                            {
+                                valueStack.Push(value1 + value2);
+                                opStack.Pop();
+                            }
+                            else
+                            {
+                                valueStack.Push(value1 - value2);
+                                opStack.Pop();
+                            }
+                        }
+                        else
+                        {
+                            opStack.Pop();
+                        }
+                    }
+                    else
+                    {
+                        opStack.Pop();
+                    }
+
+                    if (opStack.Count != 0)
+                    {
+                        if (opStack.Peek().Equals("*") || opStack.Peek().Equals("/"))
+                        {
+                            oper = opStack.Pop();
+                            value2 = valueStack.Pop();
+                            value1 = valueStack.Pop();
+
+                            if (oper.Equals("*"))
+                            {
+                                valueStack.Push(value1 * value2);
+                            }
+                            else
+                            {
+                                valueStack.Push(value1 / value2);
+                            }
+                        }
+                    }
+                }
+                else if(Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace))
+                {
+                    if (opStack.Count != 0)
+                    {
+                        if (opStack.Peek().Equals("*") || opStack.Peek().Equals("/"))
+                        {
+                            oper = opStack.Pop();
+                            value2 = Convert.ToDouble(token);
+                            value1 = valueStack.Pop();
+
+                            if (oper.Equals("*"))
+                            {
+                                valueStack.Push(value1 * value2);
+                            }
+                            else
+                            {
+                                if (value2 == 0)
+                                {
+                                    throw new FormulaEvaluationException("Division by zero has occured.");
+                                }
+                                else
+                                {
+                                    valueStack.Push(value1 / value2);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            valueStack.Push(Convert.ToDouble(token));
+                        }
+                    }
+                    else
+                    {
+                        valueStack.Push(Convert.ToDouble(token));
+                    }
+                }
+            }
+
+            if(opStack.Count == 0)
+            {
+                return valueStack.Pop();
+            }
+            else
+            {
+                oper = opStack.Pop();
+                value2 = valueStack.Pop();
+                value1 = valueStack.Pop();
+                if(oper.Equals("+"))
+                {
+                    return value1 + value2;
+                }
+                else
+                {
+                    return value1 - value2;
+                }
+            }
         }
 
         /// <summary>
