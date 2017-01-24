@@ -1,4 +1,5 @@
 ﻿// Written by Joe Zachary for CS 3500, January 2017.
+// Brian Rodriguez u0853593
 
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -47,6 +48,97 @@ namespace FormulaTestCases
         }
 
         /// <summary>
+        /// Another syntax error.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct4()
+        {
+            Formula f = new Formula(") * 3");
+        }
+
+
+        /// <summary>
+        /// Another syntax error.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct5()
+        {
+            Formula f = new Formula("() * 3");
+        }
+
+        /// <summary>
+        /// Another syntax error.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct6()
+        {
+            Formula f = new Formula("( * 3");
+        }
+
+        /// <summary>
+        /// Another syntax error.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct7()
+        {
+            Formula f = new Formula("((((((() * 3");
+        }
+
+        /// <summary>
+        /// Another syntax error.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct8()
+        {
+            Formula f = new Formula("( 3 * 2) x * 3");
+        }
+
+        /// <summary>
+        /// Another syntax error.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct9()
+        {
+            Formula f = new Formula("( 3 * 2 x) x * 3");
+        }
+
+        /// <summary>
+        /// Another syntax error.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct10()
+        {
+            Formula f = new Formula("( 3 * 2) * 3 *");
+        }
+
+        /// <summary>
+        /// Another syntax error.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct11()
+        {
+            Formula f = new Formula("(( 3 * 2) * 3) (");
+        }
+
+        /// <summary>
+        /// Another syntax error.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct12()
+        {
+            Formula f = new Formula("(( 3 * 2)) * 3)");
+        }
+
+        /// <summary>
         /// Makes sure that "2+3" evaluates to 5.  Since the Formula
         /// contains no variables, the delegate passed in as the
         /// parameter doesn't matter.  We are passing in one that
@@ -69,6 +161,14 @@ namespace FormulaTestCases
         public void Evaluate2()
         {
             Formula f = new Formula("x5");
+            Assert.AreEqual(f.Evaluate(v => 22.5), 22.5, 1e-6);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaEvaluationException))]
+        public void Evaluate6()
+        {
+            Formula f = new Formula("5 / 0");
             Assert.AreEqual(f.Evaluate(v => 22.5), 22.5, 1e-6);
         }
 

@@ -1,4 +1,5 @@
 ﻿// Skeleton written by Joe Zachary for CS 3500, January 2017
+// Brian Rodriguez u0853593
 
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,13 @@ namespace Formulas
     public class Formula
     {
         private IEnumerable<String> formula;
+
+        private const String doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: e[\+-]?\d+)?";
+        private const String varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
+        private const String opPattern = @"[\+\-*/]";
+        private const String rpPattern = @"\)";
+        private const String lpPattern = @"\(";
+
 
         /// <summary>
         /// Creates a Formula from a string that consists of a standard infix expression composed
@@ -41,12 +49,6 @@ namespace Formulas
         /// </summary>
         public Formula(String formula)
         {
-            String lpPattern = @"\(";
-            String rpPattern = @"\)";
-            String opPattern = @"[\+\-*/]";
-            String varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
-            String doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: e[\+-]?\d+)?";
-
             int rparen = 0;
             int lparen = 0;
             bool areTokens = false;
@@ -55,10 +57,6 @@ namespace Formulas
             int index = 1;
             int size = tokens.Count();
             string prevToken = null;
-            bool previsLP = false;
-            bool previsOper = false;
-            bool previsRP = false;
-            bool previsVarNum = false;
 
             foreach (string token in tokens)
             {
@@ -74,6 +72,13 @@ namespace Formulas
                             if (Regex.IsMatch(token, lpPattern))
                             {
                                 lparen++;
+                            }
+                            else if(!Regex.IsMatch(token, varPattern))
+                            {
+                                if(Convert.ToDouble(token) < 0)
+                                {
+                                    throw new FormulaFormatException("Only non-negative numbers are permitted");
+                                }
                             }
                             prevToken = token;
                             index++;
@@ -94,7 +99,7 @@ namespace Formulas
                         }
                         else
                         {
-                            if (Regex.IsMatch(token, lpPattern) || Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace) || Regex.IsMatch(token, varPattern))
+                            if (Regex.IsMatch(token, lpPattern) || Regex.IsMatch(token, varPattern) || Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace))
                             {
                                 throw new FormulaFormatException("Any token that immediately follows a number, a variable, or a closing parenthesis must be either an operator or a closing parenthesis.");
                             }
@@ -108,15 +113,21 @@ namespace Formulas
                             }
                         }
 
+                        if(Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace))
+                        {
+                            if (Convert.ToDouble(token) < 0)
+                            {
+                                throw new FormulaFormatException("Only non-negative numbers are permitted");
+                            }
+                        }
+
                         if (Regex.IsMatch(token, lpPattern))
                         {
                             lparen++;
-                            previsLP = true;
                         }
                         else if (Regex.IsMatch(token, rpPattern))
                         {
                             rparen++;
-                            previsRP = true;
                         }
 
                         if (rparen > lparen)
@@ -159,12 +170,6 @@ namespace Formulas
         /// </summary>
         public double Evaluate(Lookup lookup)
         {
-            String lpPattern = @"\(";
-            String rpPattern = @"\)";
-            String opPattern = @"[\+\-*/]";
-            String varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
-            String doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: e[\+-]?\d+)?";
-
             string oper;
             double value1;
             double value2;
@@ -212,8 +217,21 @@ namespace Formulas
                         if (opStack.Peek().Equals("*") || opStack.Peek().Equals("/"))
                         {
                             oper = opStack.Pop();
-                            value2 = lookup(token);
                             value1 = valueStack.Pop();
+
+                            try
+                            {
+                                value2 = lookup(token);
+                            }
+                            catch (UndefinedVariableException)
+                            {
+                                throw new FormulaEvaluationException("Variable is undefined.");
+                            }
+
+                            if (value2 < 0)
+                            {
+                                throw new FormulaEvaluationException("A variable must be a non-negative number.");
+                            }
 
                             if (oper.Equals("*"))
                             {
@@ -233,12 +251,44 @@ namespace Formulas
                         }
                         else
                         {
-                            valueStack.Push(lookup(token));
+                            try
+                            {
+                                lookup(token);
+                            }
+                            catch (UndefinedVariableException)
+                            {
+                                throw new FormulaEvaluationException("Variable is undefined.");
+                            }
+
+                            if (lookup(token) < 0)
+                            {
+                                throw new FormulaEvaluationException("A variable must be a non-negative number.");
+                            }
+                            else
+                            {
+                                valueStack.Push(lookup(token));
+                            }
                         }
                     }
                     else
                     {
-                        valueStack.Push(lookup(token));
+                        try
+                        {
+                            lookup(token);
+                        }
+                        catch (UndefinedVariableException)
+                        {
+                            throw new FormulaEvaluationException("Variable is undefined.");
+                        }
+
+                        if (lookup(token) < 0)
+                        {
+                            throw new FormulaEvaluationException("A variable must be a non-negative number.");
+                        }
+                        else
+                        {
+                            valueStack.Push(lookup(token));
+                        }
                     }
                 }
                 else if(Regex.IsMatch(token, lpPattern))
@@ -290,7 +340,14 @@ namespace Formulas
                             }
                             else
                             {
-                                valueStack.Push(value1 / value2);
+                                if (value2 == 0)
+                                {
+                                    throw new FormulaEvaluationException("Division by zero has occured.");
+                                }
+                                else
+                                {
+                                    valueStack.Push(value1 / value2);
+                                }
                             }
                         }
                     }
