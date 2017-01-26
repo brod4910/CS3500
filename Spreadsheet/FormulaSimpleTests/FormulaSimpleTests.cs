@@ -139,6 +139,34 @@ namespace FormulaTestCases
         }
 
         /// <summary>
+        /// No Syntax error.
+        /// </summary>
+        [TestMethod]
+        public void Construct13()
+        {
+            Formula f = new Formula("2 / 0");
+        }
+
+        /// <summary>
+        /// Another syntax error.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct14()
+        {
+            Formula f = new Formula("");
+        }
+
+        /// <summary>
+        /// No syntax error
+        /// </summary>
+        [TestMethod]
+        public void Construct15()
+        {
+            Formula f = new Formula("0 / 2");
+        }
+
+        /// <summary>
         /// Makes sure that "2+3" evaluates to 5.  Since the Formula
         /// contains no variables, the delegate passed in as the
         /// parameter doesn't matter.  We are passing in one that
@@ -208,6 +236,28 @@ namespace FormulaTestCases
         }
 
         /// <summary>
+        /// This uses one of each kind of token.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaEvaluationException))]
+        public void Evaluat6 ()
+        {
+            Formula f = new Formula("(w / 2) + (x / w)");
+            Assert.AreEqual(f.Evaluate(Lookup4), 20.0, 1e-6);
+        }
+
+        /// <summary>
+        /// This uses one of each kind of token.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaEvaluationException))]
+        public void Evaluate7()
+        {
+            Formula f = new Formula("(w / 2) + (x / a)");
+            Assert.AreEqual(f.Evaluate(Lookup4), 20.0, 1e-6);
+        }
+
+        /// <summary>
         /// A Lookup method that maps x to 4.0, y to 6.0, and z to 8.0.
         /// All other variables result in an UndefinedVariableException.
         /// </summary>
@@ -217,6 +267,8 @@ namespace FormulaTestCases
         {
             switch (v)
             {
+                case "a": return -1000;
+                case "w": return 0;
                 case "x": return 4.0;
                 case "y": return 6.0;
                 case "z": return 8.0;
