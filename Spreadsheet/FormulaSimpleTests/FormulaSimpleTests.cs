@@ -258,6 +258,50 @@ namespace FormulaTestCases
         }
 
         /// <summary>
+        /// Evaluate
+        /// </summary>
+        [TestMethod]
+        public void Evaluate8()
+        {
+            Formula f = new Formula("((20 - 41) * 15) + (4 / 2) * 20");
+            Assert.AreEqual(f.Evaluate(Lookup4), -6260, 1e-6);
+        }
+
+        /// <summary>
+        /// Negative variable input
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaEvaluationException))]
+        public void Evaluate9()
+        {
+            Formula f = new Formula("((20 - a) * 15) + (4 / 2) * 20");
+            Assert.AreEqual(f.Evaluate(Lookup4), -6260, 1e-6);
+        }
+
+        /// <summary>
+        /// Division by zero
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaEvaluationException))]
+        public void Evaluate10()
+        {
+            Formula f = new Formula("((20 - 41) * 15) + (4 / w) * 20");
+            Assert.AreEqual(f.Evaluate(Lookup4), -6260, 1e-6);
+        }
+
+        /// <summary>
+        /// Evaluate
+        /// </summary>
+        [TestMethod]
+        public void Evaluate11()
+        {
+            Formula f = new Formula("((13245 * 400 * .5) / (123 / 123) * (90 / 1))");
+            Assert.AreEqual(f.Evaluate(Lookup4), 238410000, 1e-6);
+        }
+
+
+
+        /// <summary>
         /// A Lookup method that maps x to 4.0, y to 6.0, and z to 8.0.
         /// All other variables result in an UndefinedVariableException.
         /// </summary>

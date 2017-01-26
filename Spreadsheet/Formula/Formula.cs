@@ -199,6 +199,7 @@ namespace Formulas
                             {
                                 valueStack.Push(value1 - value2);
                             }
+                            opStack.Push(token);
                         }
                         else
                         {
