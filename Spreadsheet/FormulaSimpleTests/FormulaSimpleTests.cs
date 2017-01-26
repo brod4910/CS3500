@@ -300,6 +300,16 @@ namespace FormulaTestCases
         }
 
 
+        /// <summary>
+        /// Uses an undefined variable!
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaEvaluationException))]
+        public void Evaluate12()
+        {
+            Formula f = new Formula("((13245 * d * .5) / (123 / 123) * (90 / 1))");
+            Assert.AreEqual(f.Evaluate(Lookup4), 238410000, 1e-6);
+        }
 
         /// <summary>
         /// A Lookup method that maps x to 4.0, y to 6.0, and z to 8.0.

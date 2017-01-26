@@ -8,7 +8,6 @@ using System.Linq;
 
 namespace Formulas
 {
-
     /// <summary>
     /// Represents formulas written in standard infix notation using standard precedence
     /// rules.  Provides a means to evaluate Formulas.  Formulas can be composed of
