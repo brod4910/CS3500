@@ -264,7 +264,7 @@ namespace FormulaTestCases
         public void Evaluate8()
         {
             Formula f = new Formula("((20 - 41) * 15) + (4 / 2) * 20");
-            Assert.AreEqual(f.Evaluate(Lookup4), -6260, 1e-6);
+            Assert.AreEqual(f.Evaluate(Lookup4), -275, 1e-6);
         }
 
         /// <summary>
@@ -309,6 +309,27 @@ namespace FormulaTestCases
         {
             Formula f = new Formula("((13245 * d * .5) / (123 / 123) * (90 / 1))");
             Assert.AreEqual(f.Evaluate(Lookup4), 238410000, 1e-6);
+        }
+
+        /// <summary>
+        /// Complicated Evaluation
+        /// </summary>
+        [TestMethod]
+        public void Evaluate13()
+        {
+            Formula f = new Formula("(((y / x) * z) * 300) + 365 * 10 / 2 + 1000");
+            Assert.AreEqual(f.Evaluate(Lookup4), 6425, 1e-6);
+        }
+
+        /// <summary>
+        /// Complicated Evaluation but divides by zero
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaEvaluationException))]
+        public void Evaluate14()
+        {
+            Formula f = new Formula("(((y / x) * z) * 300) + 365 * 10 / w + 1000");
+            Assert.AreEqual(f.Evaluate(Lookup4), 6425, 1e-6);
         }
 
         /// <summary>

@@ -183,26 +183,33 @@ namespace Formulas
                 {
                     if(opStack.Count != 0)
                     {
-
-                        if (opStack.Peek().Equals("+") || opStack.Peek().Equals("-"))
+                        if(token.Equals("*") || token.Equals("/"))
                         {
-                            oper = opStack.Pop();
-                            value2 = valueStack.Pop();
-                            value1 = valueStack.Pop();
-
-                            if (oper.Equals("+"))
-                            {
-                                valueStack.Push(value1 + value2);
-                            }
-                            else
-                            {
-                                valueStack.Push(value1 - value2);
-                            }
                             opStack.Push(token);
                         }
                         else
                         {
-                            opStack.Push(token);
+                            if (opStack.Peek().Equals("+") || opStack.Peek().Equals("-"))
+                            {
+                                oper = opStack.Pop();
+                                value2 = valueStack.Pop();
+                                value1 = valueStack.Pop();
+
+                                if (oper.Equals("+"))
+                                {
+                                    valueStack.Push(value1 + value2);
+                                    opStack.Push(token);
+                                }
+                                else
+                                {
+                                    valueStack.Push(value1 - value2);
+                                    opStack.Push(token);
+                                }
+                            }
+                            else
+                            {
+                                opStack.Push(token);
+                            }
                         }
                     }
                     else
