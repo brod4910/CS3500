@@ -56,7 +56,52 @@ namespace DependencyGraphTest
 
             IEnumerable<String> DGE = DG.GetDependees("d");
 
+            List<String> DP = new List<string>();
 
+            DP.Add("b");
+            DP.Add("d");
+
+            foreach(string dependee in DGE)
+            {
+                Assert.IsTrue(DP.Contains(dependee));
+            }
+
+            DG.RemoveDependency("d", "d");
+
+            DGE = DG.GetDependees("d");
+
+            DP.Remove("d");
+
+            foreach(string dependee in DGE)
+            {
+                Assert.IsTrue(DP.Contains(dependee));
+            }
+        }
+
+        [TestMethod]
+        public void testRemoveDependency()
+        {
+            DependencyGraph DG = new DependencyGraph();
+
+            DG.AddDependency("a", "b");
+            DG.AddDependency("a", "c");
+            DG.AddDependency("b", "d");
+            DG.AddDependency("d", "d");
+
+            IEnumerable<String> DGE = DG.GetDependents("a");
+
+            List<String> DP = new List<string>();
+
+            DP.Add("b");
+            DP.Add("c");
+
+            DG.RemoveDependency("a", "d");
+
+            foreach(string dependent in DGE)
+            {
+                Assert.IsTrue(DP.Contains(dependent));
+            }
+            
         }
     }
 }
