@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Dependencies
 {
@@ -46,13 +47,25 @@ namespace Dependencies
     /// the test cases with which you will be graded will create massive DependencyGraphs.  If you
     /// build an inefficient DependencyGraph this week, you will be regretting it for the next month.
     /// </summary>
+    /// 
+
+
     public class DependencyGraph
     {
+        private Dictionary<String, List<String>> Dependents;
+        private Dictionary<String, List<String>> Dependees;
+        private int size;
+
         /// <summary>
         /// Creates a DependencyGraph containing no dependencies.
         /// </summary>
         public DependencyGraph()
         {
+            Dictionary<String, List<String>> Dependents = new Dictionary<String, List<String>>();
+            Dictionary<String, List<String>> Dependees = new Dictionary<String, List<String>>();
+
+            this.Dependents = Dependents;
+            this.Dependees = Dependees;
         }
 
         /// <summary>
@@ -60,7 +73,7 @@ namespace Dependencies
         /// </summary>
         public int Size
         {
-            get { return 0; }
+            get { return size; }
         }
 
         /// <summary>
@@ -68,7 +81,16 @@ namespace Dependencies
         /// </summary>
         public bool HasDependents(string s)
         {
-            return false;
+            List<String> dependentList = new List<string>();
+
+            if (s != null)
+            {
+                return Dependents.TryGetValue(s, out dependentList);
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -76,7 +98,16 @@ namespace Dependencies
         /// </summary>
         public bool HasDependees(string s)
         {
-            return false;
+            List<String> dependeeList = new List<string>();
+
+            if (s != null)
+            {
+                return Dependents.TryGetValue(s, out dependeeList);
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -84,7 +115,21 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
-            return null;
+            List<String> dependentList = new List<string>();
+
+            if(s != null)
+            {
+                if(Dependents.ContainsKey(s))
+                {
+
+                   Dependents.TryGetValue(s, out dependentList);
+
+                    foreach(string dependent in dependentList)
+                    {
+                        yield return dependent;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -92,16 +137,76 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
-            return null;
+            List<String> dependeeList = new List<string>();
+
+            if (s != null)
+            {
+                if (Dependees.ContainsKey(s))
+                {
+                    Dependents.TryGetValue(s, out dependeeList);
+
+                    foreach (string dependee in dependeeList)
+                    {
+                        yield return dependee;
+                    }
+                }
+            }
         }
 
         /// <summary>
         /// Adds the dependency (s,t) to this DependencyGraph.
         /// This has no effect if (s,t) already belongs to this DependencyGraph.
         /// Requires s != null and t != null.
+        /// (dependee, dependent)
         /// </summary>
         public void AddDependency(string s, string t)
         {
+            if(s != null && t != null)
+            {
+                List<String> dependentList = new List<string>();
+                List<String> dependeeList = new List<string>();
+
+                if (!Dependents.ContainsKey(s) || !Dependees.ContainsKey(t))
+                {
+                    if (!Dependents.ContainsKey(s))
+                    {
+                        dependentList.Add(t);
+                        Dependents.Add(s, dependentList);
+                        size++;
+                    }
+                    else if(Dependents.ContainsKey(s))
+                    {
+                        Dependents.TryGetValue(s, out dependentList);
+
+                        if(!dependentList.Contains(t))
+                        {
+                            dependentList.Add(t);
+                            Dependents.Remove(s);
+                            Dependents.Add(s, dependentList);
+                            size++;
+                        }
+                    }
+
+                    if(!Dependees.ContainsKey(t))
+                    {
+                        dependeeList.Add(s);
+                        Dependees.Add(t, dependeeList);
+                        size++;
+                    }
+                    else if(Dependees.ContainsKey(t))
+                    {
+                        Dependees.TryGetValue(s, out dependeeList);
+
+                        if (!dependeeList.Contains(t))
+                        {
+                            dependeeList.Add(s);
+                            Dependees.Remove(t);
+                            Dependees.Add(t, dependeeList);
+                            size++;
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -120,6 +225,7 @@ namespace Dependencies
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
+
         }
 
         /// <summary>
