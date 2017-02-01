@@ -102,7 +102,7 @@ namespace Dependencies
 
             if (s != null)
             {
-                return Dependents.TryGetValue(s, out dependeeList);
+                return Dependees.TryGetValue(s, out dependeeList);
             }
             else
             {
@@ -121,7 +121,6 @@ namespace Dependencies
             {
                 if(Dependents.ContainsKey(s))
                 {
-
                    Dependents.TryGetValue(s, out dependentList);
 
                     foreach(string dependent in dependentList)
@@ -216,6 +215,38 @@ namespace Dependencies
         /// </summary>
         public void RemoveDependency(string s, string t)
         {
+            if (s != null && t != null)
+            {
+                List<String> dependentList = new List<string>();
+                List<String> dependeeList = new List<string>();
+
+                if(Dependents.ContainsKey(s) || Dependees.ContainsKey(t))
+                {
+                    if(Dependents.ContainsKey(s))
+                    {
+                        Dependents.TryGetValue(s, out dependentList);
+
+                        if (dependentList.Contains(t))
+                        {
+                            dependentList.Remove(t);
+                            Dependents.Remove(s);
+                            Dependents.Add(s, dependentList);
+                        }
+                    }
+
+                    if(Dependees.ContainsKey(t))
+                    {
+                        Dependees.TryGetValue(t, out dependeeList);
+
+                        if (dependeeList.Contains(s))
+                        {
+                            dependeeList.Remove(s);
+                            Dependees.Remove(t);
+                            Dependees.Add(t, dependeeList);
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
