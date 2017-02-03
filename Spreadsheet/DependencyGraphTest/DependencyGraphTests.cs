@@ -371,5 +371,46 @@ namespace DependencyGraphTest
                 Assert.IsTrue(OldDependents.Contains(dependent));
             }
         }
+
+        /// <summary>
+        /// Uses a List of nulls to Test if replacing calling ReplaceDependees
+        /// has no affect on the DependencyGraph.
+        /// </summary>
+        [TestMethod]
+        public void testNullInputReplaceDependees()
+        {
+            DependencyGraph DG = new DependencyGraph();
+
+            for (int i = 1; i <= 10000; i++)
+            {
+                DG.AddDependency(i + "", i * 2 + "");
+            }
+
+            List<String> ReplaceDependees = new List<String>();
+
+            List<String> OldDependeess = new List<String>();
+
+
+            IEnumerable<String> DBE = DG.GetDependees("19000");
+
+            foreach (string dependee in DBE)
+            {
+                OldDependeess.Add(dependee);
+            }
+
+            for (int i = 1; i <= 10000; i *= 2)
+            {
+                ReplaceDependees.Add(null);
+            }
+
+            DG.ReplaceDependents("9500", ReplaceDependees);
+
+            IEnumerable<String> DGE = DG.GetDependents("9500");
+
+            foreach (string dependee in DGE)
+            {
+                Assert.IsTrue(OldDependeess.Contains(dependee));
+            }
+        }
     }
 }
