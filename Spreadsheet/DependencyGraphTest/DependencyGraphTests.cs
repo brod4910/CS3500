@@ -6,9 +6,16 @@ using System.Collections.Generic;
 
 namespace DependencyGraphTest
 {
+    /// <summary>
+    /// Uses a plethora of tests to test against the implemination of 
+    /// the Dependency Graph class
+    /// </summary>
     [TestClass]
     public class DependencyGraphTests
     {
+        /// <summary>
+        /// Tests to check if the strings has Dependees
+        /// </summary>
         [TestMethod]
         
         public void TestHasDependees()
@@ -28,6 +35,9 @@ namespace DependencyGraphTest
 
         }
 
+        /// <summary>
+        /// Tests to check if a strings has Dependents
+        /// </summary>
         [TestMethod]
         public void TestHasDependents()
         {
@@ -44,6 +54,70 @@ namespace DependencyGraphTest
             Assert.IsTrue(DG.HasDependents("d"));
         }
 
+        /// <summary>
+        /// Tests to check if the strings has no Dependees
+        /// </summary>
+        [TestMethod]
+
+        public void TestHasNoDependees()
+        {
+            DependencyGraph DG = new DependencyGraph();
+
+            DG.AddDependency("a", "b");
+            DG.AddDependency("a", "c");
+            DG.AddDependency("b", "d");
+            DG.AddDependency("d", "d");
+
+            Assert.IsFalse(DG.HasDependees("q"));
+            Assert.IsFalse(DG.HasDependees("12"));
+            Assert.IsFalse(DG.HasDependees("b345"));
+            Assert.IsFalse(DG.HasDependees("c4124"));
+            Assert.IsFalse(DG.HasDependees("123123"));
+
+        }
+
+        /// <summary>
+        /// Tests to check if a strings has no Dependents
+        /// </summary>
+        [TestMethod]
+        public void TestHasNoDependents()
+        {
+            DependencyGraph DG = new DependencyGraph();
+
+            DG.AddDependency("a", "b");
+            DG.AddDependency("a", "c");
+            DG.AddDependency("b", "d");
+            DG.AddDependency("d", "d");
+
+            Assert.IsFalse(DG.HasDependents("c565"));
+            Assert.IsFalse(DG.HasDependents("a123123"));
+            Assert.IsFalse(DG.HasDependents("b123123"));
+            Assert.IsFalse(DG.HasDependents("d5345345"));
+        }
+
+        /// <summary>
+        /// Tests to check if a null input has Dependees/Dependents
+        /// </summary>
+        [TestMethod]
+        public void TestHasDependentsandDependeeswithNull()
+        {
+            DependencyGraph DG = new DependencyGraph();
+
+            DG.AddDependency("a", "b");
+            DG.AddDependency("a", "c");
+            DG.AddDependency("b", "d");
+            DG.AddDependency("d", "d");
+
+            Assert.IsFalse(DG.HasDependents(null));
+            Assert.IsFalse(DG.HasDependents(null));
+            Assert.IsFalse(DG.HasDependees(null));
+            Assert.IsFalse(DG.HasDependees(null));
+        }
+
+        /// <summary>
+        /// Tests against a small set of Dependencies to see if the
+        /// dependees exist or not
+        /// </summary>
         [TestMethod]
         public void TestGetDependees()
         {
@@ -78,6 +152,9 @@ namespace DependencyGraphTest
             }
         }
 
+        /// <summary>
+        /// Removes a small set of dependencies
+        /// </summary>
         [TestMethod]
         public void testRemoveDependency()
         {
@@ -104,6 +181,54 @@ namespace DependencyGraphTest
             
         }
 
+        /// <summary>
+        /// Attempt to remove a dependency that does not exist
+        /// </summary>
+        [TestMethod]
+        public void testRemoveDependencywithNoDependents()
+        {
+            DependencyGraph DG = new DependencyGraph();
+
+            DG.AddDependency("a", "b");
+            DG.AddDependency("a", "c");
+            DG.AddDependency("b", "d");
+            DG.AddDependency("d", "d");
+
+            DG.RemoveDependency("p", "d");
+
+            Assert.IsTrue(DG.Size == 4);
+        }
+
+        /// <summary>
+        /// Attempt to add a dependency that is alreadt contained in the graph
+        /// and checks size after
+        /// </summary>
+        [TestMethod]
+        public void testAddDependencythatExistsinGraph()
+        {
+            DependencyGraph DG = new DependencyGraph();
+
+            DG.AddDependency("a", "b");
+            DG.AddDependency("a", "c");
+            DG.AddDependency("b", "d");
+            DG.AddDependency("d", "d");
+
+            DG.AddDependency("d", "d");
+
+            IEnumerable<String> DGE = DG.GetDependents("d");
+
+            foreach(string dependent in DGE)
+            {
+                Assert.AreEqual(dependent, "d");
+            }
+
+            Assert.IsTrue(DG.Size == 4);
+        }
+
+        /// <summary>
+        /// Replaces a singular items in the list of dependees that was
+        /// given to the specified string
+        /// </summary>
         [TestMethod]
         public void testReplaceDependees()
         {
@@ -130,6 +255,10 @@ namespace DependencyGraphTest
             Assert.AreEqual(100000, DG.Size);
         }
 
+        /// <summary>
+        /// Uses a singular string "a" giving it multiple dependencies
+        /// and replacing those dependencies with a smaller set of ints
+        /// </summary>
         [TestMethod]
         public void testReplaceDependents()
         {
@@ -157,6 +286,90 @@ namespace DependencyGraphTest
             }
 
             Assert.AreEqual(10000, DG.Size);
+        }
+
+        /// <summary>
+        /// Attempts to add null items into the Dependency Graph
+        /// </summary>
+        [TestMethod]
+        public void testNullInputsAddDependecy()
+        {
+            DependencyGraph DG = new DependencyGraph();
+
+            DG.AddDependency(null, null);
+
+            Assert.AreEqual(0, DG.Size);
+
+            DG.AddDependency(null, "ert");
+
+            Assert.AreEqual(0, DG.Size);
+
+            DG.AddDependency("ert", null);
+
+            Assert.AreEqual(0, DG.Size);
+        }
+
+        /// <summary>
+        /// Attempts to remove items in the Dependency Graph but null inputs
+        /// should not affect the DP.
+        /// </summary>
+        [TestMethod]
+        public void testNullInputRemoveDependency()
+        {
+            DependencyGraph DG = new DependencyGraph();
+
+            DG.RemoveDependency(null, null);
+
+            Assert.AreEqual(0, DG.Size);
+
+            DG.RemoveDependency(null, "ert");
+
+            Assert.AreEqual(0, DG.Size);
+
+            DG.RemoveDependency("ert", null);
+
+            Assert.AreEqual(0, DG.Size);
+        }
+
+        /// <summary>
+        /// Uses a List of nulls to Test if replacing calling ReplaceDependents
+        /// has no affect on the DependencyGraph.
+        /// </summary>
+        [TestMethod]
+        public void testNullInputReplaceDependents()
+        {
+            DependencyGraph DG = new DependencyGraph();
+
+            for(int i = 1; i <= 10000;i++)
+            {
+                DG.AddDependency(i + "", i * 2 + "");
+            }
+
+            List<String> ReplaceDependents = new List<String>();
+
+            List<String> OldDependents = new List<String>();
+
+
+            IEnumerable<String> DBE = DG.GetDependents("9500");
+
+            foreach(string dependents in DBE)
+            {
+                OldDependents.Add(dependents);
+            }
+
+            for(int i = 1; i <= 10000; i *= 2)
+            {
+                ReplaceDependents.Add(null);
+            }
+
+            DG.ReplaceDependents("9500", ReplaceDependents);
+
+            IEnumerable<String> DGE = DG.GetDependents("9500");
+
+            foreach(string dependent in DGE)
+            {
+                Assert.IsTrue(OldDependents.Contains(dependent));
+            }
         }
     }
 }

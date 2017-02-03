@@ -164,6 +164,7 @@ namespace Dependencies
             {
                 HashSet<String> dependentList = new HashSet<String>();
                 HashSet<String> dependeeList = new HashSet<String>();
+                bool addedDependency = false;
 
                 if (!Dependents.ContainsKey(s) || !Dependees.ContainsKey(t))
                 {
@@ -171,6 +172,7 @@ namespace Dependencies
                     {
                         dependentList.Add(t);
                         Dependents.Add(s, dependentList);
+                        addedDependency = true;
                     }
                     else if(Dependents.ContainsKey(s))
                     {
@@ -181,6 +183,7 @@ namespace Dependencies
                             dependentList.Add(t);
                             Dependents.Remove(s);
                             Dependents.Add(s, dependentList);
+                            addedDependency = true;
                         }
                     }
 
@@ -188,6 +191,7 @@ namespace Dependencies
                     {
                         dependeeList.Add(s);
                         Dependees.Add(t, dependeeList);
+                        addedDependency = true;
                     }
                     else if(Dependees.ContainsKey(t))
                     {
@@ -198,9 +202,13 @@ namespace Dependencies
                             dependeeList.Add(s);
                             Dependees.Remove(t);
                             Dependees.Add(t, dependeeList);
+                            addedDependency = true;
                         }
                     }
-                    size++;
+                    if (addedDependency)
+                    {
+                        size++;
+                    }
                 }
             }
         }
@@ -216,6 +224,7 @@ namespace Dependencies
             {
                 HashSet<String> dependentList = new HashSet<String>();
                 HashSet<String> dependeeList = new HashSet<String>();
+                bool removedDependency = false;
 
                 if(Dependents.ContainsKey(s) || Dependees.ContainsKey(t))
                 {
@@ -228,6 +237,7 @@ namespace Dependencies
                             dependentList.Remove(t);
                             Dependents.Remove(s);
                             Dependents.Add(s, dependentList);
+                            removedDependency = true;
                         }
                     }
 
@@ -240,9 +250,14 @@ namespace Dependencies
                             dependeeList.Remove(s);
                             Dependees.Remove(t);
                             Dependees.Add(t, dependeeList);
+                            removedDependency = true;
                         }
                     }
-                    size--;
+
+                    if (removedDependency)
+                    {
+                        size--;
+                    }
                 }
             }
         }
