@@ -103,5 +103,60 @@ namespace DependencyGraphTest
             }
             
         }
+
+        [TestMethod]
+        public void testReplaceDependees()
+        {
+            DependencyGraph DG = new DependencyGraph();
+
+            for (int i = 1; i <= 100000; i++)
+            {
+                DG.AddDependency("a", i + "");
+            }
+
+            List<String> DP = new List<string>();
+
+            DP.Add("P");
+
+            DG.ReplaceDependees("20000", DP);
+
+            IEnumerable<String> DGE = DG.GetDependees("20000");
+
+            foreach (string dependee in DGE)
+            {
+                Assert.IsTrue(dependee.Equals("P"));
+            }
+
+            Assert.AreEqual(100000, DG.Size);
+        }
+
+        [TestMethod]
+        public void testReplaceDependents()
+        {
+            DependencyGraph DG = new DependencyGraph();
+
+            for (int i = 1; i <= 100000; i++)
+            {
+                DG.AddDependency("a", i + "");
+            }
+
+            List<String> DP = new List<string>();
+
+            for (int i = 1; i <= 10000; i++)
+            {
+                DP.Add(i + "");
+            }
+
+            DG.ReplaceDependents("a", DP);
+
+            IEnumerable<String> DGE = DG.GetDependents("a");
+
+            foreach(string dependent in DGE)
+            {
+                Assert.IsTrue(DP.Contains(dependent));
+            }
+
+            Assert.AreEqual(10000, DG.Size);
+        }
     }
 }

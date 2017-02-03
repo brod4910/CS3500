@@ -52,17 +52,17 @@ namespace Dependencies
 
     public class DependencyGraph
     {
-        private Dictionary<String, List<String>> Dependents;
-        private Dictionary<String, List<String>> Dependees;
-        private int size;
+        private Dictionary<String, HashSet<String>> Dependents;
+        private Dictionary<String, HashSet<String>> Dependees;
+        private int size = 0;
 
         /// <summary>
         /// Creates a DependencyGraph containing no dependencies.
         /// </summary>
         public DependencyGraph()
         {
-            Dictionary<String, List<String>> Dependents = new Dictionary<String, List<String>>();
-            Dictionary<String, List<String>> Dependees = new Dictionary<String, List<String>>();
+            Dictionary<String, HashSet<String>> Dependents = new Dictionary<String, HashSet<String>>();
+            Dictionary<String, HashSet<String>> Dependees = new Dictionary<String, HashSet<String>>();
 
             this.Dependents = Dependents;
             this.Dependees = Dependees;
@@ -81,7 +81,7 @@ namespace Dependencies
         /// </summary>
         public bool HasDependents(string s)
         {
-            List<String> dependentList = new List<string>();
+            HashSet<String> dependentList = new HashSet<String>();
 
             if (s != null)
             {
@@ -98,7 +98,7 @@ namespace Dependencies
         /// </summary>
         public bool HasDependees(string s)
         {
-            List<String> dependeeList = new List<string>();
+            HashSet<String> dependeeList = new HashSet<String>();
 
             if (s != null)
             {
@@ -115,7 +115,7 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
-            List<String> dependentList = new List<string>();
+            HashSet<String> dependentList = new HashSet<String>();
 
             if(s != null)
             {
@@ -136,13 +136,13 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
-            List<String> dependeeList = new List<string>();
+            HashSet<String> dependeeList = new HashSet<String>();
 
             if (s != null)
             {
                 if (Dependees.ContainsKey(s))
                 {
-                    Dependents.TryGetValue(s, out dependeeList);
+                    Dependees.TryGetValue(s, out dependeeList);
 
                     foreach (string dependee in dependeeList)
                     {
@@ -162,8 +162,8 @@ namespace Dependencies
         {
             if(s != null && t != null)
             {
-                List<String> dependentList = new List<string>();
-                List<String> dependeeList = new List<string>();
+                HashSet<String> dependentList = new HashSet<String>();
+                HashSet<String> dependeeList = new HashSet<String>();
 
                 if (!Dependents.ContainsKey(s) || !Dependees.ContainsKey(t))
                 {
@@ -171,7 +171,6 @@ namespace Dependencies
                     {
                         dependentList.Add(t);
                         Dependents.Add(s, dependentList);
-                        size++;
                     }
                     else if(Dependents.ContainsKey(s))
                     {
@@ -182,7 +181,6 @@ namespace Dependencies
                             dependentList.Add(t);
                             Dependents.Remove(s);
                             Dependents.Add(s, dependentList);
-                            size++;
                         }
                     }
 
@@ -190,7 +188,6 @@ namespace Dependencies
                     {
                         dependeeList.Add(s);
                         Dependees.Add(t, dependeeList);
-                        size++;
                     }
                     else if(Dependees.ContainsKey(t))
                     {
@@ -201,9 +198,9 @@ namespace Dependencies
                             dependeeList.Add(s);
                             Dependees.Remove(t);
                             Dependees.Add(t, dependeeList);
-                            size++;
                         }
                     }
+                    size++;
                 }
             }
         }
@@ -217,8 +214,8 @@ namespace Dependencies
         {
             if (s != null && t != null)
             {
-                List<String> dependentList = new List<string>();
-                List<String> dependeeList = new List<string>();
+                HashSet<String> dependentList = new HashSet<String>();
+                HashSet<String> dependeeList = new HashSet<String>();
 
                 if(Dependents.ContainsKey(s) || Dependees.ContainsKey(t))
                 {
@@ -245,6 +242,7 @@ namespace Dependencies
                             Dependees.Add(t, dependeeList);
                         }
                     }
+                    size--;
                 }
             }
         }
@@ -256,7 +254,37 @@ namespace Dependencies
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
+            if (s != null)
+            {
 
+                if (Dependents.ContainsKey(s))
+                {
+                    HashSet<String> dependentList = new HashSet<String>();
+
+                    HashSet<String> OldDependentList = new HashSet<String>();
+
+                    Dependents.TryGetValue(s, out OldDependentList);
+
+                    size -= OldDependentList.Count;
+
+                    foreach(string dependent in newDependents)
+                    {
+                        if(dependent != null)
+                        {
+                            if(!dependentList.Contains(dependent))
+                            {
+                                dependentList.Add(dependent);
+                            }
+                        }
+                    }
+
+                    Dependents.Remove(s);
+
+                    Dependents.Add(s, dependentList);
+
+                    size += dependentList.Count;   
+                }
+            }
         }
 
         /// <summary>
@@ -266,6 +294,36 @@ namespace Dependencies
         /// </summary>
         public void ReplaceDependees(string t, IEnumerable<string> newDependees)
         {
+            if(t != null)
+            { 
+                if(Dependees.ContainsKey(t))
+                {
+                    HashSet<String> dependeeList = new HashSet<String>();
+
+                    HashSet<String> OldDependeeList = new HashSet<String>();
+
+                    Dependees.TryGetValue(t, out OldDependeeList);
+
+                    size -= OldDependeeList.Count;
+
+                    foreach (string dependee in newDependees)
+                    {
+                        if(dependee != null)
+                        {
+                            if(!dependeeList.Contains(dependee))
+                            {
+                                dependeeList.Add(dependee);
+                            }
+                        }
+                    }
+
+                    Dependees.Remove(t);
+
+                    Dependees.Add(t, dependeeList);
+
+                    size += dependeeList.Count;
+                }
+            }
         }
     }
 }
