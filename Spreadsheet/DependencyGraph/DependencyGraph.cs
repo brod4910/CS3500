@@ -77,6 +77,8 @@ namespace Dependencies
 
         /// <summary>
         /// Reports whether dependents(s) is non-empty.  Requires s != null.
+        /// 
+        /// FIXED
         /// </summary>
         public bool HasDependents(string s)
         {
@@ -86,7 +88,23 @@ namespace Dependencies
             //checks to see if string s has dependents and if so return true else false
             if (s != null)
             {
-                return Dependents.TryGetValue(s, out dependentList);
+                Dependents.TryGetValue(s, out dependentList);
+
+                if (dependentList != null)
+                {
+                    if (dependentList.Count == 0)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
             }
             else
             {
@@ -96,6 +114,8 @@ namespace Dependencies
 
         /// <summary>
         /// Reports whether dependees(s) is non-empty.  Requires s != null.
+        /// 
+        /// FIXED
         /// </summary>
         public bool HasDependees(string s)
         {
@@ -104,7 +124,23 @@ namespace Dependencies
             //checks to see if string s has dependents and if so return true else false
             if (s != null)
             {
-                return Dependees.TryGetValue(s, out dependeeList);
+                Dependees.TryGetValue(s, out dependeeList);
+
+                if (dependeeList != null)
+                {
+                    if (dependeeList.Count == 0)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
             }
             else
             {
@@ -163,6 +199,8 @@ namespace Dependencies
         /// This has no effect if (s,t) already belongs to this DependencyGraph.
         /// Requires s != null and t != null.
         /// (dependee, dependent)
+        /// 
+        /// FIXED
         /// </summary>
         public void AddDependency(string s, string t)
         {
@@ -211,7 +249,7 @@ namespace Dependencies
                     //list of dependees of s
                     else if(Dependees.ContainsKey(t))
                     {
-                        Dependees.TryGetValue(s, out dependeeList);
+                        Dependees.TryGetValue(t, out dependeeList);
 
                         //if the list doesnt contain t 
                         //then add s to the list and put t into the 
@@ -320,11 +358,30 @@ namespace Dependencies
                     {
                         if(dependent != null)
                         {
+                            HashSet<String> list = new HashSet<String>();
+
                             //if dependent list doesnt not contain the dependent
                             //add it to the list
                             if(!dependentList.Contains(dependent))
                             {
                                 dependentList.Add(dependent);
+                            }
+
+                            if(!Dependees.ContainsKey(dependent))
+                            {
+                                list.Add(s);
+
+                                Dependees.Add(dependent, list);
+                            }
+                            else if(Dependees.ContainsKey(dependent))
+                            {
+                                Dependees.TryGetValue(dependent, out list);
+
+                                list.Add(s);
+
+                                Dependees.Remove(dependent);
+
+                                Dependees.Add(dependent, list);
                             }
                         }
                     }
@@ -369,11 +426,30 @@ namespace Dependencies
                     {
                         if(dependee != null)
                         {
+                            HashSet<String> list = new HashSet<String>();
+
                             //if dependee list doesnt not contain the dependee
                             //add it to the list
                             if (!dependeeList.Contains(dependee))
                             {
                                 dependeeList.Add(dependee);
+                            }
+
+                            if (!Dependents.ContainsKey(dependee))
+                            {
+                                list.Add(t);
+
+                                Dependents.Add(dependee, list);
+                            }
+                            else if (Dependents.ContainsKey(dependee))
+                            {
+                                Dependents.TryGetValue(dependee, out list);
+
+                                list.Add(t);
+
+                                Dependents.Remove(dependee);
+
+                                Dependents.Add(dependee, list);
                             }
                         }
                     }
