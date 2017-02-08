@@ -67,6 +67,12 @@ namespace Dependencies
             this.Dependees = Dependees;
         }
 
+        public DependencyGraph(DependencyGraph DG)
+        {
+            this.Dependents = DG.Dependents;
+            this.Dependees = DG.Dependees;
+        }
+
         /// <summary>
         /// The number of dependencies in the DependencyGraph.
         /// </summary>
@@ -108,7 +114,7 @@ namespace Dependencies
             }
             else
             {
-                return false;
+                throw new ArgumentNullException();
             }
         }
 
@@ -144,7 +150,7 @@ namespace Dependencies
             }
             else
             {
-                return false;
+                throw new ArgumentNullException();
             }
         }
 
@@ -169,6 +175,10 @@ namespace Dependencies
                     }
                 }
             }
+            else
+            {
+                throw new ArgumentNullException();
+            }
         }
 
         /// <summary>
@@ -192,6 +202,10 @@ namespace Dependencies
                     }
                 }
             }
+            else
+            {
+                throw new ArgumentNullException();
+            }
         }
 
         /// <summary>
@@ -199,6 +213,7 @@ namespace Dependencies
         /// This has no effect if (s,t) already belongs to this DependencyGraph.
         /// Requires s != null and t != null.
         /// (dependee, dependent)
+        /// Throws ArgumentNullException when s or t are null
         /// 
         /// FIXED
         /// </summary>
@@ -269,12 +284,18 @@ namespace Dependencies
                     }
                 }
             }
+            else
+            {
+                throw new ArgumentNullException();
+            }
         }
 
         /// <summary>
         /// Removes the dependency (s,t) from this DependencyGraph.
         /// Does nothing if (s,t) doesn't belong to this DependencyGraph.
         /// Requires s != null and t != null.
+        /// Throws ArgumentNullException when s or t are null
+        /// 
         /// </summary>
         public void RemoveDependency(string s, string t)
         {
@@ -328,12 +349,18 @@ namespace Dependencies
                     }
                 }
             }
+            else
+            {
+                throw new ArgumentNullException();
+            }
         }
 
         /// <summary>
         /// Removes all existing dependencies of the form (s,r).  Then, for each
         /// t in newDependents, adds the dependency (s,t).
         /// Requires s != null and t != null.
+        /// Throws ArgumentNullException when s or t are null
+        /// 
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
@@ -356,6 +383,11 @@ namespace Dependencies
                     //for each dependent in the new dependents
                     foreach(string dependent in newDependents)
                     {
+                        if(dependent == null)
+                        {
+                            throw new ArgumentNullException();
+                        }
+
                         if(dependent != null)
                         {
                             HashSet<String> list = new HashSet<String>();
@@ -396,12 +428,17 @@ namespace Dependencies
                     size += dependentList.Count;   
                 }
             }
+            else
+            {
+                throw new ArgumentNullException();
+            }
         }
 
         /// <summary>
         /// Removes all existing dependencies of the form (r,t).  Then, for each 
         /// s in newDependees, adds the dependency (s,t).
         /// Requires s != null and t != null.
+        /// Throws ArgumentNullException when s or t are null
         /// </summary>
         public void ReplaceDependees(string t, IEnumerable<string> newDependees)
         {
@@ -424,6 +461,11 @@ namespace Dependencies
                     //for each dependee in the new dependees
                     foreach (string dependee in newDependees)
                     {
+                        if(dependee == null)
+                        {
+                            throw new ArgumentNullException();
+                        }
+
                         if(dependee != null)
                         {
                             HashSet<String> list = new HashSet<String>();
@@ -463,6 +505,10 @@ namespace Dependencies
 
                     size += dependeeList.Count;
                 }
+            }
+            else
+            {
+                throw new ArgumentNullException();
             }
         }
     }
