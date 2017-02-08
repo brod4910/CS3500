@@ -15,7 +15,7 @@ namespace Formulas
     /// the four binary operator symbols +, -, *, and /.  (The unary operators + and -
     /// are not allowed.)
     /// </summary>
-    public class Formula
+    public struct Formula
     {
         private IEnumerable<String> formula;
 
@@ -115,6 +115,118 @@ namespace Formulas
                         }
 
                         if(Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace))
+                        {
+                            if (Convert.ToDouble(token) < 0)
+                            {
+                                throw new FormulaFormatException("Only non-negative numbers are permitted");
+                            }
+                        }
+
+                        if (Regex.IsMatch(token, lpPattern))
+                        {
+                            lparen++;
+                        }
+                        else if (Regex.IsMatch(token, rpPattern))
+                        {
+                            rparen++;
+                        }
+
+                        if (rparen > lparen)
+                        {
+                            throw new FormulaFormatException("Number of closing parentheses is greater than opening parentheses.");
+                        }
+
+                        prevToken = token;
+                        index++;
+                    }
+                }
+                else
+                {
+                    throw new FormulaFormatException("Invalid token in Formula.");
+                }
+            }
+
+            if (lparen != rparen)
+            {
+                throw new FormulaFormatException("Number of parentheses are not equal.");
+            }
+
+
+            if (areTokens == false)
+            {
+                throw new FormulaFormatException("No tokens have been entered.");
+            }
+
+            this.formula = tokens;
+        }
+
+        public Formula(String formula, Normalizer normalizer, Validator validator)
+        {
+            int rparen = 0;
+            int lparen = 0;
+            bool areTokens = false;
+            bool isfirstToken = true;
+            IEnumerable<String> tokens = GetTokens(formula);
+            int index = 1;
+            int size = tokens.Count();
+            string prevToken = null;
+
+            foreach (string token in tokens)
+            {
+                areTokens = true;
+
+                if (Regex.IsMatch(token, lpPattern) || Regex.IsMatch(token, varPattern) || Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace) || Regex.IsMatch(token, rpPattern) || Regex.IsMatch(token, opPattern))
+                {
+                    if (isfirstToken)
+                    {
+                        isfirstToken = false;
+                        if (Regex.IsMatch(token, lpPattern) || Regex.IsMatch(token, varPattern) || Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace))
+                        {
+                            if (Regex.IsMatch(token, lpPattern))
+                            {
+                                lparen++;
+                            }
+                            else if (!Regex.IsMatch(token, varPattern))
+                            {
+                                if (Convert.ToDouble(token) < 0)
+                                {
+                                    throw new FormulaFormatException("Only non-negative numbers are permitted");
+                                }
+                            }
+                            prevToken = token;
+                            index++;
+                        }
+                        else
+                        {
+                            throw new FormulaFormatException("The first token of a formula must be a number, a variable, or an opening parenthesis.");
+                        }
+                    }
+                    else
+                    {
+                        if (Regex.IsMatch(prevToken, lpPattern) || Regex.IsMatch(prevToken, opPattern))
+                        {
+                            if (Regex.IsMatch(token, rpPattern) || Regex.IsMatch(token, opPattern))
+                            {
+                                throw new FormulaFormatException("Any token that immediately follows an opening parenthesis or an operator must be either a number, a variable, or an opening parenthesis.");
+                            }
+                        }
+                        else
+                        {
+                            if (Regex.IsMatch(token, lpPattern) || Regex.IsMatch(token, varPattern) || Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace))
+                            {
+                                throw new FormulaFormatException("Any token that immediately follows a number, a variable, or a closing parenthesis must be either an operator or a closing parenthesis.");
+                            }
+                        }
+
+                        if (index == size)
+                        {
+                            if (Regex.IsMatch(token, opPattern) || Regex.IsMatch(token, lpPattern))
+                            {
+                                throw new FormulaFormatException("The last token of a formula must be a number, a variable, or a closing parenthesis.");
+                            }
+                        }
+
+                        if (Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace))
                         {
                             if (Convert.ToDouble(token) < 0)
                             {
@@ -464,6 +576,10 @@ namespace Formulas
     /// don't is up to the implementation of the method.
     /// </summary>
     public delegate double Lookup(string var);
+
+    public delegate string Normalizer(string s);
+
+    public delegate bool Validator(string s);
 
     /// <summary>
     /// Used to report that a Lookup delegate is unable to determine the value
