@@ -19,9 +19,11 @@ namespace Formulas
     {
         private IEnumerable<String> formula;
 
-        private const String doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: e[\+-]?\d+)?";
-        private const String varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
-        private const String opPattern = @"[\+\-*/]";
+        //fixed double pattern
+        private const String doublePattern = @"^(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: e[\+-]?\d+)?";
+        private const String varPattern = @"^[a-zA-Z][0-9a-zA-Z]*";
+        //fixed op pattern
+        private const String opPattern = @"^[\+\-*/]";
         private const String rpPattern = @"\)";
         private const String lpPattern = @"\(";
 
