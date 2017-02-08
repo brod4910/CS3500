@@ -27,6 +27,9 @@ namespace Formulas
         private const String rpPattern = @"\)";
         private const String lpPattern = @"\(";
 
+        private Normalizer normalizer;
+        private Validator validator;
+
 
         /// <summary>
         /// Creates a Formula from a string that consists of a standard infix expression composed
@@ -59,6 +62,9 @@ namespace Formulas
             int size = tokens.Count();
             string prevToken = null;
 
+            this.validator = s => true;
+            this.normalizer = s => s;
+
             foreach (string token in tokens)
             {
                 areTokens = true;
@@ -74,7 +80,7 @@ namespace Formulas
                             {
                                 lparen++;
                             }
-                            else if(!Regex.IsMatch(token, varPattern))
+                            else if(Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace))
                             {
                                 if(Convert.ToDouble(token) < 0)
                                 {
@@ -171,6 +177,9 @@ namespace Formulas
             int size = tokens.Count();
             string prevToken = null;
 
+            this.validator = validator;
+            this.normalizer = normalizer;
+
             foreach (string token in tokens)
             {
                 areTokens = true;
@@ -186,12 +195,16 @@ namespace Formulas
                             {
                                 lparen++;
                             }
-                            else if (!Regex.IsMatch(token, varPattern))
+                            else if (Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace))
                             {
                                 if (Convert.ToDouble(token) < 0)
                                 {
                                     throw new FormulaFormatException("Only non-negative numbers are permitted");
                                 }
+                            }
+                            else
+                            {
+                                normalizer(token);
                             }
                             prevToken = token;
                             index++;
@@ -529,6 +542,35 @@ namespace Formulas
                     return value1 - value2;
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            string formulaString = "";
+
+            foreach(string token in formula)
+            {
+                formulaString += token;
+            }
+
+            return formulaString;
+        }
+
+        public ISet<String> GetVariables()
+        {
+            Regex varPattern = new Regex(@"^[a-zA-Z][0-9a-zA-Z]*");
+
+            HashSet<String> variables = new HashSet<String>();
+
+            foreach(string token in formula)
+            {
+                if(varPattern.IsMatch(token))
+                {
+                    variables.Add(token);
+                }
+            }
+
+            return variables;
         }
 
         /// <summary>
