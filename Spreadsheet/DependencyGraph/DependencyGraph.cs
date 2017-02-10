@@ -67,10 +67,22 @@ namespace Dependencies
             this.Dependees = Dependees;
         }
 
-        public DependencyGraph(DependencyGraph DG) : this()
+        public DependencyGraph(DependencyGraph DG)
         {
-            this.Dependees = DG.Dependees;
-            this.Dependents = DG.Dependents;
+            Dictionary<String, HashSet<String>> Dependents = new Dictionary<String, HashSet<String>>();
+            Dictionary<String, HashSet<String>> Dependees = new Dictionary<String, HashSet<String>>();
+            HashSet<String> list = new HashSet<String>();
+            int index = 0;
+            int size = DG.Size;
+
+            foreach(string Dependent in DG.Dependents.Keys)
+            {
+                for(int i = index; i <= size;i = 0)
+                {
+
+                    index++;
+                }
+            }
         }
 
         /// <summary>
@@ -353,14 +365,6 @@ namespace Dependencies
             }
         }
 
-        /// <summary>
-        /// Removes all existing dependencies of the form (s,r).  Then, for each
-        /// t in newDependents, adds the dependency (s,t).
-        /// Requires s != null and t != null.
-        /// Throws NullArgumentException when there is Null input
-        /// Throws NullArgumentException when there is a Null input in the IEnumberable
-        /// FIXED
-        /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
             if (s != null)
@@ -396,20 +400,20 @@ namespace Dependencies
 
                 foreach (string dependent in newDependents)
                 {
-                    if (dependent == null)
+                    if (dependent != null)
                     {
-                        throw new ArgumentNullException("Enter a non-null input");
+                        this.AddDependency(s, dependent);
                     }
                     else
                     {
-                        this.AddDependency(s, dependent);
+                        throw new ArgumentNullException("Use non - null values in list.");
                     }
                 }
 
             }
             else
             {
-                throw new ArgumentNullException("Enter a non-null input");
+                throw new ArgumentNullException("Enter non-null inputs");
             }
         }
 
@@ -417,8 +421,7 @@ namespace Dependencies
         /// Removes all existing dependencies of the form (r,t).  Then, for each 
         /// s in newDependees, adds the dependency (s,t).
         /// Requires s != null and t != null.
-        /// Throws NullArgumentException when there is a Null input
-        /// Throws NullArgumentException when there is a Null input in the IEnumberable
+        /// 
         /// FIXED
         /// </summary>
         public void ReplaceDependees(string t, IEnumerable<string> newDependees)
@@ -456,15 +459,19 @@ namespace Dependencies
 
                 foreach (string dependee in newDependees)
                 {
-                    if(dependee == null)
+                    if (dependee != null)
                     {
                         this.AddDependency(dependee, t);
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Use non-null values in list.");
                     }
                 }
             }
             else
             {
-                throw new ArgumentNullException("Enter a non-null input");
+                throw new ArgumentNullException("Enter non-null input.");
             }
         }
     }

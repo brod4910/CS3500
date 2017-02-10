@@ -17,11 +17,10 @@ namespace DependencyGraphTest
         /// Tests to check if the strings has Dependees
         /// </summary>
         [TestMethod]
-        
         public void TestHasDependees()
         {
             DependencyGraph DG = new DependencyGraph();
-            
+
             DG.AddDependency("a", "b");
             DG.AddDependency("a", "c");
             DG.AddDependency("b", "d");
@@ -32,6 +31,41 @@ namespace DependencyGraphTest
             Assert.IsTrue(DG.HasDependees("b"));
             Assert.IsTrue(DG.HasDependees("c"));
             Assert.IsTrue(DG.HasDependees("d"));
+
+        }
+
+
+
+        /// <summary>
+        /// Tests to check if the strings has Dependees
+        /// </summary>
+        [TestMethod]
+        
+        public void testDependencyArgumentConstructor()
+        {
+            DependencyGraph DG = new DependencyGraph();
+
+
+            DG.AddDependency("a", "b");
+            DG.AddDependency("a", "c");
+            DG.AddDependency("b", "d");
+            DG.AddDependency("d", "d");
+
+            DependencyGraph DG2 = new DependencyGraph(DG);
+
+            Assert.IsFalse(DG2.HasDependees("s"));
+            Assert.IsFalse(DG2.HasDependees("a"));
+            Assert.IsTrue(DG2.HasDependees("b"));
+            Assert.IsTrue(DG2.HasDependees("c"));
+            Assert.IsTrue(DG2.HasDependees("d"));
+
+            DG.RemoveDependency("a", "b");
+
+            Assert.IsFalse(DG2.HasDependees("s"));
+            Assert.IsFalse(DG2.HasDependees("a"));
+            Assert.IsTrue(DG2.HasDependees("b"));
+            Assert.IsTrue(DG2.HasDependees("c"));
+            Assert.IsTrue(DG2.HasDependees("d"));
 
         }
 
@@ -235,7 +269,7 @@ namespace DependencyGraphTest
         {
             DependencyGraph DG = new DependencyGraph();
 
-            for (int i = 0; i <= 100000; i++)
+            for (int i = 1; i <= 100000; i++)
             {
                 DG.AddDependency("a", i + "");
             }
