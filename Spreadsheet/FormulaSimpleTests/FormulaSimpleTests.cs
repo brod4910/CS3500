@@ -4,6 +4,7 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Formulas;
+using System.Collections.Generic;
 
 namespace FormulaTestCases
 {
@@ -330,6 +331,210 @@ namespace FormulaTestCases
         {
             Formula f = new Formula("(((y / x) * z) * 300) + 365 * 10 / w + 1000");
             Assert.AreEqual(f.Evaluate(Lookup4), 6425, 1e-6);
+        }
+
+        /// <summary>
+        /// A string to test if the Strings are equal after it has been
+        /// normalized
+        /// </summary>
+        /// 
+        [TestMethod]
+        public void toStringTest1()
+        {
+
+            Normalizer norm = s => "x3";
+
+            Formula f = new Formula("(((y / x) * z) * 300) + 365 * 10 / w + 1000", norm, s => true);
+
+            string newForm = "(((x3/x3)*x3)*300)+365*10/x3+1000";
+
+            string result = f.ToString();
+
+            Assert.AreEqual(result, newForm);
+        }
+
+        /// <summary>
+        /// Test that goes outside of the format of the formula
+        /// specifications
+        /// </summary>
+        /// 
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void toStringTest2()
+        {
+
+            Normalizer norm = s => "_x3";
+
+            Formula f = new Formula("(((y / x) * z) * 300) + 365 * 10 / w + 1000", norm, s => true);
+
+            string newForm = "(((x3/x3)*x3)*300)+365*10/x3+1000";
+
+            string result = f.ToString();
+
+            Assert.AreEqual(result, newForm);
+        }
+
+        /// <summary>
+        /// A string to test if the Strings are equal after it has been
+        /// normalized
+        /// </summary>
+        /// 
+        [TestMethod]
+        public void toStringTest3()
+        {
+
+            Normalizer norm = s => "x3134324124";
+
+            Formula f = new Formula("(((y / x) * z) * 300) + 365 * 10 / w + 1000", norm, s => true);
+
+            string newForm = "(((x3134324124/x3134324124)*x3134324124)*300)+365*10/x3134324124+1000";
+
+            string result = f.ToString();
+
+            Assert.AreEqual(result, newForm);
+        }
+
+        /// <summary>
+        /// A string to test if the Strings are equal after it has been
+        /// normalized
+        /// </summary>
+        /// 
+        [TestMethod]
+        public void toStringTest4()
+        {
+
+            Normalizer norm = s => s.ToUpper();
+
+            Formula f = new Formula("(((y / x) * z) * 300) + 365 * 10 / w + 1000", norm, s => true);
+
+            string newForm = "(((Y/X)*Z)*300)+365*10/W+1000";
+
+            string result = f.ToString();
+
+            Assert.AreEqual(result, newForm);
+        }
+
+        /// <summary>
+        /// Tests normalizer null input
+        /// </summary>
+        /// 
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void toStringTest5()
+        {
+            Normalizer norm = s => "x3";
+
+            Formula f = new Formula("(((y / x) * z) * 300) + 365 * 10 / w + 1000", null, s => true);
+
+            string newForm = "(((x3/x3)*x3)*300)+365*10/x3+1000";
+
+            string result = f.ToString();
+
+            Assert.AreEqual(result, newForm);
+        }
+
+        /// <summary>
+        /// Tests validator null input
+        /// </summary>
+        /// 
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void toStringTest6()
+        {
+            Normalizer norm = s => "x3";
+
+            Formula f = new Formula("(((y / x) * z) * 300) + 365 * 10 / w + 1000", norm, null);
+
+            string newForm = "(((x3/x3)*x3)*300)+365*10/x3+1000";
+
+            string result = f.ToString();
+
+            Assert.AreEqual(result, newForm);
+        }
+
+        /// <summary>
+        /// Tests normalizer null input
+        /// </summary>
+        /// 
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void toStringTest7()
+        {
+            Normalizer norm = s => null;
+
+            Formula f = new Formula("(((y / x) * z) * 300) + 365 * 10 / w + 1000", norm, s => true);
+
+            string newForm = "(((x3/x3)*x3)*300)+365*10/x3+1000";
+
+            string result = f.ToString();
+
+            Assert.AreEqual(result, newForm);
+        }
+
+        /// <summary>
+        /// Tests the zero argument constructor
+        /// </summary>
+        /// 
+        [TestMethod]
+        public void zeroArgumentConstructorTest1()
+        {
+            Formula f = new Formula();
+
+            Assert.AreEqual(0, f.Evaluate(s => 10000));
+        }
+
+        /// <summary>
+        /// Tests the zero argument constructor
+        /// </summary>
+        /// 
+        [TestMethod]
+        public void zeroArgumentConstructorTest2()
+        {
+            Formula f = new Formula();
+
+            Assert.AreEqual(0, f.Evaluate(s => 0));
+        }
+
+        /// <summary>
+        /// Two formulas that should behave the same
+        /// </summary>
+        [TestMethod]
+        public void nestedFormulaConstructing()
+        {
+            Formula f1 = new Formula("(((y / x) * z) * 300) + 365 * 10 / w + 1000", s => s, s => true);
+
+            Formula f2 = new Formula(f1.ToString(), s => s, s => true);
+
+            Assert.AreEqual(f1.Evaluate(s => 1), f2.Evaluate(s => 1));
+        }
+
+        [TestMethod]
+        public void getVariablesTest1()
+        {
+            Formula f1 = new Formula("(((y / x) * z) * 300) + 365 * 10 / w + 1000", s => s, s => true);
+
+            List<String> vars = new List<string>();
+
+            vars.Add("x");
+            vars.Add("w");
+            vars.Add("z");
+            vars.Add("y");
+
+            foreach(string var in f1.GetVariables())
+            {
+                Assert.IsTrue(vars.Contains(var));
+            }
+
+            Formula f2 = new Formula("(((y / x) * z) * 300) + 365 * 10 / w + 1000", s => "P12", s => true);
+
+            vars.Clear();
+
+            vars.Add("P12");
+
+            foreach(string var in f2.GetVariables())
+            {
+                Assert.IsTrue(vars.Contains(var));
+            }
         }
 
         /// <summary>

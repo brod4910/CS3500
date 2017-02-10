@@ -17,7 +17,9 @@ namespace Formulas
     /// </summary>
     public struct Formula
     {
-        private IEnumerable<String> formula;
+        private IEnumerable<String> formulaIE;
+        private Normalizer normalizer;
+        private Validator validator;
 
         //fixed double pattern
         private const String doublePattern = @"^(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: e[\+-]?\d+)?";
@@ -27,8 +29,7 @@ namespace Formulas
         private const String rpPattern = @"\)";
         private const String lpPattern = @"\(";
 
-        private Normalizer normalizer;
-        private Validator validator;
+
 
 
         /// <summary>
@@ -51,8 +52,15 @@ namespace Formulas
         /// If the formula is syntacticaly invalid, throws a FormulaFormatException with an 
         /// explanatory Message.
         /// </summary>
+        /// 
+
         public Formula(String formula)
         {
+            if(formula == null)
+            {
+                throw new ArgumentNullException("Enter a non-Null input.");
+            }
+
             int rparen = 0;
             int lparen = 0;
             bool areTokens = false;
@@ -61,7 +69,6 @@ namespace Formulas
             int index = 1;
             int size = tokens.Count();
             string prevToken = null;
-
             this.validator = s => true;
             this.normalizer = s => s;
 
@@ -163,126 +170,46 @@ namespace Formulas
                 throw new FormulaFormatException("No tokens have been entered.");
             }
 
-            this.formula = tokens;
+            this.formulaIE = tokens;
         }
 
-        public Formula(String formula, Normalizer normalizer, Validator validator)
+        public Formula(String formula, Normalizer normalizer, Validator validator) : this(formula)
         {
-            int rparen = 0;
-            int lparen = 0;
-            bool areTokens = false;
-            bool isfirstToken = true;
-            IEnumerable<String> tokens = GetTokens(formula);
-            int index = 1;
-            int size = tokens.Count();
-            string prevToken = null;
-
-            this.validator = validator;
-            this.normalizer = normalizer;
-
-            foreach (string token in tokens)
+            if (formula == null || normalizer == null || validator == null)
             {
-                areTokens = true;
+                throw new ArgumentNullException("Enter a non-null input.");
+            }
 
-                if (Regex.IsMatch(token, lpPattern) || Regex.IsMatch(token, varPattern) || Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace) || Regex.IsMatch(token, rpPattern) || Regex.IsMatch(token, opPattern))
+            this.normalizer = normalizer;
+            this.validator = validator;
+            string normalized;
+            List<String> list = new List<String>();
+
+            foreach(string token in formulaIE)
+            {
+                if(Regex.IsMatch(token, varPattern))
                 {
-                    if (isfirstToken)
+                    normalized = normalizer(token);
+
+                    if(!Regex.IsMatch(normalized, varPattern))
                     {
-                        isfirstToken = false;
-                        if (Regex.IsMatch(token, lpPattern) || Regex.IsMatch(token, varPattern) || Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace))
-                        {
-                            if (Regex.IsMatch(token, lpPattern))
-                            {
-                                lparen++;
-                            }
-                            else if (Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace))
-                            {
-                                if (Convert.ToDouble(token) < 0)
-                                {
-                                    throw new FormulaFormatException("Only non-negative numbers are permitted");
-                                }
-                            }
-                            else
-                            {
-                                normalizer(token);
-                            }
-                            prevToken = token;
-                            index++;
-                        }
-                        else
-                        {
-                            throw new FormulaFormatException("The first token of a formula must be a number, a variable, or an opening parenthesis.");
-                        }
+                        throw new FormulaFormatException("Normalizer does not follow Formula rules.");
                     }
-                    else
+
+                    if(!validator(normalized))
                     {
-                        if (Regex.IsMatch(prevToken, lpPattern) || Regex.IsMatch(prevToken, opPattern))
-                        {
-                            if (Regex.IsMatch(token, rpPattern) || Regex.IsMatch(token, opPattern))
-                            {
-                                throw new FormulaFormatException("Any token that immediately follows an opening parenthesis or an operator must be either a number, a variable, or an opening parenthesis.");
-                            }
-                        }
-                        else
-                        {
-                            if (Regex.IsMatch(token, lpPattern) || Regex.IsMatch(token, varPattern) || Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace))
-                            {
-                                throw new FormulaFormatException("Any token that immediately follows a number, a variable, or a closing parenthesis must be either an operator or a closing parenthesis.");
-                            }
-                        }
-
-                        if (index == size)
-                        {
-                            if (Regex.IsMatch(token, opPattern) || Regex.IsMatch(token, lpPattern))
-                            {
-                                throw new FormulaFormatException("The last token of a formula must be a number, a variable, or a closing parenthesis.");
-                            }
-                        }
-
-                        if (Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace))
-                        {
-                            if (Convert.ToDouble(token) < 0)
-                            {
-                                throw new FormulaFormatException("Only non-negative numbers are permitted");
-                            }
-                        }
-
-                        if (Regex.IsMatch(token, lpPattern))
-                        {
-                            lparen++;
-                        }
-                        else if (Regex.IsMatch(token, rpPattern))
-                        {
-                            rparen++;
-                        }
-
-                        if (rparen > lparen)
-                        {
-                            throw new FormulaFormatException("Number of closing parentheses is greater than opening parentheses.");
-                        }
-
-                        prevToken = token;
-                        index++;
+                        throw new FormulaFormatException("The normalized variable validated to false.");
                     }
+
+                    list.Add(normalized);
                 }
                 else
                 {
-                    throw new FormulaFormatException("Invalid token in Formula.");
+                    list.Add(token);
                 }
             }
 
-            if (lparen != rparen)
-            {
-                throw new FormulaFormatException("Number of parentheses are not equal.");
-            }
-
-
-            if (areTokens == false)
-            {
-                throw new FormulaFormatException("No tokens have been entered.");
-            }
-
-            this.formula = tokens;
+            this.formulaIE = list;
         }
 
         /// <summary>
@@ -304,7 +231,17 @@ namespace Formulas
 
             Stack<Double> valueStack = new Stack<Double>();
 
-            foreach(string token in formula)
+            if (formulaIE == null)
+            {
+                return 0;
+            }
+
+            if(lookup == null)
+            {
+                throw new ArgumentNullException("Lookup delagate is null.");
+            }
+
+            foreach(string token in formulaIE)
             {
                 if(Regex.IsMatch(token, opPattern))
                 {
@@ -548,7 +485,7 @@ namespace Formulas
         {
             string formulaString = "";
 
-            foreach(string token in formula)
+            foreach(string token in formulaIE)
             {
                 formulaString += token;
             }
@@ -562,11 +499,14 @@ namespace Formulas
 
             HashSet<String> variables = new HashSet<String>();
 
-            foreach(string token in formula)
+            foreach(string token in formulaIE)
             {
                 if(varPattern.IsMatch(token))
                 {
-                    variables.Add(token);
+                    if (!variables.Contains(token))
+                    {
+                        variables.Add(token);
+                    }
                 }
             }
 
