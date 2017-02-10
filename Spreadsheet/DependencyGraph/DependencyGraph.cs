@@ -67,6 +67,12 @@ namespace Dependencies
             this.Dependees = Dependees;
         }
 
+        public DependencyGraph(DependencyGraph DG) : this()
+        {
+            this.Dependees = DG.Dependees;
+            this.Dependents = DG.Dependents;
+        }
+
         /// <summary>
         /// The number of dependencies in the DependencyGraph.
         /// </summary>
@@ -77,7 +83,7 @@ namespace Dependencies
 
         /// <summary>
         /// Reports whether dependents(s) is non-empty.  Requires s != null.
-        /// 
+        /// Throws NullArgumentException when there is Null input
         /// FIXED
         /// </summary>
         public bool HasDependents(string s)
@@ -113,7 +119,7 @@ namespace Dependencies
 
         /// <summary>
         /// Reports whether dependees(s) is non-empty.  Requires s != null.
-        /// 
+        /// Throws NullArgumentException when there is Null input
         /// FIXED
         /// </summary>
         public bool HasDependees(string s)
@@ -149,6 +155,7 @@ namespace Dependencies
 
         /// <summary>
         /// Enumerates dependents(s).  Requires s != null.
+        /// Throws NullArgumentException when there is Null input
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
@@ -176,6 +183,7 @@ namespace Dependencies
 
         /// <summary>
         /// Enumerates dependees(s).  Requires s != null.
+        /// Throws NullArgumentException when there is Null input
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
@@ -205,8 +213,7 @@ namespace Dependencies
         /// Adds the dependency (s,t) to this DependencyGraph.
         /// This has no effect if (s,t) already belongs to this DependencyGraph.
         /// Requires s != null and t != null.
-        /// (dependee, dependent)
-        /// 
+        /// Throws NullArgumentException when there is Null input
         /// FIXED
         /// </summary>
         public void AddDependency(string s, string t)
@@ -285,6 +292,7 @@ namespace Dependencies
         /// <summary>
         /// Removes the dependency (s,t) from this DependencyGraph.
         /// Does nothing if (s,t) doesn't belong to this DependencyGraph.
+        /// Throws NullArgumentException when there is Null input
         /// Requires s != null and t != null.
         /// </summary>
         public void RemoveDependency(string s, string t)
@@ -349,7 +357,8 @@ namespace Dependencies
         /// Removes all existing dependencies of the form (s,r).  Then, for each
         /// t in newDependents, adds the dependency (s,t).
         /// Requires s != null and t != null.
-        /// 
+        /// Throws NullArgumentException when there is Null input
+        /// Throws NullArgumentException when there is a Null input in the IEnumberable
         /// FIXED
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
@@ -408,7 +417,8 @@ namespace Dependencies
         /// Removes all existing dependencies of the form (r,t).  Then, for each 
         /// s in newDependees, adds the dependency (s,t).
         /// Requires s != null and t != null.
-        /// 
+        /// Throws NullArgumentException when there is a Null input
+        /// Throws NullArgumentException when there is a Null input in the IEnumberable
         /// FIXED
         /// </summary>
         public void ReplaceDependees(string t, IEnumerable<string> newDependees)

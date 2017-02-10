@@ -99,6 +99,7 @@ namespace DependencyGraphTest
         /// Tests to check if a null input has Dependees/Dependents
         /// </summary>
         [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
         public void TestHasDependentsandDependeeswithNull()
         {
             DependencyGraph DG = new DependencyGraph();
@@ -234,7 +235,7 @@ namespace DependencyGraphTest
         {
             DependencyGraph DG = new DependencyGraph();
 
-            for (int i = 1; i <= 100000; i++)
+            for (int i = 0; i <= 100000; i++)
             {
                 DG.AddDependency("a", i + "");
             }
@@ -292,6 +293,7 @@ namespace DependencyGraphTest
         /// Attempts to add null items into the Dependency Graph
         /// </summary>
         [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
         public void testNullInputsAddDependecy()
         {
             DependencyGraph DG = new DependencyGraph();
@@ -314,6 +316,7 @@ namespace DependencyGraphTest
         /// should not affect the DP.
         /// </summary>
         [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
         public void testNullInputRemoveDependency()
         {
             DependencyGraph DG = new DependencyGraph();
@@ -336,6 +339,7 @@ namespace DependencyGraphTest
         /// has no affect on the DependencyGraph.
         /// </summary>
         [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
         public void testNullInputReplaceDependents()
         {
             DependencyGraph DG = new DependencyGraph();
@@ -377,6 +381,7 @@ namespace DependencyGraphTest
         /// has no affect on the DependencyGraph.
         /// </summary>
         [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
         public void testNullInputReplaceDependees()
         {
             DependencyGraph DG = new DependencyGraph();
