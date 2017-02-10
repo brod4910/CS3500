@@ -67,12 +67,6 @@ namespace Dependencies
             this.Dependees = Dependees;
         }
 
-        public DependencyGraph(DependencyGraph DG)
-        {
-            this.Dependents = DG.Dependents;
-            this.Dependees = DG.Dependees;
-        }
-
         /// <summary>
         /// The number of dependencies in the DependencyGraph.
         /// </summary>
@@ -88,7 +82,6 @@ namespace Dependencies
         /// </summary>
         public bool HasDependents(string s)
         {
-             
             HashSet<String> dependentList = new HashSet<String>();
 
             //checks to see if string s has dependents and if so return true else false
@@ -114,7 +107,7 @@ namespace Dependencies
             }
             else
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("Enter a non-null input");
             }
         }
 
@@ -150,7 +143,7 @@ namespace Dependencies
             }
             else
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("Enter a non-null input");
             }
         }
 
@@ -161,15 +154,15 @@ namespace Dependencies
         {
             HashSet<String> dependentList = new HashSet<String>();
 
-            if(s != null)
+            if (s != null)
             {
-                if(Dependents.ContainsKey(s))
+                if (Dependents.ContainsKey(s))
                 {
                     //trys to get the dependents of the string
-                   Dependents.TryGetValue(s, out dependentList);
+                    Dependents.TryGetValue(s, out dependentList);
 
                     //for each dependent in the list create an IEnumerable
-                    foreach(string dependent in dependentList)
+                    foreach (string dependent in dependentList)
                     {
                         yield return dependent;
                     }
@@ -177,7 +170,7 @@ namespace Dependencies
             }
             else
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("Enter a non-null input");
             }
         }
 
@@ -204,7 +197,7 @@ namespace Dependencies
             }
             else
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("Enter a non-null input");
             }
         }
 
@@ -213,20 +206,19 @@ namespace Dependencies
         /// This has no effect if (s,t) already belongs to this DependencyGraph.
         /// Requires s != null and t != null.
         /// (dependee, dependent)
-        /// Throws ArgumentNullException when s or t are null
         /// 
         /// FIXED
         /// </summary>
         public void AddDependency(string s, string t)
         {
-            if(s != null && t != null)
+            if (s != null && t != null)
             {
                 HashSet<String> dependentList = new HashSet<String>();
                 HashSet<String> dependeeList = new HashSet<String>();
                 bool addedDependency = false;
 
                 //if Dependents/Dependees doesn't contain the keys then...
-                if (!Dependents.ContainsKey(s) || !Dependees.ContainsKey(t))
+                if ((!Dependents.ContainsKey(s) || !Dependees.ContainsKey(t)) || (Dependents.ContainsKey(s) || Dependees.ContainsKey(t)))
                 {
                     //If Dependents doesn't contain the key s then add the dependent to 
                     //the Dependents and set addedDependeny to true
@@ -237,13 +229,13 @@ namespace Dependencies
                         addedDependency = true;
                     }
                     //else get the dependents of s
-                    else if(Dependents.ContainsKey(s))
+                    else if (Dependents.ContainsKey(s))
                     {
                         Dependents.TryGetValue(s, out dependentList);
 
                         //if the list doesnt contain then add it to the list
                         //and set addedDependency to true
-                        if(!dependentList.Contains(t))
+                        if (!dependentList.Contains(t))
                         {
                             dependentList.Add(t);
                             Dependents.Remove(s);
@@ -252,7 +244,7 @@ namespace Dependencies
                         }
                     }
                     //if Dependees doesnt contain t
-                    if(!Dependees.ContainsKey(t))
+                    if (!Dependees.ContainsKey(t))
                     {
                         //then add the string s to the list of dependees
                         //and add t to the Dependees structure
@@ -262,14 +254,14 @@ namespace Dependencies
                     }
                     //else if Depndees does contain t get the 
                     //list of dependees of s
-                    else if(Dependees.ContainsKey(t))
+                    else if (Dependees.ContainsKey(t))
                     {
                         Dependees.TryGetValue(t, out dependeeList);
 
                         //if the list doesnt contain t 
                         //then add s to the list and put t into the 
                         //list of Depndees
-                        if (!dependeeList.Contains(t))
+                        if (!dependeeList.Contains(s))
                         {
                             dependeeList.Add(s);
                             Dependees.Remove(t);
@@ -286,7 +278,7 @@ namespace Dependencies
             }
             else
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("Enter a non-null input");
             }
         }
 
@@ -294,8 +286,6 @@ namespace Dependencies
         /// Removes the dependency (s,t) from this DependencyGraph.
         /// Does nothing if (s,t) doesn't belong to this DependencyGraph.
         /// Requires s != null and t != null.
-        /// Throws ArgumentNullException when s or t are null
-        /// 
         /// </summary>
         public void RemoveDependency(string s, string t)
         {
@@ -306,10 +296,10 @@ namespace Dependencies
                 bool removedDependency = false;
 
                 //If Dependents and Dependees is present in the structure then...
-                if(Dependents.ContainsKey(s) || Dependees.ContainsKey(t))
+                if (Dependents.ContainsKey(s) || Dependees.ContainsKey(t))
                 {
                     //if dependents contains key s
-                    if(Dependents.ContainsKey(s))
+                    if (Dependents.ContainsKey(s))
                     {
                         //Get the dependents of string s
                         Dependents.TryGetValue(s, out dependentList);
@@ -326,7 +316,7 @@ namespace Dependencies
                     }
 
                     //If Dependees contains key t
-                    if(Dependees.ContainsKey(t))
+                    if (Dependees.ContainsKey(t))
                     {
                         //Get Dependees of string t
                         Dependees.TryGetValue(t, out dependeeList);
@@ -351,7 +341,7 @@ namespace Dependencies
             }
             else
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("Enter a non-null input");
             }
         }
 
@@ -359,78 +349,58 @@ namespace Dependencies
         /// Removes all existing dependencies of the form (s,r).  Then, for each
         /// t in newDependents, adds the dependency (s,t).
         /// Requires s != null and t != null.
-        /// Throws ArgumentNullException when s or t are null
         /// 
+        /// FIXED
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
             if (s != null)
             {
-                //if Depeendents contains key s then...
                 if (Dependents.ContainsKey(s))
                 {
-                    ///create two structures one for the new dependent list
-                    //and one for the size of the old dependent list
-                    HashSet<String> dependentList = new HashSet<String>();
-
                     HashSet<String> OldDependentList = new HashSet<String>();
+                    HashSet<String> currentDependees = new HashSet<String>();
 
-                    //get values of the old list
                     Dependents.TryGetValue(s, out OldDependentList);
-                    //get the size and decrement by that much
-                    size -= OldDependentList.Count;
 
-                    //for each dependent in the new dependents
-                    foreach(string dependent in newDependents)
+                    foreach (string dependee in OldDependentList)
                     {
-                        if(dependent == null)
+                        if (Dependees.ContainsKey(dependee))
                         {
-                            throw new ArgumentNullException();
-                        }
+                            Dependees.TryGetValue(dependee, out currentDependees);
 
-                        if(dependent != null)
-                        {
-                            HashSet<String> list = new HashSet<String>();
-
-                            //if dependent list doesnt not contain the dependent
-                            //add it to the list
-                            if(!dependentList.Contains(dependent))
+                            if (currentDependees.Contains(s))
                             {
-                                dependentList.Add(dependent);
-                            }
-
-                            if(!Dependees.ContainsKey(dependent))
-                            {
-                                list.Add(s);
-
-                                Dependees.Add(dependent, list);
-                            }
-                            else if(Dependees.ContainsKey(dependent))
-                            {
-                                Dependees.TryGetValue(dependent, out list);
-
-                                list.Add(s);
-
-                                Dependees.Remove(dependent);
-
-                                Dependees.Add(dependent, list);
+                                currentDependees.Remove(s);
+                                Dependees.Remove(dependee);
+                                Dependees.Add(dependee, currentDependees);
+                                size--;
                             }
                         }
                     }
-
-                    //remove s from the Dependents list then
-                    //add it back to the list with the new
-                    //dependents and increment the size
-                    Dependents.Remove(s);
-
-                    Dependents.Add(s, dependentList);
-
-                    size += dependentList.Count;   
                 }
+
+                HashSet<String> emptyList = new HashSet<string>();
+
+                Dependents.Remove(s);
+                Dependents.Add(s, emptyList);
+
+                foreach (string dependent in newDependents)
+                {
+                    if (dependent == null)
+                    {
+                        throw new ArgumentNullException("Enter a non-null input");
+                    }
+                    else
+                    {
+                        this.AddDependency(s, dependent);
+                    }
+                }
+
             }
             else
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("Enter a non-null input");
             }
         }
 
@@ -438,77 +408,53 @@ namespace Dependencies
         /// Removes all existing dependencies of the form (r,t).  Then, for each 
         /// s in newDependees, adds the dependency (s,t).
         /// Requires s != null and t != null.
-        /// Throws ArgumentNullException when s or t are null
+        /// 
+        /// FIXED
         /// </summary>
         public void ReplaceDependees(string t, IEnumerable<string> newDependees)
         {
-            if(t != null)
-            { 
-                if(Dependees.ContainsKey(t))
+            if (t != null)
+            {
+                if (Dependees.ContainsKey(t))
                 {
-                    //create two structures one for the new dependent list
-                    //and one for the size of the old dependent list
-                    HashSet<String> dependeeList = new HashSet<String>();
+                    HashSet<String> OldDependees = new HashSet<String>();
+                    HashSet<String> currentDependents = new HashSet<String>();
 
-                    HashSet<String> OldDependeeList = new HashSet<String>();
+                    Dependees.TryGetValue(t, out OldDependees);
 
-                    //get values of the old list
-                    Dependees.TryGetValue(t, out OldDependeeList);
-
-                    //get the size and decrement by that much
-                    size -= OldDependeeList.Count;
-
-                    //for each dependee in the new dependees
-                    foreach (string dependee in newDependees)
+                    foreach (string dependent in OldDependees)
                     {
-                        if(dependee == null)
+                        if (Dependents.ContainsKey(dependent))
                         {
-                            throw new ArgumentNullException();
-                        }
+                            Dependents.TryGetValue(dependent, out currentDependents);
 
-                        if(dependee != null)
-                        {
-                            HashSet<String> list = new HashSet<String>();
-
-                            //if dependee list doesnt not contain the dependee
-                            //add it to the list
-                            if (!dependeeList.Contains(dependee))
+                            if (currentDependents.Contains(t))
                             {
-                                dependeeList.Add(dependee);
-                            }
-
-                            if (!Dependents.ContainsKey(dependee))
-                            {
-                                list.Add(t);
-
-                                Dependents.Add(dependee, list);
-                            }
-                            else if (Dependents.ContainsKey(dependee))
-                            {
-                                Dependents.TryGetValue(dependee, out list);
-
-                                list.Add(t);
-
-                                Dependents.Remove(dependee);
-
-                                Dependents.Add(dependee, list);
+                                currentDependents.Remove(t);
+                                Dependents.Remove(dependent);
+                                Dependents.Add(dependent, currentDependents);
+                                size--;
                             }
                         }
                     }
+                }
 
-                    //remove s from the Dependents list then
-                    //add it back to the list with the new
-                    //dependents and increment the size
-                    Dependees.Remove(t);
+                HashSet<String> emptyList = new HashSet<string>();
 
-                    Dependees.Add(t, dependeeList);
+                Dependees.Remove(t);
+                Dependees.Add(t, emptyList);
 
-                    size += dependeeList.Count;
+                foreach (string dependee in newDependees)
+                {
+                    if(dependee == null)
+                    {
+                        this.AddDependency(dependee, t);
+                    }
                 }
             }
             else
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("Enter a non-null input");
             }
         }
     }
