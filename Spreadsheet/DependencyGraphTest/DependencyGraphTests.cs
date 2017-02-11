@@ -45,27 +45,22 @@ namespace DependencyGraphTest
         {
             DependencyGraph DG = new DependencyGraph();
 
-
             DG.AddDependency("a", "b");
-            DG.AddDependency("a", "c");
-            DG.AddDependency("b", "d");
-            DG.AddDependency("d", "d");
 
             DependencyGraph DG2 = new DependencyGraph(DG);
 
-            Assert.IsFalse(DG2.HasDependees("s"));
-            Assert.IsFalse(DG2.HasDependees("a"));
-            Assert.IsTrue(DG2.HasDependees("b"));
-            Assert.IsTrue(DG2.HasDependees("c"));
-            Assert.IsTrue(DG2.HasDependees("d"));
+            DependencyGraph DG3 = new DependencyGraph(DG2);
 
-            DG.RemoveDependency("a", "b");
-
-            Assert.IsFalse(DG2.HasDependees("s"));
-            Assert.IsFalse(DG2.HasDependees("a"));
             Assert.IsTrue(DG2.HasDependees("b"));
-            Assert.IsTrue(DG2.HasDependees("c"));
-            Assert.IsTrue(DG2.HasDependees("d"));
+
+
+            DG2.RemoveDependency("a", "b");
+
+            Assert.IsFalse(DG2.HasDependees("b"));
+
+            DG.AddDependency("c", "d");
+
+            Assert.IsTrue(DG3.HasDependees("b"));
 
         }
 

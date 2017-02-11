@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Dependencies
 {
@@ -67,22 +68,78 @@ namespace Dependencies
             this.Dependees = Dependees;
         }
 
+        /// <summary>
+        /// Copies the values of the input Dependency Graph
+        /// and Creates an independent graph
+        /// </summary>
+        /// <param name="DG"></param>
         public DependencyGraph(DependencyGraph DG)
         {
+            if(DG == null)
+            {
+                throw new ArgumentNullException("Depencency Graph entered is null.");
+            }
+
+            //Copy the call by value reference
+            this.size = DG.Size;
+            HashSet<String> values;
+
+            //Create new Dependees/Dependents Dictionaries
             Dictionary<String, HashSet<String>> Dependents = new Dictionary<String, HashSet<String>>();
             Dictionary<String, HashSet<String>> Dependees = new Dictionary<String, HashSet<String>>();
-            HashSet<String> list = new HashSet<String>();
-            int index = 0;
-            int size = DG.Size;
 
-            foreach(string Dependent in DG.Dependents.Keys)
+            //Copy the values of the input dependency graph DG
+            //Creates new instances of each value in the input graph
+            foreach(string key in DG.Dependents.Keys)
             {
-                for(int i = index; i <= size;i = 0)
-                {
+                HashSet<String> copiedValues = new HashSet<String>();
 
-                    index++;
+                DG.Dependents.TryGetValue(key, out values);
+
+                foreach(string value in values)
+                {
+                    String newValue = String.Copy(value);
+
+                    copiedValues.Add(newValue);
                 }
+
+                Dependents.Add(key, copiedValues);
             }
+
+
+            //Copy the values of the input dependency graph DG
+            //Creates new instances of each value in the input graph
+            foreach (string key in DG.Dependees.Keys)
+            {
+                HashSet<String> copiedValues = new HashSet<String>();
+
+                DG.Dependees.TryGetValue(key, out values);
+
+                foreach (string value in values)
+                {
+                    String newValue = String.Copy(value);
+
+                    copiedValues.Add(newValue);
+                }
+
+                Dependees.Add(key, copiedValues);
+            }
+
+            this.Dependents = Dependents;
+            this.Dependees = Dependees;
+
+        }
+
+        /// <summary>
+        /// Creates a Deep Copy of this Dependency Object
+        /// </summary>
+        /// <returns></returns>
+
+        private DependencyGraph DeepCopy()
+        {
+            DependencyGraph deepCopy = new DependencyGraph() { Dependees = this.Dependees, Dependents = this.Dependents, size = this.size };
+
+            return deepCopy;
         }
 
         /// <summary>
