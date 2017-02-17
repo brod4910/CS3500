@@ -53,9 +53,15 @@ namespace SS
     /// </summary>
     class Spreadsheet : AbstractSpreadsheet
     {
-        private DependencyGraph dependencyGraph = new DependencyGraph();
+        private DependencyGraph dependencyGraph;
 
-        private Dictionary<String ,Cell> Cells = new Dictionary<String, Cell>();
+        private Dictionary<String, Cell> Cells;
+
+        public Spreadsheet()
+        {
+            this.Cells = new Dictionary<string, Cell>();
+            this.dependencyGraph = new DependencyGraph();
+        }
 
         /// <summary>
         /// If name is null or invalid, throws an InvalidNameException.
@@ -120,6 +126,8 @@ namespace SS
 
             Cell cell = new Cell();
 
+            IEnumerable<String> cellstoRecalculate;
+
             if (name == null || !Regex.IsMatch(varPattern, name))
             {
                 throw new InvalidNameException();
@@ -127,9 +135,23 @@ namespace SS
 
             Cells.TryGetValue(name, out cell);
 
+            Formula oldFormula = new Formula (((Formula)(cell.getContents)).ToString());
+
             cell.setContents(formula);
 
-            throw new NotImplementedException();
+            try
+            {
+                cellstoRecalculate = GetCellsToRecalculate(name);
+            }
+            catch (CircularException)
+            {
+                cell.setContents(oldFormula);
+                throw new CircularException();
+            }
+
+
+
+            return null;
         }
 
         /// <summary>
@@ -197,6 +219,41 @@ namespace SS
 
 
             throw new NotImplementedException();
+        }
+
+        private class Cell
+        {
+            private object contents;
+
+            public Cell()
+            {
+                this.contents = null;
+            }
+
+            public Cell(Formula contents)
+            {
+                this.contents = contents;
+            }
+
+            public Cell(Double contents)
+            {
+                this.contents = contents;
+            }
+
+            public Cell(String contents)
+            {
+                this.contents = contents;
+            }
+
+            public object getContents
+            {
+                get { return contents; }
+            }
+
+            public void setContents(object contents)
+            {
+                this.contents = contents;
+            }
         }
     }
 }
