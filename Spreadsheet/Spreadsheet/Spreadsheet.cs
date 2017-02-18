@@ -51,7 +51,7 @@ namespace SS
     /// A1 depends on B1, which depends on C1, which depends on A1.  That's a circular
     /// dependency.
     /// </summary>
-    class Spreadsheet : AbstractSpreadsheet
+    public class Spreadsheet : AbstractSpreadsheet
     {
         private DependencyGraph dependencyGraph;
 
@@ -144,7 +144,7 @@ namespace SS
             Cell cell = new Cell(formula);
 
             //non-intialized hashset
-            HashSet<String> cellstoRecalc;
+            HashSet<String> cellsRecalculated;
 
             //if name is null or if the reges is not a match then throw
             //exception
@@ -160,8 +160,7 @@ namespace SS
             {
                 //replace dependencies with the variables of the formula
                 dependencyGraph.ReplaceDependees(name, formula.GetVariables());
-                //recalculate cells
-                cellstoRecalc = (HashSet<String>)GetCellsToRecalculate(name);
+              
 
                 //if the Cells contains the name replace the
                 //contents
@@ -176,7 +175,10 @@ namespace SS
                     Cells.Add(name, cell);
                 }
 
-                return cellstoRecalc;
+                //ALMOST BIG MISTAKE. RECALCULATE AT THE END
+                cellsRecalculated = new HashSet<String>(GetCellsToRecalculate(name));
+
+                return cellsRecalculated;
             }
             catch (CircularException)
             {
@@ -212,7 +214,7 @@ namespace SS
             {
                 throw new ArgumentNullException();
             }
-            else if(name == null || Regex.IsMatch(name, varPattern))
+            else if(name == null || !Regex.IsMatch(name, varPattern))
             {
                 throw new InvalidNameException();
             }
@@ -235,8 +237,8 @@ namespace SS
 
             //replace the dependees of the name with the empty set
             dependencyGraph.ReplaceDependees(name, emptySet);
-            //recalcalculate the cells at the end
-            HashSet<String> cellsRecalculated = (HashSet<String>)GetCellsToRecalculate(name);
+            //ALMOST BIG MISTAKE. RECALCULATE AT THE END
+            HashSet<String> cellsRecalculated = new HashSet<String>(GetCellsToRecalculate(name));
 
             return cellsRecalculated;
         }
@@ -281,8 +283,8 @@ namespace SS
             //replace the dependencies with the empty set
             dependencyGraph.ReplaceDependees(name, emptySet);
 
-            //recalculate the cells 
-            HashSet<String> cellsRecalculated = (HashSet<String>)GetCellsToRecalculate(name);
+            //ALMOST BIG MISTAKE. RECALCULATE AT THE END
+            HashSet<String> cellsRecalculated = new HashSet<String>(GetCellsToRecalculate(name));
 
             return cellsRecalculated;
         }
@@ -369,15 +371,6 @@ namespace SS
             public object getContents
             {
                 get { return contents; }
-            }
-
-            /// <summary>
-            /// Sets contents to the object
-            /// </summary>
-            /// <param name="contents"></param>
-            public void setContents(object contents)
-            {
-                this.contents = contents;
             }
         }
     }
