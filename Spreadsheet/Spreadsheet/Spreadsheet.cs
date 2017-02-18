@@ -57,6 +57,10 @@ namespace SS
 
         private Dictionary<String, Cell> Cells;
 
+        /// <summary>
+        /// Zero argument constructor that creates
+        /// a new empty spreadsheet
+        /// </summary>
         public Spreadsheet()
         {
             this.Cells = new Dictionary<string, Cell>();
@@ -71,17 +75,23 @@ namespace SS
         /// </summary>
         public override object GetCellContents(string name)
         {
+            //Regex patter for our name
             String varPattern = @"^[a-zA-Z][0-9a-zA-Z]*";
 
+            //empty cell
             Cell cell = new Cell();
 
-            if(name == null || !Regex.IsMatch(varPattern, name))
+            //if name is null or regex is not a match
+            //throw exception
+            if(name == null || !Regex.IsMatch(name, varPattern))
             {
                 throw new InvalidNameException();
             }
 
+            //get the contents of the cell
             Cells.TryGetValue(name, out cell);
 
+            //return the cells
             return cell.getContents;
         }
 
@@ -91,18 +101,23 @@ namespace SS
         /// </summary>
         public override IEnumerable<string> GetNamesOfAllNonemptyCells()
         {
+            //create set for our cells
             HashSet<string> set =  new HashSet<string>();
+            //new empty cell
             Cell cell = new Cell();
 
+            //for each key in cells...
             foreach(String name in Cells.Keys)
             {
+                //try to get the value
                 Cells.TryGetValue(name, out cell);
-                
+                //if the value is not null add it to the set
                 if(cell.getContents != null)
                 {
                     set.Add(name);
                 }
             }
+            //return the set
             return set;
         }
 
@@ -122,36 +137,53 @@ namespace SS
         /// </summary>
         public override ISet<string> SetCellContents(string name, Formula formula)
         {
+            //regex pattern
             String varPattern = @"^[a-zA-Z][0-9a-zA-Z]*";
 
-            Cell cell = new Cell();
+            // new cell that contains formula as contents
+            Cell cell = new Cell(formula);
 
-            IEnumerable<String> cellstoRecalculate;
+            //non-intialized hashset
+            HashSet<String> cellstoRecalc;
 
-            if (name == null || !Regex.IsMatch(varPattern, name))
+            //if name is null or if the reges is not a match then throw
+            //exception
+            if (name == null || !Regex.IsMatch(name, varPattern))
             {
                 throw new InvalidNameException();
             }
 
-            Cells.TryGetValue(name, out cell);
-
-            Formula oldFormula = new Formula (((Formula)(cell.getContents)).ToString());
-
-            cell.setContents(formula);
+            //store the old dependencies in the enum
+            IEnumerable<String> oldDependencies = dependencyGraph.GetDependees(name);
 
             try
             {
-                cellstoRecalculate = GetCellsToRecalculate(name);
+                //replace dependencies with the variables of the formula
+                dependencyGraph.ReplaceDependees(name, formula.GetVariables());
+                //recalculate cells
+                cellstoRecalc = (HashSet<String>)GetCellsToRecalculate(name);
+
+                //if the Cells contains the name replace the
+                //contents
+                if (Cells.ContainsKey(name))
+                {
+                    Cells.Remove(name);
+                    Cells.Add(name, cell);
+                }
+                //else add the name
+                else
+                {
+                    Cells.Add(name, cell);
+                }
+
+                return cellstoRecalc;
             }
             catch (CircularException)
             {
-                cell.setContents(oldFormula);
+                //revert the dependencies back to old ones
+                dependencyGraph.ReplaceDependees(name, oldDependencies);
                 throw new CircularException();
             }
-
-
-
-            return null;
         }
 
         /// <summary>
@@ -168,7 +200,45 @@ namespace SS
         /// </summary>
         public override ISet<string> SetCellContents(string name, string text)
         {
-            throw new NotImplementedException();
+            //Var pattern for for our name check
+            String varPattern = @"^[a-zA-Z][0-9a-zA-Z]*";
+
+            // empty set for our new cell
+            HashSet<String> emptySet = new HashSet<string>();
+
+            //if either name is null or text is null or regex is not a match
+            //throw an exception
+            if (text == null)
+            {
+                throw new ArgumentNullException();
+            }
+            else if(name == null || Regex.IsMatch(name, varPattern))
+            {
+                throw new InvalidNameException();
+            }
+
+            //create a new cell with the text as contents
+            Cell cell = new Cell(text);
+
+            //if the cell contains name remove it then add it with
+            //the contents
+            if(Cells.ContainsKey(name))
+            {
+                Cells.Remove(name);
+                Cells.Add(name, cell);
+            }
+            //else add the cell to the Cells hashset
+            else
+            {
+                Cells.Add(name, cell);
+            }
+
+            //replace the dependees of the name with the empty set
+            dependencyGraph.ReplaceDependees(name, emptySet);
+            //recalcalculate the cells at the end
+            HashSet<String> cellsRecalculated = (HashSet<String>)GetCellsToRecalculate(name);
+
+            return cellsRecalculated;
         }
 
         /// <summary>
@@ -183,7 +253,38 @@ namespace SS
         /// </summary>
         public override ISet<string> SetCellContents(string name, double number)
         {
-            throw new NotImplementedException();
+            String varPattern = @"^[a-zA-Z][0-9a-zA-Z]*";
+            //empty set for our name
+            HashSet<String> emptySet = new HashSet<string>();
+
+            //create new cell with number as contents
+            Cell cell = new Cell(number);
+
+            //if name is null or does not match the regex then throw exception
+            if (name == null || !Regex.IsMatch(name, varPattern))
+            {
+                throw new InvalidNameException();
+            }
+
+            //if cell contains key, remove it then add it back
+            if(Cells.ContainsKey(name))
+            {
+                Cells.Remove(name);
+                Cells.Add(name, cell);
+            }
+            //else just add it to the cells
+            else
+            {
+                Cells.Add(name, cell);
+            }
+
+            //replace the dependencies with the empty set
+            dependencyGraph.ReplaceDependees(name, emptySet);
+
+            //recalculate the cells 
+            HashSet<String> cellsRecalculated = (HashSet<String>)GetCellsToRecalculate(name);
+
+            return cellsRecalculated;
         }
 
         /// <summary>
@@ -205,51 +306,75 @@ namespace SS
         /// </summary>
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
-            HashSet<String> dependents = new HashSet<string>();
-
+            //if cells does not contain key throw exception
             if(!Cells.ContainsKey(name))
             {
                 throw new InvalidNameException();
             }
+            // else if name == null then throw exception
             else if(name == null)
             {
                 throw new ArgumentNullException();
             }
-
-
-
-            throw new NotImplementedException();
+            //return dependents of name
+            return dependencyGraph.GetDependents(name);
         }
 
+        /// <summary>
+        /// Representation for our spreadsheet cells
+        /// </summary>
         private class Cell
         {
             private object contents;
 
+            /// <summary>
+            /// Zero argument constructor to represent an empty
+            /// Cell
+            /// </summary>
             public Cell()
             {
                 this.contents = null;
             }
 
+            /// <summary>
+            /// One argument constructor that takes a formula
+            /// </summary>
+            /// <param name="contents"></param>
             public Cell(Formula contents)
             {
                 this.contents = contents;
             }
 
+            /// <summary>
+            /// One argument constructor that takes a double
+            /// </summary>
+            /// <param name="contents"></param>
             public Cell(Double contents)
             {
                 this.contents = contents;
             }
 
+            /// <summary>
+            /// One argument constructor that takes a String
+            /// </summary>
+            /// <param name="contents"></param>
             public Cell(String contents)
             {
                 this.contents = contents;
             }
 
+            /// <summary>
+            /// Public getter to return contents
+            /// </summary>
             public object getContents
             {
                 get { return contents; }
             }
 
+            /// <summary>
+            /// Sets contents to the object
+            /// </summary>
+            /// <param name="contents"></param>
             public void setContents(object contents)
             {
                 this.contents = contents;
