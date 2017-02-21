@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -126,7 +127,7 @@ namespace SS
         /// the new Spreadsheet's IsValid regular expression should be newIsValid.
         public Spreadsheet(TextReader source, Regex newisValid)
         {
-            String line = "";
+            String line;
 
             try
             {
@@ -148,10 +149,7 @@ namespace SS
         /// </summary>
         public override bool Changed
         {
-            get
-            {
-                return hasChanged;
-            }
+            get { return hasChanged; }
 
             protected set
             {
@@ -188,9 +186,43 @@ namespace SS
         /// </summary>
         public override void Save(TextWriter dest)
         {
-            
+            using (XmlWriter writer = XmlWriter.Create(dest))
+            {
+                Cell cell = new Cell();
+                IEnumerable <String> listofCells = this.GetNamesOfAllNonemptyCells();
 
-            throw new NotImplementedException();
+                writer.WriteStartDocument();
+                writer.WriteStartElement("", "spreadsheet", "urn:cell-schema");
+                writer.WriteAttributeString("isValid", this.isValid.ToString());
+
+                foreach (String key in listofCells)
+                {
+                    writer.WriteStartElement("cell");
+                    writer.WriteAttributeString("name", key);
+
+                    Cells.TryGetValue(key, out cell);
+
+                    if(cell.getContents is Formula)
+                    {
+                        writer.WriteAttributeString("contents", cell.getContents.ToString());
+                    }
+                    else if(cell.getContents is Double)
+                    {
+                        writer.WriteAttributeString("contents", cell.getContents.ToString());
+                    }
+                    else
+                    {
+                        String str = (String) cell.getContents;
+                        writer.WriteAttributeString("contents", str);
+                    }
+
+                    writer.WriteEndElement();
+                }
+
+                writer.WriteEndElement();
+                writer.WriteEndDocument();
+            }
+        
         }
 
         // ADDED FOR PS6
@@ -227,6 +259,30 @@ namespace SS
         /// </summary>
         public override ISet<string> SetContentsOfCell(string name, string content)
         {
+            Double value;
+
+            Regex varPattern = new Regex(@"^[a-zA-Z][1-9a-zA-Z]*");
+
+            if (content == null)
+            {
+                throw new ArgumentNullException();
+            }
+            else if (name == null || !isValid.IsMatch(name.ToUpper()) || !varPattern.IsMatch(name))
+            {
+                throw new InvalidNameException();
+            }
+
+            if(Double.TryParse(content, out value) == true)
+            {
+                Cells.Remove(name);
+                Cells.Add(name, new Cell(value));
+            }
+            else if(content.IndexOf('=') == 0)
+            {
+                Normalizer normalizer = s => s.ToUpper();
+                Formula formula = new Formula(content.Substring(1), normalizer, );
+            }
+
             throw new NotImplementedException();
         }
 
@@ -239,7 +295,16 @@ namespace SS
         /// </summary>
         public override object GetCellValue(string name)
         {
-            throw new NotImplementedException();
+            object value;
+
+            if(name == null | !isValid.IsMatch(name.ToUpper()))
+            {
+                throw new InvalidNameException();
+            }
+
+
+
+            return value;
         }
 
         /// <summary>
@@ -250,15 +315,15 @@ namespace SS
         /// </summary>
         public override object GetCellContents(string name)
         {
-            //Regex patter for our name
-            String varPattern = @"^[a-zA-Z][1-9a-zA-Z]*";
+            //Regex pattern for our name
+            Regex varPattern = new Regex(@"^[a-zA-Z][1-9a-zA-Z]*");
 
             //empty cell
             Cell cell = new Cell();
 
             //if name is null or regex is not a match
             //throw exception
-            if(name == null || !Regex.IsMatch(name, varPattern))
+            if(name == null || !varPattern.IsMatch(name))
             {
                 throw new InvalidNameException();
             }
@@ -315,7 +380,7 @@ namespace SS
         protected override ISet<String> SetCellContents(String name, Formula formula)
         {
             //regex pattern
-            String varPattern = @"^[a-zA-Z][1-9a-zA-Z]*";
+            Regex varPattern = new Regex(@"^[a-zA-Z][1-9a-zA-Z]*");
 
             // new cell that contains formula as contents
             Cell cell = new Cell(formula);
@@ -325,7 +390,7 @@ namespace SS
 
             //if name is null or if the reges is not a match then throw
             //exception
-            if (name == null || !Regex.IsMatch(name, varPattern))
+            if (name == null || !varPattern.IsMatch(name))
             {
                 throw new InvalidNameException();
             }
@@ -381,7 +446,7 @@ namespace SS
         protected override ISet<String> SetCellContents(String name, String text)
         {
             //Var pattern for for our name check
-            String varPattern = @"^[a-zA-Z][1-9a-zA-Z]*";
+            Regex varPattern = new Regex(@"^[a-zA-Z][1-9a-zA-Z]*");
 
             // empty set for our new cell
             HashSet<String> emptySet = new HashSet<String>();
@@ -392,7 +457,7 @@ namespace SS
             {
                 throw new ArgumentNullException();
             }
-            else if(name == null || !Regex.IsMatch(name, varPattern))
+            else if(name == null || !varPattern.IsMatch(name))
             {
                 throw new InvalidNameException();
             }
@@ -434,7 +499,8 @@ namespace SS
         /// </summary>
         protected override ISet<String> SetCellContents(String name, double number)
         {
-            String varPattern = @"^[a-zA-Z][1-9a-zA-Z]*";
+            Regex varPattern = new Regex(@"^[a-zA-Z][1-9a-zA-Z]*");
+
             //empty set for our name
             HashSet<String> emptySet = new HashSet<string>();
 
@@ -442,7 +508,7 @@ namespace SS
             Cell cell = new Cell(number);
 
             //if name is null or does not match the regex then throw exception
-            if (name == null || !Regex.IsMatch(name, varPattern))
+            if (name == null || !varPattern.IsMatch(name))
             {
                 throw new InvalidNameException();
             }
@@ -507,6 +573,7 @@ namespace SS
         private class Cell
         {
             private object contents;
+            private object value;
 
             /// <summary>
             /// Zero argument constructor to represent an empty
@@ -515,6 +582,7 @@ namespace SS
             public Cell()
             {
                 this.contents = null;
+                this.value = null;
             }
 
             /// <summary>
