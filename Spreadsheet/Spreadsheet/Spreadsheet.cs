@@ -274,16 +274,33 @@ namespace SS
 
             if(Double.TryParse(content, out value) == true)
             {
-                Cells.Remove(name);
-                Cells.Add(name, new Cell(value));
+                return this.SetCellContents(name, value);
             }
             else if(content.IndexOf('=') == 0)
             {
                 Normalizer normalizer = s => s.ToUpper();
-                Formula formula = new Formula(content.Substring(1), normalizer, );
+                Validator validator = s => isValid.IsMatch(s.ToUpper());
+                try
+                {
+                    Formula formula = new Formula(content.Substring(1), normalizer, validator);
+                    return this.SetCellContents(name, formula);
+                }
+                catch(Exception ex) when (ex is FormulaFormatException || ex is CircularException)
+                {
+                    if (ex is FormulaFormatException)
+                    {
+                        throw new FormulaFormatException("Formula could not be parsed.");
+                    }
+                    else
+                    {
+                        throw new CircularException();
+                    }
+                }
             }
-
-            throw new NotImplementedException();
+            else
+            {
+                return this.SetCellContents(name, content);
+            }
         }
 
         // ADDED FOR PS6
@@ -301,8 +318,6 @@ namespace SS
             {
                 throw new InvalidNameException();
             }
-
-
 
             return value;
         }
@@ -601,6 +616,7 @@ namespace SS
             public Cell(Double contents)
             {
                 this.contents = contents;
+                this.value = contents;
             }
 
             /// <summary>
