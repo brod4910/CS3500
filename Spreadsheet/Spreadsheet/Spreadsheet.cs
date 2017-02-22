@@ -76,23 +76,30 @@ namespace SS
         public override object GetCellContents(string name)
         {
             //Regex patter for our name
-            String varPattern = @"^[a-zA-Z][0-9a-zA-Z]*";
+            Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
 
             //empty cell
             Cell cell = new Cell();
 
             //if name is null or regex is not a match
             //throw exception
-            if(name == null || !Regex.IsMatch(name, varPattern))
+            if (name == null || !varPattern.IsMatch(name))
             {
                 throw new InvalidNameException();
             }
 
-            //get the contents of the cell
-            Cells.TryGetValue(name, out cell);
+            if (Cells.ContainsKey(name))
+            {
+                //get the contents of the cell
+                Cells.TryGetValue(name, out cell);
 
-            //return the cells
-            return cell.getContents;
+                //return the cells
+                return cell.getContents;
+            }
+            else
+            {
+                return "";
+            }
         }
 
 
@@ -111,8 +118,19 @@ namespace SS
             {
                 //try to get the value
                 Cells.TryGetValue(name, out cell);
+
+                //NEW if cell is an empty string
+                //it is considered empty
+                if(cell.getContents is String)
+                {
+                    if(!cell.getContents.Equals(""))
+                    {
+                        set.Add(name);
+                    }
+
+                }
                 //if the value is not null add it to the set
-                if(cell.getContents != null)
+                else if(cell.getContents != null)
                 {
                     set.Add(name);
                 }
@@ -138,20 +156,34 @@ namespace SS
         public override ISet<string> SetCellContents(string name, Formula formula)
         {
             //regex pattern
-            String varPattern = @"^[a-zA-Z][0-9a-zA-Z]*";
+            Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
 
             // new cell that contains formula as contents
-            Cell cell = new Cell(formula);
+            Cell newCell = new Cell(formula);
+
+            //Old Cell
+            Cell oldCell = new Cell();
+
+            //OldCell Contents
+            Object oldContent;
+
+            if (name == null || !varPattern.IsMatch(name))
+            {
+                throw new InvalidNameException();
+            }
+
+            if(Cells.ContainsKey(name))
+            {
+                Cells.TryGetValue(name, out oldCell);
+
+                oldContent = oldCell.getContents;
+            }
 
             //non-intialized hashset
             HashSet<String> cellsRecalculated;
 
             //if name is null or if the reges is not a match then throw
             //exception
-            if (name == null || !Regex.IsMatch(name, varPattern))
-            {
-                throw new InvalidNameException();
-            }
 
             //store the old dependencies in the enum
             IEnumerable<String> oldDependencies = dependencyGraph.GetDependees(name);
@@ -160,19 +192,18 @@ namespace SS
             {
                 //replace dependencies with the variables of the formula
                 dependencyGraph.ReplaceDependees(name, formula.GetVariables());
-              
 
                 //if the Cells contains the name replace the
                 //contents
                 if (Cells.ContainsKey(name))
                 {
                     Cells.Remove(name);
-                    Cells.Add(name, cell);
+                    Cells.Add(name, newCell);
                 }
                 //else add the name
                 else
                 {
-                    Cells.Add(name, cell);
+                    Cells.Add(name, newCell);
                 }
 
                 //ALMOST BIG MISTAKE. RECALCULATE AT THE END
@@ -184,6 +215,8 @@ namespace SS
             {
                 //revert the dependencies back to old ones
                 dependencyGraph.ReplaceDependees(name, oldDependencies);
+                Cells.Remove(name);
+                Cells.Add(name, oldCell);
                 throw new CircularException();
             }
         }
@@ -203,7 +236,7 @@ namespace SS
         public override ISet<string> SetCellContents(string name, string text)
         {
             //Var pattern for for our name check
-            String varPattern = @"^[a-zA-Z][0-9a-zA-Z]*";
+            Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
 
             // empty set for our new cell
             HashSet<String> emptySet = new HashSet<string>();
@@ -214,7 +247,7 @@ namespace SS
             {
                 throw new ArgumentNullException();
             }
-            else if(name == null || !Regex.IsMatch(name, varPattern))
+            if (name == null || !varPattern.IsMatch(name))
             {
                 throw new InvalidNameException();
             }
@@ -255,7 +288,7 @@ namespace SS
         /// </summary>
         public override ISet<string> SetCellContents(string name, double number)
         {
-            String varPattern = @"^[a-zA-Z][0-9a-zA-Z]*";
+            Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
             //empty set for our name
             HashSet<String> emptySet = new HashSet<string>();
 
@@ -263,7 +296,7 @@ namespace SS
             Cell cell = new Cell(number);
 
             //if name is null or does not match the regex then throw exception
-            if (name == null || !Regex.IsMatch(name, varPattern))
+            if (name == null || !varPattern.IsMatch(name))
             {
                 throw new InvalidNameException();
             }
