@@ -261,7 +261,7 @@ namespace SS
         {
             Double value;
 
-            Regex varPattern = new Regex(@"^[a-zA-Z][1-9a-zA-Z]*");
+            Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
 
             if (content == null)
             {
@@ -382,7 +382,6 @@ namespace SS
                     {
                         set.Add(name);
                     }
-
                 }
                 //if the value is not null add it to the set
                 else if(cell.getContents != null)
@@ -424,11 +423,14 @@ namespace SS
             //OldCell Contents
             Object oldContent;
 
+            //if name is null or if the reges is not a match then throw
+            //exception
             if (name == null || !varPattern.IsMatch(name))
             {
                 throw new InvalidNameException();
             }
 
+            //Grab old cell data
             if(Cells.ContainsKey(name))
             {
                 Cells.TryGetValue(name, out oldCell);
@@ -439,8 +441,6 @@ namespace SS
             //non-intialized hashset
             HashSet<String> cellsRecalculated;
 
-            //if name is null or if the reges is not a match then throw
-            //exception
 
             //store the old dependencies in the enum
             IEnumerable<String> oldDependencies = dependencyGraph.GetDependees(name);
@@ -472,6 +472,7 @@ namespace SS
             {
                 //revert the dependencies back to old ones
                 dependencyGraph.ReplaceDependees(name, oldDependencies);
+                //Revert old cell values
                 Cells.Remove(name);
                 Cells.Add(name, oldCell);
                 throw new CircularException();
@@ -547,7 +548,7 @@ namespace SS
         /// </summary>
         protected override ISet<String> SetCellContents(String name, double number)
         {
-            Regex varPattern = new Regex(@"^[a-zA-Z][1-9a-zA-Z]*");
+            Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
 
             //empty set for our name
             HashSet<String> emptySet = new HashSet<string>();
