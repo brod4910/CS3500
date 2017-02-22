@@ -330,8 +330,8 @@ namespace SS
         /// </summary>
         public override object GetCellContents(string name)
         {
-            //Regex pattern for our name
-            Regex varPattern = new Regex(@"^[a-zA-Z][1-9a-zA-Z]*");
+            //Regex patter for our name
+            Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
 
             //empty cell
             Cell cell = new Cell();
@@ -343,11 +343,18 @@ namespace SS
                 throw new InvalidNameException();
             }
 
-            //get the contents of the cell
-            Cells.TryGetValue(name, out cell);
+            if (Cells.ContainsKey(name))
+            {
+                //get the contents of the cell
+                Cells.TryGetValue(name, out cell);
 
-            //return the cells
-            return cell.getContents;
+                //return the cells
+                return cell.getContents;
+            }
+            else
+            {
+                return "";
+            }
         }
 
 
@@ -366,8 +373,19 @@ namespace SS
             {
                 //try to get the value
                 Cells.TryGetValue(name, out cell);
+
+                //NEW if cell is an empty string
+                //it is considered empty
+                if(cell.getContents is String)
+                {
+                    if(!cell.getContents.Equals(""))
+                    {
+                        set.Add(name);
+                    }
+
+                }
                 //if the value is not null add it to the set
-                if(cell.getContents != null)
+                else if(cell.getContents != null)
                 {
                     set.Add(name);
                 }
@@ -395,20 +413,34 @@ namespace SS
         protected override ISet<String> SetCellContents(String name, Formula formula)
         {
             //regex pattern
-            Regex varPattern = new Regex(@"^[a-zA-Z][1-9a-zA-Z]*");
+            Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
 
             // new cell that contains formula as contents
-            Cell cell = new Cell(formula);
+            Cell newCell = new Cell(formula);
+
+            //Old Cell
+            Cell oldCell = new Cell();
+
+            //OldCell Contents
+            Object oldContent;
+
+            if (name == null || !varPattern.IsMatch(name))
+            {
+                throw new InvalidNameException();
+            }
+
+            if(Cells.ContainsKey(name))
+            {
+                Cells.TryGetValue(name, out oldCell);
+
+                oldContent = oldCell.getContents;
+            }
 
             //non-intialized hashset
             HashSet<String> cellsRecalculated;
 
             //if name is null or if the reges is not a match then throw
             //exception
-            if (name == null || !varPattern.IsMatch(name))
-            {
-                throw new InvalidNameException();
-            }
 
             //store the old dependencies in the enum
             IEnumerable<String> oldDependencies = dependencyGraph.GetDependees(name);
@@ -417,19 +449,18 @@ namespace SS
             {
                 //replace dependencies with the variables of the formula
                 dependencyGraph.ReplaceDependees(name, formula.GetVariables());
-              
 
                 //if the Cells contains the name replace the
                 //contents
                 if (Cells.ContainsKey(name))
                 {
                     Cells.Remove(name);
-                    Cells.Add(name, cell);
+                    Cells.Add(name, newCell);
                 }
                 //else add the name
                 else
                 {
-                    Cells.Add(name, cell);
+                    Cells.Add(name, newCell);
                 }
 
                 //ALMOST BIG MISTAKE. RECALCULATE AT THE END
@@ -441,6 +472,8 @@ namespace SS
             {
                 //revert the dependencies back to old ones
                 dependencyGraph.ReplaceDependees(name, oldDependencies);
+                Cells.Remove(name);
+                Cells.Add(name, oldCell);
                 throw new CircularException();
             }
         }
@@ -461,7 +494,7 @@ namespace SS
         protected override ISet<String> SetCellContents(String name, String text)
         {
             //Var pattern for for our name check
-            Regex varPattern = new Regex(@"^[a-zA-Z][1-9a-zA-Z]*");
+            Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
 
             // empty set for our new cell
             HashSet<String> emptySet = new HashSet<String>();
