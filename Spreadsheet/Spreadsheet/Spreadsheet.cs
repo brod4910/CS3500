@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using Dependencies;
 using System.IO;
 using System.Xml;
+using System.Xml.Schema;
 
 namespace SS
 {
@@ -125,20 +126,131 @@ namespace SS
         ///
         /// Else, create a Spreadsheet that is a duplicate of the one encoded in source except that
         /// the new Spreadsheet's IsValid regular expression should be newIsValid.
-        public Spreadsheet(TextReader source, Regex newisValid)
+        public Spreadsheet(TextReader source, Regex newisValid) : this()
         {
-            String line;
+            //String for attribute value
+            String attri;
+            //old is valid
+            Regex oldisValid = new Regex("");
+            //String for contents
+            String contents;
+            //Forumla for formula
+            Formula formula;
+            //Double for double
+            Double doub;
+            //Sets isValid to the newisValid
+            this.isValid = newisValid;
 
-            try
+            // Create the XmlSchemaSet class.  Anything with the namespace "urn:states-schema" will
+            // be validated against states3.xsd.
+            XmlSchemaSet sc = new XmlSchemaSet();
+
+            // NOTE: To read states3.xsd this way, it must be stored in the same folder with the
+            // executable.  To arrange this, I set the "Copy to Output Directory" propery of states3.xsd to
+            // "Copy If Newer", which will copy states3.xsd as part of each build (if it has changed
+            // since the last build).
+            sc.Add(null, "Spreadsheet.xsd");
+
+            // Configure validation.
+            XmlReaderSettings settings = new XmlReaderSettings();
+            settings.ValidationType = ValidationType.Schema;
+            settings.Schemas = sc;
+            settings.ValidationEventHandler += ValidationCallback;
+
+            using (XmlReader reader = XmlReader.Create(source, settings))
             {
-                while((line = source.ReadLine()) != null)
+                while (reader.Read())
                 {
+                    if(reader.IsStartElement())
+                    {
+                        switch(reader.Name)
+                        {
+                            case "spreadsheet":
+                                attri = reader.GetAttribute("isValid");
+                                if(isValidRegex(attri))
+                                {
+                                    oldisValid = new Regex(attri);
+                                }
+                                else
+                                {
+                                    throw new SpreadsheetReadException("isValid is not a valid C# regex.");
+                                }
+                                break;
 
+                            case "cell":
+                                attri = reader.GetAttribute("name");
+                                contents = reader.GetAttribute("contents");
+
+                                if(Cells.ContainsKey(attri.ToUpper()))
+                                {
+                                    throw new SpreadsheetReadException("No Duplicate cell names.");
+                                }
+                                else if(!oldisValid.IsMatch(attri.ToUpper()))
+                                {
+                                    throw new SpreadsheetReadException("Invalid cell name with old isValid.");
+                                }
+                                else if(!newisValid.IsMatch(attri.ToUpper()))
+                                {
+                                    throw new SpreadsheetReadException("Invalid cell name with new isValid.");
+                                }
+
+                                if(Double.TryParse(contents, out doub))
+                                {
+                                    Cells.Add(attri.ToUpper(), new Cell(doub));
+                                }
+                                else if(contents.First().Equals("="))
+                                {
+                                    try
+                                    {
+                                        formula = new Formula(contents.Substring(1));
+                                        Cells.Add(attri.ToUpper(), new Cell(formula));
+                                    }
+                                    catch(FormulaFormatException)
+                                    {
+                                        throw new SpreadsheetReadException("Formula Format Exception was thrown");
+                                    }
+                                }
+                                else
+                                {
+                                    Cells.Add(attri.ToUpper(), new Cell(contents));
+                                }
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        throw new SpreadsheetReadException("Source gave end element instead of start element");
+                    }
                 }
             }
-            catch(IOException)
+        }
+
+        /// <summary>
+        /// Catches any Invalidations with the source.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private static void ValidationCallback(object sender, ValidationEventArgs e)
+        {
+            throw new SpreadsheetReadException("Problem reading source spreadsheet");
+        }
+
+        /// <summary>
+        /// Checks to see if the string passed in is a valid
+        /// Regex pattern
+        /// </summary>
+        /// <param name="pattern"></param>
+        /// <returns></returns>
+        private static bool isValidRegex(String pattern)
+        {
+            try
             {
-                throw new IOException("Problem occured while reading source.");
+                new Regex(pattern);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 
@@ -204,7 +316,7 @@ namespace SS
 
                     if(cell.getContents is Formula)
                     {
-                        writer.WriteAttributeString("contents", cell.getContents.ToString());
+                        writer.WriteAttributeString("contents", "=" + cell.getContents.ToString());
                     }
                     else if(cell.getContents is Double)
                     {
@@ -312,14 +424,21 @@ namespace SS
         /// </summary>
         public override object GetCellValue(string name)
         {
-            object value;
+            Cell cell = new Cell();
 
             if(name == null | !isValid.IsMatch(name.ToUpper()))
             {
                 throw new InvalidNameException();
             }
 
-            return value;
+            if(Cells.ContainsKey(name))
+            {
+                return cell.getValue;
+            }
+            else
+            {
+                return "";
+            }
         }
 
         /// <summary>
@@ -660,6 +779,7 @@ namespace SS
             public Cell(String contents)
             {
                 this.contents = contents;
+                this.value = contents;
             }
 
             /// <summary>
@@ -668,6 +788,11 @@ namespace SS
             public object getContents
             {
                 get { return contents; }
+            }
+
+            public object getValue
+            {
+                get { return value; }
             }
         }
     }
