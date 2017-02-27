@@ -75,6 +75,8 @@ namespace SS
 
         private Regex isValid;
 
+        private Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
+
         /// <summary>
         /// Zero argument constructor that creates
         /// a new empty spreadsheet
@@ -129,7 +131,7 @@ namespace SS
         public Spreadsheet(TextReader source, Regex newisValid) : this()
         {
             //String for attribute value
-            String attri;
+            String name;
             //old is valid
             Regex oldisValid = new Regex("");
             //String for contents
@@ -149,7 +151,7 @@ namespace SS
             // executable.  To arrange this, I set the "Copy to Output Directory" propery of states3.xsd to
             // "Copy If Newer", which will copy states3.xsd as part of each build (if it has changed
             // since the last build).
-            sc.Add(null, @".\Spreadsheet.xsd");
+            sc.Add(null, "Spreadsheet.xsd");
 
             // Configure validation.
             XmlReaderSettings settings = new XmlReaderSettings();
@@ -161,6 +163,8 @@ namespace SS
             {
                 using (XmlReader reader = XmlReader.Create(source, settings))
                 {
+                    reader.Read();
+
                     while (reader.Read())
                     {
                         if (reader.IsStartElement())
@@ -168,10 +172,10 @@ namespace SS
                             switch (reader.Name)
                             {
                                 case "spreadsheet":
-                                    attri = reader.GetAttribute("isValid");
-                                    if (isValidRegex(attri))
+                                    name = reader.GetAttribute("isValid");
+                                    if (isValidRegex(name))
                                     {
-                                        oldisValid = new Regex(attri);
+                                        oldisValid = new Regex(name);
                                     }
                                     else
                                     {
@@ -180,47 +184,61 @@ namespace SS
                                     break;
 
                                 case "cell":
-                                    attri = reader.GetAttribute("name").ToUpper();
+                                    //if attribute count is not two thorw exception
+                                    if(reader.AttributeCount != 2)
+                                    {
+                                        throw new SpreadsheetReadException("There must be only two attributes.");
+                                    }
+
+                                    //grab attribute and contents
+                                    name = reader.GetAttribute("name").ToUpper();
                                     contents = reader.GetAttribute("contents");
 
-                                    if (Cells.ContainsKey(attri))
+                                    //if there are duplicate names throw exception
+                                    if (Cells.ContainsKey(name))
                                     {
                                         throw new SpreadsheetReadException("No Duplicate cell names.");
                                     }
-                                    else if (!oldisValid.IsMatch(attri))
+                                    //if name does not match old is valid
+                                    else if (!oldisValid.IsMatch(name))
                                     {
                                         throw new SpreadsheetReadException("Invalid cell name with old isValid.");
                                     }
-                                    else if (!newisValid.IsMatch(attri))
+                                    else if (!newisValid.IsMatch(name))
                                     {
-                                        throw new SpreadsheetReadException("Invalid cell name with new isValid.");
+                                        throw new SpreadsheetVersionException("Invalid cell name with new isValid.");
                                     }
 
                                     if (Double.TryParse(contents, out doub))
                                     {
-                                        this.SetContentsOfCell(attri, contents);
+                                        this.SetContentsOfCell(name, contents);
                                     }
                                     else if (contents.First().Equals("="))
                                     {
                                         try
                                         {
-                                            this.SetContentsOfCell(attri, contents.Substring(1));
+                                            this.SetContentsOfCell(name, contents.Substring(1));
                                         }
-                                        catch (FormulaFormatException)
+                                        catch (Exception ex) when (ex is FormulaFormatException || ex is CircularException)
                                         {
-                                            throw new SpreadsheetReadException("Formula Format Exception was thrown");
+                                            if (ex is FormulaFormatException)
+                                            {
+                                                throw new SpreadsheetVersionException("Invalid Formula in source.");
+                                            }
+                                            else if(ex is CircularException)
+                                            {
+                                                throw new SpreadsheetReadException("Source has circular formulas.");
+                                            }
                                         }
                                     }
                                     else
                                     {
-                                        this.SetContentsOfCell(attri, contents);
+                                        this.SetContentsOfCell(name, contents);
                                     }
                                     break;
+                                default:
+                                    throw new SpreadsheetReadException("Invalid Element Name.");
                             }
-                        }
-                        else
-                        {
-                            throw new SpreadsheetReadException("Source gave end element instead of start element");
                         }
                     }
                 }
@@ -238,7 +256,9 @@ namespace SS
         /// <param name="e"></param>
         private static void ValidationCallback(object sender, ValidationEventArgs e)
         {
-            throw new SpreadsheetReadException("Problem reading source spreadsheet");
+            Console.WriteLine(" *** Validation Error: {0}", e.Message);
+
+            //throw new SpreadsheetReadException("Problem reading source spreadsheet");
         }
 
         /// <summary>
@@ -301,20 +321,26 @@ namespace SS
             {
                 using (XmlWriter writer = XmlWriter.Create(dest))
                 {
+                    //Cell for value
                     Cell cell = new Cell();
+                    //Enumerable for list of all non-empty cells
                     IEnumerable<String> listofCells = this.GetNamesOfAllNonemptyCells();
 
+                    //Start of XML doc
                     writer.WriteStartDocument();
                     writer.WriteStartElement("", "spreadsheet", "");
                     writer.WriteAttributeString("isValid", this.isValid.ToString());
 
+                    //For each Cell Name in Cells
                     foreach (String key in listofCells)
                     {
+                        //Start element cell with attribute of name and contents
                         writer.WriteStartElement("cell");
                         writer.WriteAttributeString("name", key);
 
                         Cells.TryGetValue(key, out cell);
 
+                        //write the contents of the cell in the attribute contents
                         if (cell.getContents is Formula)
                         {
                             writer.WriteAttributeString("contents", "=" + cell.getContents.ToString());
@@ -331,12 +357,13 @@ namespace SS
 
                         writer.WriteEndElement();
                     }
-
+                    //end the document and set changed to false
                     writer.WriteEndElement();
                     writer.WriteEndDocument();
                     this.Changed = false;
                 }
             }
+            //If there is a problem saving the xml file throw IOException
             catch(Exception ex) when (ex is XmlException || ex is IOException)
             {
                 throw new IOException();
@@ -378,16 +405,17 @@ namespace SS
         /// </summary>
         public override ISet<string> SetContentsOfCell(string name, string content)
         {
+            //Empty Double
             Double value;
 
-            Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
-
+            //Empty Cell
             Cell cell;
-
+            //Set of Cells to Evaluate
             ISet<String> toEvaluate;
-
+            //Any Call to this method will set changed to true
             this.Changed = true;
 
+            //Checks for invalid and null inputs
             if (content == null)
             {
                 throw new ArgumentNullException();
@@ -397,25 +425,30 @@ namespace SS
                 throw new InvalidNameException();
             }
 
+            //if content is an empty string add it to the list of Cells
             if (content == "")
             {
                 Cells.Remove(name);
                 dependencyGraph.ReplaceDependents(name, new HashSet<string>());
                 toEvaluate = new HashSet<string>(GetCellsToRecalculate(name));
             }
+            //parse double and set contents to double
             else if(Double.TryParse(content, out value) == true)
             {
                 toEvaluate = this.SetCellContents(name, value);
             }
+            //Attempt to evaluate formula
             else if(content.IndexOf('=') == 0)
             {
                 Normalizer normalizer = s => s.ToUpper();
                 Validator validator = s => isValid.IsMatch(s.ToUpper());
+
                 try
                 {
                     Formula formula = new Formula(content.Substring(1), normalizer, validator);
                     toEvaluate = this.SetCellContents(name, formula);
                 }
+                //catch any possible errors throw them back
                 catch(Exception ex) when (ex is FormulaFormatException || ex is CircularException)
                 {
                     if (ex is FormulaFormatException)
@@ -428,11 +461,13 @@ namespace SS
                     }
                 }
             }
+            //else if contents is a string set contents and value to the string
             else
             {
                 toEvaluate = this.SetCellContents(name, content);
             }
-
+            //for each variable in Cells toEvaluate
+            //attempt to evaluate them.
             foreach (String var in toEvaluate)
             {
                 if(Cells.TryGetValue(var, out cell))
@@ -453,6 +488,7 @@ namespace SS
         /// </summary>
         public override object GetCellValue(string name)
         {
+            //Empty cell
             Cell cell;
 
             if(name == null || !isValid.IsMatch(name.ToUpper()))
@@ -460,11 +496,14 @@ namespace SS
                 throw new InvalidNameException();
             }
 
+            //if the cell is in the list of Cells
+            //return its value
             if(Cells.ContainsKey(name))
             {
                 Cells.TryGetValue(name, out cell);
                 return cell.Value;
             }
+            //else return an empty string
             else
             {
                 return "";
@@ -479,9 +518,6 @@ namespace SS
         /// </summary>
         public override object GetCellContents(string name)
         {
-            //Regex patter for our name
-            Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
-
             //empty cell
             Cell cell = new Cell();
 
@@ -560,9 +596,6 @@ namespace SS
         /// </summary>
         protected override ISet<String> SetCellContents(String name, Formula formula)
         {
-            //regex pattern
-            Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
-
             // new cell that contains formula as contents
             Cell newCell = new Cell(formula, Lookup);
 
@@ -644,9 +677,6 @@ namespace SS
         /// </summary>
         protected override ISet<String> SetCellContents(String name, String text)
         {
-            //Var pattern for for our name check
-            Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
-
             // empty set for our new cell
             HashSet<String> emptySet = new HashSet<String>();
 
@@ -698,8 +728,6 @@ namespace SS
         /// </summary>
         protected override ISet<String> SetCellContents(String name, double number)
         {
-            Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
-
             //empty set for our name
             HashSet<String> emptySet = new HashSet<string>();
 
@@ -773,14 +801,18 @@ namespace SS
         /// <returns></returns>
         private double Lookup(string s)
         {
+            //Empty cell
             Cell cell;
 
+            //Get the value from the cell named s
             if (Cells.TryGetValue(s, out cell))
             {
                 if (cell.Value is double)
                 {
                     return (double) cell.Value;
                 }
+                //throw ArgumentExceptions to be caught
+                //and dealt with accordingly
                 else
                 {
                     throw new ArgumentException();
@@ -819,10 +851,12 @@ namespace SS
             {
                 this.contents = contents;
 
+                //Attempt to solve the formula
                 try
                 {
                     this.value = contents.Evaluate(lookup);
                 }
+                //Catch two only possible exceptions and create FormulaErrors
                 catch (Exception ex) when (ex is ArgumentException || ex is FormulaEvaluationException)
                 {
                     if (ex is ArgumentException)
@@ -898,11 +932,7 @@ namespace SS
                         }
                     }
                 }
-                else if(contents is Double)
-                {
-                    this.value = this.contents;
-                }
-                else
+                else if(contents is Double || contents is String)
                 {
                     this.value = this.contents;
                 }

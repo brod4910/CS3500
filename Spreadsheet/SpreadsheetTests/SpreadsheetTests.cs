@@ -154,14 +154,26 @@ namespace SpreadsheetTests
             sheet.GetCellValue("a");
         }
 
-        //[TestMethod]
-        //public void TestReadMethod()
-        //{
-        //    StreamReader stream = new StreamReader(@".\SpreadsheetResult.xml");
+        [TestMethod]
+        public void TestReadMethod()
+        {
+            StreamReader stream = new StreamReader("../../Spreadsheet.xml");
 
-        //    Spreadsheet sheet = new Spreadsheet(stream, new Regex(".*"));
+            Spreadsheet sheet = new Spreadsheet(stream, new Regex(".*"));
 
-        //    sheet.SetContentsOfCell("A1", "1");
-        //}
+            Assert.AreEqual(sheet.GetCellValue("A1"), 8.0);
+
+            sheet.SetContentsOfCell("A1", "1");
+
+            Assert.AreEqual(sheet.GetCellValue("A1"), 1.0);
+        }
+
+        [TestMethod]
+        public void TestReadMethodIOException()
+        {
+            StreamReader stream = new StreamReader("../../Spreadsheet1.xml");
+
+            Spreadsheet sheet = new Spreadsheet(stream, new Regex(".*"));
+        }
     }
 }
