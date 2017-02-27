@@ -83,7 +83,7 @@ namespace SS
         {
             this.Cells = new Dictionary<string, Cell>();
             this.dependencyGraph = new DependencyGraph();
-            hasChanged = false;
+            this.Changed = false;
             isValid = new Regex(@".*");
         }
 
@@ -139,7 +139,7 @@ namespace SS
             //Sets isValid to the newisValid
             this.isValid = newisValid;
             //Changed is false
-            hasChanged = false;
+            this.Changed = false;
 
             // Create the XmlSchemaSet class.  Anything with the namespace "urn:states-schema" will
             // be validated against states3.xsd.
@@ -149,7 +149,7 @@ namespace SS
             // executable.  To arrange this, I set the "Copy to Output Directory" propery of states3.xsd to
             // "Copy If Newer", which will copy states3.xsd as part of each build (if it has changed
             // since the last build).
-            sc.Add(null, "Spreadsheet.xsd");
+            sc.Add(null, @".\Spreadsheet.xsd");
 
             // Configure validation.
             XmlReaderSettings settings = new XmlReaderSettings();
@@ -305,7 +305,7 @@ namespace SS
                     IEnumerable<String> listofCells = this.GetNamesOfAllNonemptyCells();
 
                     writer.WriteStartDocument();
-                    writer.WriteStartElement("", "spreadsheet", "urn:cell-schema");
+                    writer.WriteStartElement("", "spreadsheet", "");
                     writer.WriteAttributeString("isValid", this.isValid.ToString());
 
                     foreach (String key in listofCells)
@@ -334,6 +334,7 @@ namespace SS
 
                     writer.WriteEndElement();
                     writer.WriteEndDocument();
+                    this.Changed = false;
                 }
             }
             catch(Exception ex) when (ex is XmlException || ex is IOException)
@@ -385,6 +386,8 @@ namespace SS
 
             ISet<String> toEvaluate;
 
+            this.Changed = true;
+
             if (content == null)
             {
                 throw new ArgumentNullException();
@@ -396,14 +399,12 @@ namespace SS
 
             if (content == "")
             {
-                hasChanged = true;
                 Cells.Remove(name);
                 dependencyGraph.ReplaceDependents(name, new HashSet<string>());
                 toEvaluate = new HashSet<string>(GetCellsToRecalculate(name));
             }
             else if(Double.TryParse(content, out value) == true)
             {
-                hasChanged = true;
                 toEvaluate = this.SetCellContents(name, value);
             }
             else if(content.IndexOf('=') == 0)
@@ -429,7 +430,6 @@ namespace SS
             }
             else
             {
-                hasChanged = true;
                 toEvaluate = this.SetCellContents(name, content);
             }
 
@@ -614,7 +614,7 @@ namespace SS
                 //ALMOST BIG MISTAKE. RECALCULATE AT THE END
                 cellsRecalculated = new HashSet<String>(GetCellsToRecalculate(name));
 
-                hasChanged = true;
+                this.Changed = true;
 
                 return cellsRecalculated;
             }
@@ -766,6 +766,11 @@ namespace SS
             return dependencyGraph.GetDependents(name);
         }
 
+        /// <summary>
+        /// LookUp method to gather the values in a formula
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
         private double Lookup(string s)
         {
             Cell cell;
@@ -774,7 +779,7 @@ namespace SS
             {
                 if (cell.Value is double)
                 {
-                    return (double)cell.Value;
+                    return (double) cell.Value;
                 }
                 else
                 {
@@ -813,13 +818,24 @@ namespace SS
             public Cell(Formula contents, Lookup lookup)
             {
                 this.contents = contents;
+
                 try
                 {
                     this.value = contents.Evaluate(lookup);
                 }
-                catch (ArgumentException)
+                catch (Exception ex) when (ex is ArgumentException || ex is FormulaEvaluationException)
                 {
-                    this.Value = new FormulaError("Unknown Cell Name.");
+                    if (ex is ArgumentException)
+                    {
+                        this.Value = new FormulaError("Unknown Cell Name.");
+                    }
+                    else if (ex is FormulaEvaluationException)
+                    {
+                        if (ex.Message.Equals("Division by zero has occured."))
+                        {
+                            this.Value = new FormulaError("Division by zero has occured.");
+                        }
+                    }
                 }
             }
 
@@ -840,6 +856,7 @@ namespace SS
             public Cell(String contents)
             {
                 this.contents = contents;
+                this.value = contents;
             }
 
             /// <summary>
@@ -866,12 +883,26 @@ namespace SS
                         Formula form = (Formula)this.contents;
                         this.value = form.Evaluate(lookup);
                     }
-                    catch (ArgumentException)
+                    catch (Exception ex) when (ex is ArgumentException || ex is FormulaEvaluationException)
                     {
-                        this.Value = new FormulaError("Unknown Cell Name.");
+                        if (ex is ArgumentException)
+                        {
+                            this.Value = new FormulaError("Unknown Cell Name.");
+                        }
+                        else if(ex is FormulaEvaluationException)
+                        {
+                            if(ex.Message.Equals("Division by zero has occured."))
+                            {
+                                this.Value = new FormulaError("Division by zero has occured.");
+                            }
+                        }
                     }
                 }
                 else if(contents is Double)
+                {
+                    this.value = this.contents;
+                }
+                else
                 {
                     this.value = this.contents;
                 }

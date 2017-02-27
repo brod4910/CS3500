@@ -5,6 +5,7 @@ using Formulas;
 using System.Collections.Generic;
 using System.Collections;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace SpreadsheetTests
 {
@@ -64,6 +65,19 @@ namespace SpreadsheetTests
         }
 
         [TestMethod]
+        public void TestMethodSetCellContents8()
+        {
+            spreadsheet.SetContentsOfCell("B1", "=A2 + 9");
+            Assert.AreEqual(spreadsheet.GetCellValue("B1"), 9.0);
+        }
+
+        [TestMethod]
+        public void testBeforeSave()
+        {
+            Assert.IsTrue(spreadsheet.Changed);
+        }
+
+        [TestMethod]
         public void TestSaveMethod()
         {
             string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
@@ -72,9 +86,82 @@ namespace SpreadsheetTests
 
             FileStream f = File.Create(@".\Spreadsheet.xml");
 
-            StreamWriter writer = new StreamWriter(f); 
-            
+            StreamWriter writer = new StreamWriter(f);
+
             spreadsheet.Save(writer);
+
+            Assert.IsFalse(spreadsheet.Changed);
         }
+
+        [TestMethod]
+        public void TestAfterSave()
+        {
+            spreadsheet.SetContentsOfCell("A1001", "9.0");
+            Assert.IsTrue(spreadsheet.Changed);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void testNullContent()
+        {
+            spreadsheet.SetContentsOfCell("Something", null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void testNullName()
+        {
+            spreadsheet.SetContentsOfCell(null, "Something");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void testNullInvalidContent1()
+        {
+            spreadsheet.SetContentsOfCell("Somthing", "asdf");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void testNullInvalidContent2()
+        {
+            Spreadsheet sheet = new Spreadsheet(new Regex(@"\d+"));
+
+            sheet.SetContentsOfCell("Somthing", "a");
+        }
+
+        [TestMethod]
+        public void DivisionByZero()
+        {
+            spreadsheet.SetContentsOfCell("B1", "=1/0");
+
+            Assert.IsTrue(spreadsheet.GetCellValue("B1") is FormulaError);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void TestGetCellValueNullName()
+        {
+            spreadsheet.GetCellValue(null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void TestGetCellValueInvalidName()
+        {
+            Spreadsheet sheet = new Spreadsheet(new Regex(@"\d+"));
+
+            sheet.GetCellValue("a");
+        }
+
+        //[TestMethod]
+        //public void TestReadMethod()
+        //{
+        //    StreamReader stream = new StreamReader(@".\SpreadsheetResult.xml");
+
+        //    Spreadsheet sheet = new Spreadsheet(stream, new Regex(".*"));
+
+        //    sheet.SetContentsOfCell("A1", "1");
+        //}
     }
 }
