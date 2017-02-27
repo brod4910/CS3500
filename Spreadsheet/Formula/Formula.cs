@@ -347,9 +347,17 @@ namespace Formulas
                         {
                             lookup(token);
                         }
-                        catch (UndefinedVariableException)
+                        catch (Exception ex) when (ex is UndefinedVariableException || ex is ArgumentException)
                         {
-                            throw new FormulaEvaluationException("Variable is undefined.");
+                            if (ex is FormulaEvaluationException)
+                            {
+                                throw new FormulaEvaluationException("Variable is undefined.");
+                            }
+                            else if(ex is ArgumentException)
+                            {
+                                throw new ArgumentException();
+                            }
+                            
                         }
 
                         if (lookup(token) < 0)

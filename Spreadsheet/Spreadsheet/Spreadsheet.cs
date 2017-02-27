@@ -134,12 +134,12 @@ namespace SS
             Regex oldisValid = new Regex("");
             //String for contents
             String contents;
-            //Forumla for formula
-            Formula formula;
             //Double for double
             Double doub;
             //Sets isValid to the newisValid
             this.isValid = newisValid;
+            //Changed is false
+            hasChanged = false;
 
             // Create the XmlSchemaSet class.  Anything with the namespace "urn:states-schema" will
             // be validated against states3.xsd.
@@ -157,71 +157,77 @@ namespace SS
             settings.Schemas = sc;
             settings.ValidationEventHandler += ValidationCallback;
 
-            using (XmlReader reader = XmlReader.Create(source, settings))
+            try
             {
-                while (reader.Read())
+                using (XmlReader reader = XmlReader.Create(source, settings))
                 {
-                    if(reader.IsStartElement())
+                    while (reader.Read())
                     {
-                        switch(reader.Name)
+                        if (reader.IsStartElement())
                         {
-                            case "spreadsheet":
-                                attri = reader.GetAttribute("isValid");
-                                if(isValidRegex(attri))
-                                {
-                                    oldisValid = new Regex(attri);
-                                }
-                                else
-                                {
-                                    throw new SpreadsheetReadException("isValid is not a valid C# regex.");
-                                }
-                                break;
-
-                            case "cell":
-                                attri = reader.GetAttribute("name");
-                                contents = reader.GetAttribute("contents");
-
-                                if(Cells.ContainsKey(attri.ToUpper()))
-                                {
-                                    throw new SpreadsheetReadException("No Duplicate cell names.");
-                                }
-                                else if(!oldisValid.IsMatch(attri.ToUpper()))
-                                {
-                                    throw new SpreadsheetReadException("Invalid cell name with old isValid.");
-                                }
-                                else if(!newisValid.IsMatch(attri.ToUpper()))
-                                {
-                                    throw new SpreadsheetReadException("Invalid cell name with new isValid.");
-                                }
-
-                                if(Double.TryParse(contents, out doub))
-                                {
-                                    Cells.Add(attri.ToUpper(), new Cell(doub));
-                                }
-                                else if(contents.First().Equals("="))
-                                {
-                                    try
+                            switch (reader.Name)
+                            {
+                                case "spreadsheet":
+                                    attri = reader.GetAttribute("isValid");
+                                    if (isValidRegex(attri))
                                     {
-                                        formula = new Formula(contents.Substring(1));
-                                        Cells.Add(attri.ToUpper(), new Cell(formula));
+                                        oldisValid = new Regex(attri);
                                     }
-                                    catch(FormulaFormatException)
+                                    else
                                     {
-                                        throw new SpreadsheetReadException("Formula Format Exception was thrown");
+                                        throw new SpreadsheetReadException("isValid is not a valid C# regex.");
                                     }
-                                }
-                                else
-                                {
-                                    Cells.Add(attri.ToUpper(), new Cell(contents));
-                                }
-                                break;
+                                    break;
+
+                                case "cell":
+                                    attri = reader.GetAttribute("name").ToUpper();
+                                    contents = reader.GetAttribute("contents");
+
+                                    if (Cells.ContainsKey(attri))
+                                    {
+                                        throw new SpreadsheetReadException("No Duplicate cell names.");
+                                    }
+                                    else if (!oldisValid.IsMatch(attri))
+                                    {
+                                        throw new SpreadsheetReadException("Invalid cell name with old isValid.");
+                                    }
+                                    else if (!newisValid.IsMatch(attri))
+                                    {
+                                        throw new SpreadsheetReadException("Invalid cell name with new isValid.");
+                                    }
+
+                                    if (Double.TryParse(contents, out doub))
+                                    {
+                                        this.SetContentsOfCell(attri, contents);
+                                    }
+                                    else if (contents.First().Equals("="))
+                                    {
+                                        try
+                                        {
+                                            this.SetContentsOfCell(attri, contents.Substring(1));
+                                        }
+                                        catch (FormulaFormatException)
+                                        {
+                                            throw new SpreadsheetReadException("Formula Format Exception was thrown");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        this.SetContentsOfCell(attri, contents);
+                                    }
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            throw new SpreadsheetReadException("Source gave end element instead of start element");
                         }
                     }
-                    else
-                    {
-                        throw new SpreadsheetReadException("Source gave end element instead of start element");
-                    }
                 }
+            }
+            catch(IOException)
+            {
+                throw new IOException();
             }
         }
 
@@ -265,14 +271,7 @@ namespace SS
 
             protected set
             {
-                if(hasChanged)
-                {
-                    hasChanged = false;
-                }
-                else
-                {
-                    hasChanged = true;
-                }
+                this.hasChanged = value;
             }
         }
 
@@ -298,41 +297,48 @@ namespace SS
         /// </summary>
         public override void Save(TextWriter dest)
         {
-            using (XmlWriter writer = XmlWriter.Create(dest))
+            try
             {
-                Cell cell = new Cell();
-                IEnumerable <String> listofCells = this.GetNamesOfAllNonemptyCells();
-
-                writer.WriteStartDocument();
-                writer.WriteStartElement("", "spreadsheet", "urn:cell-schema");
-                writer.WriteAttributeString("isValid", this.isValid.ToString());
-
-                foreach (String key in listofCells)
+                using (XmlWriter writer = XmlWriter.Create(dest))
                 {
-                    writer.WriteStartElement("cell");
-                    writer.WriteAttributeString("name", key);
+                    Cell cell = new Cell();
+                    IEnumerable<String> listofCells = this.GetNamesOfAllNonemptyCells();
 
-                    Cells.TryGetValue(key, out cell);
+                    writer.WriteStartDocument();
+                    writer.WriteStartElement("", "spreadsheet", "urn:cell-schema");
+                    writer.WriteAttributeString("isValid", this.isValid.ToString());
 
-                    if(cell.getContents is Formula)
+                    foreach (String key in listofCells)
                     {
-                        writer.WriteAttributeString("contents", "=" + cell.getContents.ToString());
-                    }
-                    else if(cell.getContents is Double)
-                    {
-                        writer.WriteAttributeString("contents", cell.getContents.ToString());
-                    }
-                    else
-                    {
-                        String str = (String) cell.getContents;
-                        writer.WriteAttributeString("contents", str);
+                        writer.WriteStartElement("cell");
+                        writer.WriteAttributeString("name", key);
+
+                        Cells.TryGetValue(key, out cell);
+
+                        if (cell.getContents is Formula)
+                        {
+                            writer.WriteAttributeString("contents", "=" + cell.getContents.ToString());
+                        }
+                        else if (cell.getContents is Double)
+                        {
+                            writer.WriteAttributeString("contents", cell.getContents.ToString());
+                        }
+                        else
+                        {
+                            String str = (String)cell.getContents;
+                            writer.WriteAttributeString("contents", str);
+                        }
+
+                        writer.WriteEndElement();
                     }
 
                     writer.WriteEndElement();
+                    writer.WriteEndDocument();
                 }
-
-                writer.WriteEndElement();
-                writer.WriteEndDocument();
+            }
+            catch(Exception ex) when (ex is XmlException || ex is IOException)
+            {
+                throw new IOException();
             }
         
         }
@@ -375,6 +381,10 @@ namespace SS
 
             Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
 
+            Cell cell;
+
+            ISet<String> toEvaluate;
+
             if (content == null)
             {
                 throw new ArgumentNullException();
@@ -384,9 +394,17 @@ namespace SS
                 throw new InvalidNameException();
             }
 
-            if(Double.TryParse(content, out value) == true)
+            if (content == "")
             {
-                return this.SetCellContents(name, value);
+                hasChanged = true;
+                Cells.Remove(name);
+                dependencyGraph.ReplaceDependents(name, new HashSet<string>());
+                toEvaluate = new HashSet<string>(GetCellsToRecalculate(name));
+            }
+            else if(Double.TryParse(content, out value) == true)
+            {
+                hasChanged = true;
+                toEvaluate = this.SetCellContents(name, value);
             }
             else if(content.IndexOf('=') == 0)
             {
@@ -395,7 +413,7 @@ namespace SS
                 try
                 {
                     Formula formula = new Formula(content.Substring(1), normalizer, validator);
-                    return this.SetCellContents(name, formula);
+                    toEvaluate = this.SetCellContents(name, formula);
                 }
                 catch(Exception ex) when (ex is FormulaFormatException || ex is CircularException)
                 {
@@ -411,8 +429,19 @@ namespace SS
             }
             else
             {
-                return this.SetCellContents(name, content);
+                hasChanged = true;
+                toEvaluate = this.SetCellContents(name, content);
             }
+
+            foreach (String var in toEvaluate)
+            {
+                if(Cells.TryGetValue(var, out cell))
+                {
+                        cell.evaluateCell(Lookup);
+                }
+            }
+
+            return toEvaluate;
         }
 
         // ADDED FOR PS6
@@ -424,16 +453,17 @@ namespace SS
         /// </summary>
         public override object GetCellValue(string name)
         {
-            Cell cell = new Cell();
+            Cell cell;
 
-            if(name == null | !isValid.IsMatch(name.ToUpper()))
+            if(name == null || !isValid.IsMatch(name.ToUpper()))
             {
                 throw new InvalidNameException();
             }
 
             if(Cells.ContainsKey(name))
             {
-                return cell.getValue;
+                Cells.TryGetValue(name, out cell);
+                return cell.Value;
             }
             else
             {
@@ -534,7 +564,7 @@ namespace SS
             Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
 
             // new cell that contains formula as contents
-            Cell newCell = new Cell(formula);
+            Cell newCell = new Cell(formula, Lookup);
 
             //Old Cell
             Cell oldCell = new Cell();
@@ -560,7 +590,6 @@ namespace SS
             //non-intialized hashset
             HashSet<String> cellsRecalculated;
 
-
             //store the old dependencies in the enum
             IEnumerable<String> oldDependencies = dependencyGraph.GetDependees(name);
 
@@ -584,6 +613,8 @@ namespace SS
 
                 //ALMOST BIG MISTAKE. RECALCULATE AT THE END
                 cellsRecalculated = new HashSet<String>(GetCellsToRecalculate(name));
+
+                hasChanged = true;
 
                 return cellsRecalculated;
             }
@@ -735,6 +766,27 @@ namespace SS
             return dependencyGraph.GetDependents(name);
         }
 
+        private double Lookup(string s)
+        {
+            Cell cell;
+
+            if (Cells.TryGetValue(s, out cell))
+            {
+                if (cell.Value is double)
+                {
+                    return (double)cell.Value;
+                }
+                else
+                {
+                    throw new ArgumentException();
+                }
+            }
+            else
+            {
+                throw new ArgumentException();
+            }
+        }
+
         /// <summary>
         /// Representation for our spreadsheet cells
         /// </summary>
@@ -757,9 +809,18 @@ namespace SS
             /// One argument constructor that takes a formula
             /// </summary>
             /// <param name="contents"></param>
-            public Cell(Formula contents)
+            /// <param name="lookup"></param>
+            public Cell(Formula contents, Lookup lookup)
             {
                 this.contents = contents;
+                try
+                {
+                    this.value = contents.Evaluate(lookup);
+                }
+                catch (ArgumentException)
+                {
+                    this.Value = new FormulaError("Unknown Cell Name.");
+                }
             }
 
             /// <summary>
@@ -779,7 +840,6 @@ namespace SS
             public Cell(String contents)
             {
                 this.contents = contents;
-                this.value = contents;
             }
 
             /// <summary>
@@ -790,9 +850,31 @@ namespace SS
                 get { return contents; }
             }
 
-            public object getValue
+            public object Value
             {
                 get { return value; }
+
+                set { this.value = value; }
+            }
+
+            public void evaluateCell(Lookup lookup)
+            {
+                if (contents is Formula)
+                {
+                    try
+                    {
+                        Formula form = (Formula)this.contents;
+                        this.value = form.Evaluate(lookup);
+                    }
+                    catch (ArgumentException)
+                    {
+                        this.Value = new FormulaError("Unknown Cell Name.");
+                    }
+                }
+                else if(contents is Double)
+                {
+                    this.value = this.contents;
+                }
             }
         }
     }
