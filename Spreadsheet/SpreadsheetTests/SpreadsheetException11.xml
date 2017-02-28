@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<spreadsheet IsValid=".*">
+  <cell name="A1" contents="8" />
+  <cell name="A2" contents="=A1-A1" />
+  <cell name="A3" contents="=A2-A1" />
+  <cell name="A4" contents="=A5+1" />
+  <cell name="B1" contents="=A2+9" />
+</spreadsheet>

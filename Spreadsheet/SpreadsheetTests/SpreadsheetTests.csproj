@@ -69,6 +69,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Spreadsheet1.xml" />
+    <Content Include="SpreadsheetException13.xml" />
+    <Content Include="SpreadsheetException12.xml" />
+    <Content Include="SpreadsheetException11.xml" />
     <Content Include="SpreadsheetException1.xml" />
     <Content Include="SpreadsheetException3.xml" />
     <Content Include="SpreadsheetException4.xml" />

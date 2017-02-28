@@ -75,7 +75,7 @@ namespace SS
 
         private Regex isValid;
 
-        private Regex varPattern = new Regex("[a-zA-Z]+[1-9]+[1-9]*");
+        private Regex varPattern = new Regex(@"^[a-zA-Z]+[1-9]+[0-9]*$");
 
         /// <summary>
         /// Zero argument constructor that creates
@@ -279,7 +279,7 @@ namespace SS
         /// </summary>
         /// <param name="pattern"></param>
         /// <returns></returns>
-        private static bool isValidRegex(String pattern)
+        private bool isValidRegex(String pattern)
         {
             try
             {
@@ -441,6 +441,7 @@ namespace SS
             if (content == "")
             {
                 Cells.Remove(name);
+                Cells.Add(name, new Cell(content));
                 dependencyGraph.ReplaceDependents(name, new HashSet<string>());
                 toEvaluate = new HashSet<string>(GetCellsToRecalculate(name));
             }
