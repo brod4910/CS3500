@@ -143,14 +143,10 @@ namespace SS
             //Changed is false
             this.Changed = false;
 
-            // Create the XmlSchemaSet class.  Anything with the namespace "urn:states-schema" will
-            // be validated against states3.xsd.
+            // Create the XmlSchemaSet class.
             XmlSchemaSet sc = new XmlSchemaSet();
-
-            // NOTE: To read states3.xsd this way, it must be stored in the same folder with the
-            // executable.  To arrange this, I set the "Copy to Output Directory" propery of states3.xsd to
-            // "Copy If Newer", which will copy states3.xsd as part of each build (if it has changed
-            // since the last build).
+            
+            //add the schema to the set
             sc.Add(null, "Spreadsheet.xsd");
 
             // Configure validation.
@@ -159,24 +155,30 @@ namespace SS
             settings.Schemas = sc;
             settings.ValidationEventHandler += ValidationCallback;
 
-            try
+            //create an Xml reader
+            using (XmlReader reader = XmlReader.Create(source, settings))
             {
-                using (XmlReader reader = XmlReader.Create(source, settings))
+                try
                 {
-                    reader.Read();
-
+                    //while reader has next elements
                     while (reader.Read())
                     {
+                        //if the reader is a start element
                         if (reader.IsStartElement())
                         {
+                            //switch cases
                             switch (reader.Name)
                             {
                                 case "spreadsheet":
-                                    name = reader.GetAttribute("isValid");
+                                    //grab the attribute IsValid
+                                    name = reader.GetAttribute("IsValid");
+                                    
+                                    //If IsValid is a valid regex continue
                                     if (isValidRegex(name))
                                     {
                                         oldisValid = new Regex(name);
                                     }
+                                    //else throw a SpreadsheetReadException
                                     else
                                     {
                                         throw new SpreadsheetReadException("isValid is not a valid C# regex.");
@@ -184,81 +186,91 @@ namespace SS
                                     break;
 
                                 case "cell":
-                                    //if attribute count is not two thorw exception
-                                    if(reader.AttributeCount != 2)
-                                    {
-                                        throw new SpreadsheetReadException("There must be only two attributes.");
-                                    }
-
                                     //grab attribute and contents
                                     name = reader.GetAttribute("name").ToUpper();
                                     contents = reader.GetAttribute("contents");
 
-                                    //if there are duplicate names throw exception
+                                    //if there are duplicate names in the list of Cells
                                     if (Cells.ContainsKey(name))
                                     {
-                                        throw new SpreadsheetReadException("No Duplicate cell names.");
+                                        throw new SpreadsheetReadException("No Duplicate cell names are allowed.");
                                     }
-                                    //if name does not match old is valid
+
+                                    //if oldIsValid is not a match throw exception
                                     else if (!oldisValid.IsMatch(name))
                                     {
                                         throw new SpreadsheetReadException("Invalid cell name with old isValid.");
                                     }
+                                    //else if newIsValid is not a match throw exception
                                     else if (!newisValid.IsMatch(name))
                                     {
                                         throw new SpreadsheetVersionException("Invalid cell name with new isValid.");
                                     }
-
+                                    //If contents can be parsed set that as cell contents
                                     if (Double.TryParse(contents, out doub))
                                     {
                                         this.SetContentsOfCell(name, contents);
                                     }
-                                    else if (contents.First().Equals("="))
+                                    //if contents is a formula...
+                                    else if (contents.Substring(0,1).Equals("="))
                                     {
+                                        //Test the formula against the oldIsValid (Probably redundant checks but edge cases)
                                         try
                                         {
-                                            this.SetContentsOfCell(name, contents.Substring(1));
+                                            Formula form = new Formula(contents.Substring(1), s => s.ToUpper(), s => oldisValid.IsMatch(s.ToUpper()));
                                         }
+                                        //If it does not match throw exception
+                                        catch(FormulaFormatException)
+                                        {
+                                            throw new SpreadsheetReadException("Invalid formula in source with oldIsValid.");
+                                        }
+                                        //Test formula with the newIsValid (Probably redundant checks but edge cases)
+                                        try
+                                        {
+                                            Formula form = new Formula(contents.Substring(1), s => s.ToUpper(), s => newisValid.IsMatch(s.ToUpper()));
+                                            this.SetContentsOfCell(name, "=" + form.ToString());
+                                        }
+                                        //Catch CircularException and FormatException and throw the necessary Excptions
                                         catch (Exception ex) when (ex is FormulaFormatException || ex is CircularException)
                                         {
                                             if (ex is FormulaFormatException)
                                             {
-                                                throw new SpreadsheetVersionException("Invalid Formula in source.");
+                                                throw new SpreadsheetVersionException("Invalid Formula in source with newIsValid.");
                                             }
-                                            else if(ex is CircularException)
+                                            else if (ex is CircularException)
                                             {
                                                 throw new SpreadsheetReadException("Source has circular formulas.");
                                             }
                                         }
                                     }
+                                    //else if contents is just a string set that as contents
                                     else
                                     {
                                         this.SetContentsOfCell(name, contents);
                                     }
                                     break;
                                 default:
-                                    throw new SpreadsheetReadException("Invalid Element Name.");
+                                    throw new SpreadsheetReadException("Invalid element name.");
                             }
                         }
                     }
                 }
-            }
-            catch(IOException)
-            {
-                throw new IOException();
+                catch (Exception ex) when (ex is IOException || ex is XmlException)
+                {
+                    throw new IOException();
+                }
             }
         }
 
         /// <summary>
-        /// Catches any Invalidations with the source.
+        /// Catches any Validation errors with the source.
+        /// Prints the validation message as well.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private static void ValidationCallback(object sender, ValidationEventArgs e)
         {
-            Console.WriteLine(" *** Validation Error: {0}", e.Message);
-
-            //throw new SpreadsheetReadException("Problem reading source spreadsheet");
+            throw new SpreadsheetReadException(e.Message);
         }
 
         /// <summary>
@@ -329,7 +341,7 @@ namespace SS
                     //Start of XML doc
                     writer.WriteStartDocument();
                     writer.WriteStartElement("", "spreadsheet", "");
-                    writer.WriteAttributeString("isValid", this.isValid.ToString());
+                    writer.WriteAttributeString("IsValid", this.isValid.ToString());
 
                     //For each Cell Name in Cells
                     foreach (String key in listofCells)
@@ -901,6 +913,9 @@ namespace SS
                 get { return contents; }
             }
 
+            /// <summary>
+            /// Getter and Setter for value variable
+            /// </summary>
             public object Value
             {
                 get { return value; }
@@ -908,15 +923,23 @@ namespace SS
                 set { this.value = value; }
             }
 
+            /// <summary>
+            /// Method to evaluate this cell
+            /// </summary>
+            /// <param name="lookup"></param>
             public void evaluateCell(Lookup lookup)
             {
+                //check if contents is a formula
                 if (contents is Formula)
                 {
+                    //try to evaluate the formula
                     try
                     {
                         Formula form = (Formula)this.contents;
                         this.value = form.Evaluate(lookup);
                     }
+                    //Catch ArgumentException or Formuleval exception
+                    //Set appropriate FormulaError
                     catch (Exception ex) when (ex is ArgumentException || ex is FormulaEvaluationException)
                     {
                         if (ex is ArgumentException)
@@ -932,6 +955,8 @@ namespace SS
                         }
                     }
                 }
+                //else if contents is a double or a string set the value
+                //as either or
                 else if(contents is Double || contents is String)
                 {
                     this.value = this.contents;

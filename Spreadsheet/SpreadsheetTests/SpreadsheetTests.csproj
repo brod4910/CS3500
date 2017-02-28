@@ -68,8 +68,20 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Spreadsheet1.xml" />
+    <Content Include="SpreadsheetException1.xml" />
+    <Content Include="SpreadsheetException3.xml" />
+    <Content Include="SpreadsheetException4.xml" />
+    <Content Include="SpreadsheetException9.xml" />
+    <Content Include="SpreadsheetException10.xml" />
+    <Content Include="SpreadsheetException8.xml" />
+    <Content Include="SpreadsheetException7.xml" />
+    <Content Include="SpreadsheetException6.xml" />
+    <Content Include="SpreadsheetException5.xml" />
+    <Content Include="SpreadsheetException2.xml" />
+    <Content Include="SpreadsheetError.xml" />
     <Content Include="Spreadsheet.xml" />
-    <Content Include="SpreadsheetResult.xml" />
+    <Content Include="Spreadsheet2.xml" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
