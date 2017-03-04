@@ -441,14 +441,14 @@ namespace SS
             if (content == "")
             {
                 Cells.Remove(name);
-                Cells.Add(name, new Cell(content));
-                dependencyGraph.ReplaceDependents(name, new HashSet<string>());
+                Cells.Add(name.ToUpper(), new Cell(content));
+                dependencyGraph.ReplaceDependents(name.ToUpper(), new HashSet<string>());
                 toEvaluate = new HashSet<string>(GetCellsToRecalculate(name));
             }
             //parse double and set contents to double
             else if(Double.TryParse(content, out value) == true)
             {
-                toEvaluate = this.SetCellContents(name, value);
+                toEvaluate = this.SetCellContents(name.ToUpper(), value);
             }
             //Attempt to evaluate formula
             else if(content.IndexOf('=') == 0)
@@ -459,7 +459,7 @@ namespace SS
                 try
                 {
                     Formula formula = new Formula(content.Substring(1), normalizer, validator);
-                    toEvaluate = this.SetCellContents(name, formula);
+                    toEvaluate = this.SetCellContents(name.ToUpper(), formula);
                 }
                 //catch any possible errors throw them back
                 catch(Exception ex) when (ex is FormulaFormatException || ex is CircularException)
@@ -477,7 +477,7 @@ namespace SS
             //else if contents is a string set contents and value to the string
             else
             {
-                toEvaluate = this.SetCellContents(name, content);
+                toEvaluate = this.SetCellContents(name.ToUpper(), content);
             }
             //for each variable in Cells toEvaluate
             //attempt to evaluate them.
@@ -511,9 +511,9 @@ namespace SS
 
             //if the cell is in the list of Cells
             //return its value
-            if(Cells.ContainsKey(name))
+            if(Cells.ContainsKey(name.ToUpper()))
             {
-                Cells.TryGetValue(name, out cell);
+                Cells.TryGetValue(name.ToUpper(), out cell);
                 return cell.Value;
             }
             //else return an empty string
@@ -541,10 +541,10 @@ namespace SS
                 throw new InvalidNameException();
             }
 
-            if (Cells.ContainsKey(name))
+            if (Cells.ContainsKey(name.ToUpper()))
             {
                 //get the contents of the cell
-                Cells.TryGetValue(name, out cell);
+                Cells.TryGetValue(name.ToUpper(), out cell);
 
                 //return the cells
                 return cell.getContents;
