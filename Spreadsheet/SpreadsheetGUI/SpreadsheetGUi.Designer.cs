@@ -134,7 +134,7 @@
             this.CellValueLabel.Size = new System.Drawing.Size(172, 20);
             this.CellValueLabel.TabIndex = 2;
             this.CellValueLabel.Text = "Cell Name:   Cell Value:";
-            this.CellValueLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.CellValueLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // StaticCellValueLabel
             // 

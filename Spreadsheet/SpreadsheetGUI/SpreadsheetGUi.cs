@@ -76,10 +76,22 @@ namespace SpreadsheetGUI
             ss.GetValue(col, row, out value);
             if (value == "")
             {
+
                 ss.SetValue(col, row, DateTime.Now.ToLocalTime().ToString("T"));
                 ss.GetValue(col, row, out value);
-                CellValueLabel.Text = "Cell Name: " + "" + " Cell Value: " + value;
+                CellValueLabel.Text = "Cell Name: " + CellName(row, col) + "  Cell Value: " + value;
             }
+        }
+
+        private string CellName(int row, int col)
+        {
+            string result;
+
+            Char c = (Char)(col + 97);
+
+            result = c + " " + row;
+
+            return result.ToUpper();
         }
 
         private void MenuItemOpen_Click(object sender, EventArgs e)
