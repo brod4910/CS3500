@@ -12,7 +12,7 @@ namespace SpreadsheetGUI
         {
             set
             {
-                throw new NotImplementedException();
+                label1.Text = value;
             }
         }
 
@@ -20,7 +20,7 @@ namespace SpreadsheetGUI
         {
             set
             {
-                throw new NotImplementedException();
+                label2.Text = value;
             }
         }
 
@@ -101,6 +101,11 @@ namespace SpreadsheetGUI
 
         private void MenuItemOpen_Click(object sender, EventArgs e)
         {
+            string savedFile = "";
+            saveFileDialog.InitialDirectory = "C:/Users";
+            saveFileDialog.Title = "Open a Spreadsheet File";
+            saveFileDialog.FileName = "";
+            saveFileDialog.Filter = "Spreadsheet File (*.ss)|*.ss|All Files (*.*)|*.*";
             DialogResult result = openFileDialog.ShowDialog();
 
             if (result == DialogResult.Yes || result == DialogResult.OK)
@@ -115,10 +120,10 @@ namespace SpreadsheetGUI
         private void MenuItemSave_Click(object sender, EventArgs e)
         {
             string savedFile = "";
-            saveFileDialog.InitialDirectory = "C:";
+            saveFileDialog.InitialDirectory = "C:/Users";
             saveFileDialog.Title = "Save a Spreadsheet File";
             saveFileDialog.FileName = "";
-            saveFileDialog.Filter = "Spreadsheet File (*.sprd)|*.sprd|All Files (*.*)|*.*";
+            saveFileDialog.Filter = "Spreadsheet File (*.ss)|*.ss|All Files (*.*)|*.*";
 
             DialogResult result = saveFileDialog.ShowDialog();
 
@@ -138,7 +143,9 @@ namespace SpreadsheetGUI
 
         private void SetCellContentsTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
-            EnterButton_Click(sender, e);
+            // Enter Key is pressed
+            if(e.KeyChar == (char) Keys.Enter)
+                EnterButton_Click(sender, e);
         }
 
         public void DoClose()

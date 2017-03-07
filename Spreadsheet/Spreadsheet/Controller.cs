@@ -22,6 +22,7 @@ namespace SS
             window.FileChosen += HandleFileChosen;
             window.CloseEvent += HandleClose;
             window.NewEvent += HandleNew;
+            window.SaveSpreadsheet += HandleFileSave;
             this.model = new Spreadsheet();
         }
 
@@ -35,11 +36,25 @@ namespace SS
                 TextReader sr = new StringReader(filename);
                 this.model = new Spreadsheet(sr, new System.Text.RegularExpressions.Regex(""));
                 window.Title = filename;
-                window.message = "Successfully loaded" + filename;
+                window.message = "Successfully loaded " + filename;
             }
             catch (Exception ex)
             {
                 window.message = "Unable to open file\n" + ex.Message;
+            }
+        }
+        private void HandleFileSave(string filename)
+        {
+            try
+            {
+                TextWriter sw = new StreamWriter(filename);
+                this.model.Save(sw);
+                window.Title = filename;
+                window.message = "Successfully Saved " + filename;
+            }
+            catch (Exception ex)
+            {
+                window.message = "Unable to save file\n" + ex.Message;
             }
         }
 

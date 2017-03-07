@@ -44,6 +44,8 @@
             this.EnterButton = new System.Windows.Forms.Button();
             this.SetCellContentsTextBox = new System.Windows.Forms.TextBox();
             this.StaticSetContentsLabel = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();
@@ -57,7 +59,7 @@
             this.spreadsheetPanel.AutoSize = true;
             this.spreadsheetPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.spreadsheetPanel.Location = new System.Drawing.Point(0, 76);
-            this.spreadsheetPanel.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.spreadsheetPanel.Margin = new System.Windows.Forms.Padding(2);
             this.spreadsheetPanel.Name = "spreadsheetPanel";
             this.spreadsheetPanel.Size = new System.Drawing.Size(796, 343);
             this.spreadsheetPanel.TabIndex = 0;
@@ -124,7 +126,7 @@
             // 
             this.splitContainer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.splitContainer.Location = new System.Drawing.Point(0, 18);
-            this.splitContainer.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.splitContainer.Margin = new System.Windows.Forms.Padding(2);
             this.splitContainer.Name = "splitContainer";
             // 
             // splitContainer.Panel1
@@ -169,7 +171,7 @@
             this.EnterButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.EnterButton.Location = new System.Drawing.Point(286, 32);
             this.EnterButton.Name = "EnterButton";
-            this.EnterButton.Size = new System.Drawing.Size(123, 21);
+            this.EnterButton.Size = new System.Drawing.Size(125, 21);
             this.EnterButton.TabIndex = 4;
             this.EnterButton.Text = "Enter";
             this.EnterButton.UseVisualStyleBackColor = true;
@@ -178,7 +180,7 @@
             // SetCellContentsTextBox
             // 
             this.SetCellContentsTextBox.Location = new System.Drawing.Point(51, 34);
-            this.SetCellContentsTextBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.SetCellContentsTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.SetCellContentsTextBox.Name = "SetCellContentsTextBox";
             this.SetCellContentsTextBox.Size = new System.Drawing.Size(232, 20);
             this.SetCellContentsTextBox.TabIndex = 3;
@@ -194,16 +196,35 @@
             this.StaticSetContentsLabel.TabIndex = 1;
             this.StaticSetContentsLabel.Text = "Set Cell Contents of Selected Cell:";
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(304, 2);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(29, 13);
+            this.label1.TabIndex = 3;
+            this.label1.Text = "New";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(487, 2);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(0, 13);
+            this.label2.TabIndex = 4;
+            // 
             // SpreadsheetGUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(796, 419);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.splitContainer);
             this.Controls.Add(this.spreadsheetPanel);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.MinimumSize = new System.Drawing.Size(646, 456);
             this.Name = "SpreadsheetGUI";
             this.Text = "Spreadsheet";
@@ -238,6 +259,8 @@
         private System.Windows.Forms.Label StaticSetContentsLabel;
         private System.Windows.Forms.Button EnterButton;
         private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
     }
 }
 
