@@ -138,6 +138,7 @@ namespace SpreadsheetGUI
 
         private void SetCellContentsTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
+            EnterButton_Click(sender, e);
         }
 
         public void DoClose()
