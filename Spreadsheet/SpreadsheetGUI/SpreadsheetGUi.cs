@@ -54,6 +54,8 @@ namespace SpreadsheetGUI
 
         public event Action NewEvent;
 
+        public event Action<string, string> AddCell;
+
         /// <summary>
         /// Creates a top-level view of the Spreadsheet
         /// </summary>
@@ -75,10 +77,9 @@ namespace SpreadsheetGUI
         {
             int row, col;
             String value;
-
             ss.GetSelection(out col, out row);
             ss.GetValue(col, row, out value);
-            CellValueLabel.Text = CellName(row, col, value);
+            CellValueLabel.Text = CellName(row, col, value); ;
         }
 
         /// <summary>
@@ -171,6 +172,13 @@ namespace SpreadsheetGUI
 
             spreadsheetPanel.GetSelection(out col, out row);
             spreadsheetPanel.SetValue(col, row, cellContents);
+            // Add cell contents and name to Spreadsheet
+            string result;
+
+            Char c = (Char)(col + 97);
+
+            result = c + "" + (row + 1);
+            AddCell(result, cellContents);
 
             CellValueLabel.Text = CellName(row, col, cellContents);
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace SS
 {
@@ -22,6 +23,7 @@ namespace SS
             window.FileChosen += HandleFileChosen;
             window.CloseEvent += HandleClose;
             window.NewEvent += HandleNew;
+            window.AddCell += HandleCell;
             window.SaveSpreadsheet += HandleFileSave;
             this.model = new Spreadsheet();
         }
@@ -31,10 +33,12 @@ namespace SS
         /// </summary>
         private void HandleFileChosen(string filename)
         {
+            // I think we need to brute force put items back into Spreadsheet
+            Regex varPattern = new Regex(@"^[a-zA-Z]+[1-9]+[0-9]*$");
             try
             {
                 TextReader sr = new StringReader(filename);
-                this.model = new Spreadsheet(sr, new System.Text.RegularExpressions.Regex(""));
+                this.model = new Spreadsheet(sr, varPattern);
                 window.Title = filename;
                 window.message = "Successfully loaded " + filename;
             }
@@ -43,6 +47,10 @@ namespace SS
                 window.message = "Unable to open file\n" + ex.Message;
             }
         }
+
+        /// <summary>
+        /// Handles request to save a file
+        /// </summary>
         private void HandleFileSave(string filename)
         {
             try
@@ -56,6 +64,11 @@ namespace SS
             {
                 window.message = "Unable to save file\n" + ex.Message;
             }
+        }
+
+        private void HandleCell(string name, string content)
+        {
+            this.model.SetContentsOfCell(name, content);
         }
 
         /// <summary>

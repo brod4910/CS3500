@@ -36,6 +36,8 @@ namespace SS
         /// </summary>
         event Action CloseEvent;
 
+        event Action<String, String> AddCell;
+
         /// <summary>
         /// Event is fired when a request for a new window is made
         /// </summary>
