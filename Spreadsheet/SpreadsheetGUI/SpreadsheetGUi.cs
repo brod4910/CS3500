@@ -60,9 +60,11 @@ namespace SpreadsheetGUI
         public SpreadsheetGUI()
         {
             InitializeComponent();
+            string value;
             spreadsheetPanel.SelectionChanged += displaySelection;
             spreadsheetPanel.SetSelection(0, 0);
-            CellValueLabel.Text = "A1";
+            spreadsheetPanel.GetValue(0, 0, out value);
+            CellValueLabel.Text = CellName(0, 0, value);
         }
 
         /// <summary>

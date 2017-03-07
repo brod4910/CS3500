@@ -41,9 +41,9 @@
             this.splitContainer = new System.Windows.Forms.SplitContainer();
             this.CellValueLabel = new System.Windows.Forms.Label();
             this.StaticCellValueLabel = new System.Windows.Forms.Label();
+            this.EnterButton = new System.Windows.Forms.Button();
             this.SetCellContentsTextBox = new System.Windows.Forms.TextBox();
             this.StaticSetContentsLabel = new System.Windows.Forms.Label();
-            this.EnterButton = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();
@@ -55,10 +55,9 @@
             // 
             this.spreadsheetPanel.AutoSize = true;
             this.spreadsheetPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.spreadsheetPanel.Location = new System.Drawing.Point(0, 80);
-            this.spreadsheetPanel.Margin = new System.Windows.Forms.Padding(2);
+            this.spreadsheetPanel.Location = new System.Drawing.Point(0, 125);
             this.spreadsheetPanel.Name = "spreadsheetPanel";
-            this.spreadsheetPanel.Size = new System.Drawing.Size(632, 343);
+            this.spreadsheetPanel.Size = new System.Drawing.Size(976, 528);
             this.spreadsheetPanel.TabIndex = 0;
             // 
             // menuStrip1
@@ -69,8 +68,7 @@
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(4, 1, 0, 1);
-            this.menuStrip1.Size = new System.Drawing.Size(632, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(976, 33);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -82,48 +80,47 @@
             this.saveToolStripMenuItem,
             this.closeToolStripMenuItem});
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(37, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(50, 29);
             this.openToolStripMenuItem.Text = "File";
             // 
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(104, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(142, 30);
             this.newToolStripMenuItem.Text = "New";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
             // 
             // openToolStripMenuItem1
             // 
             this.openToolStripMenuItem1.Name = "openToolStripMenuItem1";
-            this.openToolStripMenuItem1.Size = new System.Drawing.Size(104, 22);
+            this.openToolStripMenuItem1.Size = new System.Drawing.Size(142, 30);
             this.openToolStripMenuItem1.Text = "Open";
             this.openToolStripMenuItem1.Click += new System.EventHandler(this.MenuItemOpen_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(104, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(142, 30);
             this.saveToolStripMenuItem.Text = "Save..";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.MenuItemSave_Click);
             // 
             // closeToolStripMenuItem
             // 
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(104, 22);
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(142, 30);
             this.closeToolStripMenuItem.Text = "Close";
             this.closeToolStripMenuItem.Click += new System.EventHandler(this.closeToolStripMenuItem_Click);
             // 
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 22);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(61, 29);
             this.helpToolStripMenuItem.Text = "Help";
             // 
             // splitContainer
             // 
             this.splitContainer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.splitContainer.Location = new System.Drawing.Point(0, 21);
-            this.splitContainer.Margin = new System.Windows.Forms.Padding(2);
+            this.splitContainer.Location = new System.Drawing.Point(0, 33);
             this.splitContainer.Name = "splitContainer";
             // 
             // splitContainer.Panel1
@@ -136,19 +133,17 @@
             this.splitContainer.Panel2.Controls.Add(this.EnterButton);
             this.splitContainer.Panel2.Controls.Add(this.SetCellContentsTextBox);
             this.splitContainer.Panel2.Controls.Add(this.StaticSetContentsLabel);
-            this.splitContainer.Size = new System.Drawing.Size(632, 58);
-            this.splitContainer.SplitterDistance = 294;
-            this.splitContainer.SplitterWidth = 3;
+            this.splitContainer.Size = new System.Drawing.Size(976, 89);
+            this.splitContainer.SplitterDistance = 454;
             this.splitContainer.TabIndex = 2;
             // 
             // CellValueLabel
             // 
             this.CellValueLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.CellValueLabel.AutoSize = true;
-            this.CellValueLabel.Location = new System.Drawing.Point(91, 36);
-            this.CellValueLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.CellValueLabel.Location = new System.Drawing.Point(92, 55);
             this.CellValueLabel.Name = "CellValueLabel";
-            this.CellValueLabel.Size = new System.Drawing.Size(117, 13);
+            this.CellValueLabel.Size = new System.Drawing.Size(172, 20);
             this.CellValueLabel.TabIndex = 2;
             this.CellValueLabel.Text = "Cell Name:   Cell Value:";
             this.CellValueLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -156,53 +151,51 @@
             // StaticCellValueLabel
             // 
             this.StaticCellValueLabel.AutoSize = true;
-            this.StaticCellValueLabel.Location = new System.Drawing.Point(61, 11);
-            this.StaticCellValueLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.StaticCellValueLabel.Location = new System.Drawing.Point(67, 17);
             this.StaticCellValueLabel.Name = "StaticCellValueLabel";
-            this.StaticCellValueLabel.Size = new System.Drawing.Size(188, 13);
+            this.StaticCellValueLabel.Size = new System.Drawing.Size(279, 20);
             this.StaticCellValueLabel.TabIndex = 0;
             this.StaticCellValueLabel.Text = "Cell Name and Cell Value of Selection:";
             // 
+            // EnterButton
+            // 
+            this.EnterButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.EnterButton.Location = new System.Drawing.Point(429, 49);
+            this.EnterButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.EnterButton.Name = "EnterButton";
+            this.EnterButton.Size = new System.Drawing.Size(76, 32);
+            this.EnterButton.TabIndex = 4;
+            this.EnterButton.Text = "Enter";
+            this.EnterButton.UseVisualStyleBackColor = true;
+            this.EnterButton.Click += new System.EventHandler(this.EnterButton_Click);
+            // 
             // SetCellContentsTextBox
             // 
-            this.SetCellContentsTextBox.Location = new System.Drawing.Point(51, 34);
-            this.SetCellContentsTextBox.Margin = new System.Windows.Forms.Padding(2);
+            this.SetCellContentsTextBox.Location = new System.Drawing.Point(76, 52);
             this.SetCellContentsTextBox.Name = "SetCellContentsTextBox";
-            this.SetCellContentsTextBox.Size = new System.Drawing.Size(232, 20);
+            this.SetCellContentsTextBox.Size = new System.Drawing.Size(346, 26);
             this.SetCellContentsTextBox.TabIndex = 3;
             this.SetCellContentsTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.SetCellContentsTextBox_KeyPress);
             // 
             // StaticSetContentsLabel
             // 
             this.StaticSetContentsLabel.AutoSize = true;
-            this.StaticSetContentsLabel.Location = new System.Drawing.Point(80, 11);
-            this.StaticSetContentsLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.StaticSetContentsLabel.Location = new System.Drawing.Point(120, 17);
             this.StaticSetContentsLabel.Name = "StaticSetContentsLabel";
-            this.StaticSetContentsLabel.Size = new System.Drawing.Size(168, 13);
+            this.StaticSetContentsLabel.Size = new System.Drawing.Size(252, 20);
             this.StaticSetContentsLabel.TabIndex = 1;
             this.StaticSetContentsLabel.Text = "Set Cell Contents of Selected Cell:";
             // 
-            // EnterButton
-            // 
-            this.EnterButton.Location = new System.Drawing.Point(375, 49);
-            this.EnterButton.Name = "EnterButton";
-            this.EnterButton.Size = new System.Drawing.Size(75, 32);
-            this.EnterButton.TabIndex = 4;
-            this.EnterButton.Text = "Enter";
-            this.EnterButton.UseVisualStyleBackColor = true;
-            this.EnterButton.Click += new System.EventHandler(this.EnterButton_Click);
-            // 
             // SpreadsheetGUI
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(632, 423);
+            this.ClientSize = new System.Drawing.Size(976, 653);
             this.Controls.Add(this.splitContainer);
             this.Controls.Add(this.spreadsheetPanel);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(2);
-            this.MinimumSize = new System.Drawing.Size(648, 462);
+            this.MinimumSize = new System.Drawing.Size(961, 681);
             this.Name = "SpreadsheetGUI";
             this.Text = "Spreadsheet";
             this.menuStrip1.ResumeLayout(false);
