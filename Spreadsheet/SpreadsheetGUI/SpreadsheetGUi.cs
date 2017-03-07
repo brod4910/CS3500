@@ -7,6 +7,22 @@ namespace SpreadsheetGUI
 {
     public partial class SpreadsheetGUI : Form, ISpreadsheetView
     {
+        public string Title
+        {
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public string message
+        {
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         /// <summary>
         /// Creates a top-level view of the Spreadsheet
         /// </summary>
@@ -16,6 +32,8 @@ namespace SpreadsheetGUI
         }
 
         public event Action<string> FileChosen;
+        public event Action CloseEvent;
+        public event Action NewEvent;
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -35,6 +53,16 @@ namespace SpreadsheetGUI
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
+        }
+
+        public void DoClose()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OpenNew()
+        {
+            throw new NotImplementedException();
         }
     }
 }

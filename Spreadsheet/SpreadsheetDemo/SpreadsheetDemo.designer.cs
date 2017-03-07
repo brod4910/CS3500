@@ -1,4 +1,6 @@
-﻿namespace SSGui
+﻿using SSGui;
+
+namespace SSGui
 {
     partial class SpreadsheetDemo
     {
