@@ -46,14 +46,13 @@ namespace SpreadsheetGUI
         public event Action<string> FileChosen;
 
         /// <summary>
-        /// Fired when the window is closed
-        /// </summary>
-        public event Action CloseWindow;
-
-        /// <summary>
         /// Fired when the spreadsheet is saved
         /// </summary>
         public event Action<string> SaveSpreadsheet;
+
+        public event Action CloseEvent;
+
+        public event Action NewEvent;
 
         /// <summary>
         /// Creates a top-level view of the Spreadsheet
@@ -100,9 +99,9 @@ namespace SpreadsheetGUI
         {
             DialogResult result = saveFileDialog.ShowDialog();
 
-            if(result == DialogResult.Yes || result == DialogResult.OK)
+            if (result == DialogResult.Yes || result == DialogResult.OK)
             {
-                if(SaveSpreadsheet != null)
+                if (SaveSpreadsheet != null)
                 {
                     SaveSpreadsheet(saveFileDialog.FileName);
                 }
@@ -114,6 +113,8 @@ namespace SpreadsheetGUI
             Close();
         }
 
+        private void SetCellContentsTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
         }
 
         public void DoClose()
@@ -121,8 +122,6 @@ namespace SpreadsheetGUI
             throw new NotImplementedException();
         }
 
-        private void SetCellContentsTextBox_KeyPress(object sender, KeyPressEventArgs e)
-        {
         public void OpenNew()
         {
             throw new NotImplementedException();

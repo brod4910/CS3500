@@ -17,11 +17,6 @@ namespace SS
         event Action<String> FileChosen;
 
         /// <summary>
-        /// Fired when a window is closed
-        /// </summary>
-        event Action CloseWindow;
-
-        /// <summary>
         /// Fired when the spreadsheet is saved
         /// </summary>
         event Action<String> SaveSpreadsheet;
