@@ -39,7 +39,7 @@ namespace SSGui
             ss.GetValue(col, row, out value);
             if (value == "") 
             {
-                ss.SetValue(col, row, DateTime.Now.ToLocalTime().ToString("T"));
+                ss.SetValue(col, row, );
                 ss.GetValue(col, row, out value);
                 MessageBox.Show("Selection: column " + col + " row " + row + " value " + value);
             }

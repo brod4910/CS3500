@@ -2,18 +2,26 @@
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using SS;
+using SSGui;
 
 namespace SpreadsheetGUI
 {
     public partial class SpreadsheetGUI : Form, ISpreadsheetView
     {
-
-        /// <summary>
-        /// Creates a top-level view of the Spreadsheet
-        /// </summary>
-        public SpreadsheetGUI()
+        public string cellValue
         {
-            InitializeComponent();
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public string cellContents
+        {
+            set
+            {
+                throw new NotImplementedException();
+            }
         }
 
         /// <summary>
@@ -31,11 +39,35 @@ namespace SpreadsheetGUI
         /// </summary>
         public event Action<string> SaveSpreadsheet;
 
-        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Creates a top-level view of the Spreadsheet
+        /// </summary>
+        public SpreadsheetGUI()
         {
+            InitializeComponent();
+            spreadsheetPanel.SelectionChanged += displaySelection;
+            spreadsheetPanel.SetSelection(1, 1);
         }
 
-        private void openToolStripMenuItem1_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Every time the selection changes, this method is called with the
+        /// Spreadsheet as its parameter.  We display the current time in the cell.
+        /// </summary>
+        private void displaySelection(SpreadsheetPanel ss)
+        {
+            int row, col;
+            String value;
+            ss.GetSelection(out col, out row);
+            ss.GetValue(col, row, out value);
+            if (value == "")
+            {
+                ss.SetValue(col, row, DateTime.Now.ToLocalTime().ToString("T"));
+                ss.GetValue(col, row, out value);
+                CellValueLabel.Text = "Cell Name: " + "" + " Cell Value: " + value;
+            }
+        }
+
+        private void MenuItemOpen_Click(object sender, EventArgs e)
         {
             DialogResult result = openFileDialog.ShowDialog();
 
@@ -48,7 +80,7 @@ namespace SpreadsheetGUI
             }
         }
 
-        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        private void MenuItemSave_Click(object sender, EventArgs e)
         {
             DialogResult result = saveFileDialog.ShowDialog();
 
@@ -61,9 +93,13 @@ namespace SpreadsheetGUI
             }
         }
 
-        private void spreadsheetPanel1_Load(object sender, EventArgs e)
+        private void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            Close();
+        }
 
+        private void SetCellContentsTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
         }
     }
 }
