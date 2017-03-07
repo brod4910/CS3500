@@ -61,7 +61,8 @@ namespace SpreadsheetGUI
         {
             InitializeComponent();
             spreadsheetPanel.SelectionChanged += displaySelection;
-            spreadsheetPanel.SetSelection(1, 1);
+            spreadsheetPanel.SetSelection(0, 0);
+            CellValueLabel.Text = "A1";
         }
 
         /// <summary>
@@ -111,6 +112,12 @@ namespace SpreadsheetGUI
 
         private void MenuItemSave_Click(object sender, EventArgs e)
         {
+            string savedFile = "";
+            saveFileDialog.InitialDirectory = "C:";
+            saveFileDialog.Title = "Save a Spreadsheet File";
+            saveFileDialog.FileName = "";
+            saveFileDialog.Filter = "Spreadsheet File (*.sprd)|*.sprd|All Files (*.*)|*.*";
+
             DialogResult result = saveFileDialog.ShowDialog();
 
             if (result == DialogResult.Yes || result == DialogResult.OK)
@@ -133,12 +140,17 @@ namespace SpreadsheetGUI
 
         public void DoClose()
         {
-            throw new NotImplementedException();
+            Close();
         }
 
         public void OpenNew()
         {
-            throw new NotImplementedException();
+            SpreadsheetApplicationContext.GetContext().RunNew();
+        }
+
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenNew();
         }
 
         private void EnterButton_Click(object sender, EventArgs e)
