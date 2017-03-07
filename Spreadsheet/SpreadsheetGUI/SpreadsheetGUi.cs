@@ -61,7 +61,8 @@ namespace SpreadsheetGUI
         {
             InitializeComponent();
             spreadsheetPanel.SelectionChanged += displaySelection;
-            spreadsheetPanel.SetSelection(1, 1);
+            spreadsheetPanel.SetSelection(0, 0);
+            CellValueLabel.Text = "A1";
         }
 
         /// <summary>
@@ -77,9 +78,10 @@ namespace SpreadsheetGUI
             if (value == "")
             {
 
-                ss.SetValue(col, row, DateTime.Now.ToLocalTime().ToString("T"));
+                ss.SetValue(col, row, SetCellContentsTextBox.Text.ToString());
+                SetCellContentsTextBox.Text = "";
                 ss.GetValue(col, row, out value);
-                CellValueLabel.Text = "Cell Name: " + CellName(row, col) + "  Cell Value: " + value;
+                CellValueLabel.Text = "Cell Name: " + CellName(row + 1, col) + "  Cell Value: " + value;
             }
         }
 
@@ -109,6 +111,12 @@ namespace SpreadsheetGUI
 
         private void MenuItemSave_Click(object sender, EventArgs e)
         {
+            string savedFile = "";
+            saveFileDialog.InitialDirectory = "C:";
+            saveFileDialog.Title = "Save a Spreadsheet File";
+            saveFileDialog.FileName = "";
+            saveFileDialog.Filter = "Spreadsheet File (*.sprd)|*.sprd|All Files (*.*)|*.*";
+
             DialogResult result = saveFileDialog.ShowDialog();
 
             if (result == DialogResult.Yes || result == DialogResult.OK)
@@ -137,6 +145,11 @@ namespace SpreadsheetGUI
         public void OpenNew()
         {
             SpreadsheetApplicationContext.GetContext().RunNew();
+        }
+
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenNew();
         }
     }
 }
