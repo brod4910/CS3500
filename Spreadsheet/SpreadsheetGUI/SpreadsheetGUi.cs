@@ -8,6 +8,22 @@ namespace SpreadsheetGUI
 {
     public partial class SpreadsheetGUI : Form, ISpreadsheetView
     {
+        public string Title
+        {
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public string message
+        {
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public string cellValue
         {
             set
@@ -98,8 +114,18 @@ namespace SpreadsheetGUI
             Close();
         }
 
+        }
+
+        public void DoClose()
+        {
+            throw new NotImplementedException();
+        }
+
         private void SetCellContentsTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
+        public void OpenNew()
+        {
+            throw new NotImplementedException();
         }
     }
 }
