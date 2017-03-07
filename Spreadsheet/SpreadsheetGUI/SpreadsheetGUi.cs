@@ -57,12 +57,12 @@ namespace SpreadsheetGUI
 
         public void DoClose()
         {
-            throw new NotImplementedException();
+            Close();
         }
 
         public void OpenNew()
         {
-            throw new NotImplementedException();
+            SpreadsheetApplicationContext.GetContext().RunNew();
         }
     }
 }

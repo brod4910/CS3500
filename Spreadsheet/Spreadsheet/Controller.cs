@@ -35,6 +35,7 @@ namespace SS
                 TextReader sr = new StringReader(filename);
                 this.model = new Spreadsheet(sr, new System.Text.RegularExpressions.Regex(""));
                 window.Title = filename;
+                window.message = "Successfully loaded" + filename;
             }
             catch (Exception ex)
             {
@@ -57,6 +58,8 @@ namespace SS
         {
             window.OpenNew();
         }
+
+
 
         /// <summary>
         /// Creates a controller from the given XML file.
