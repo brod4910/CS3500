@@ -42,6 +42,7 @@
             this.StaticCellValueLabel = new System.Windows.Forms.Label();
             this.SetCellContentsTextBox = new System.Windows.Forms.TextBox();
             this.StaticSetContentsLabel = new System.Windows.Forms.Label();
+            this.EnterButton = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();
@@ -120,6 +121,7 @@
             // 
             // splitContainer.Panel2
             // 
+            this.splitContainer.Panel2.Controls.Add(this.EnterButton);
             this.splitContainer.Panel2.Controls.Add(this.SetCellContentsTextBox);
             this.splitContainer.Panel2.Controls.Add(this.StaticSetContentsLabel);
             this.splitContainer.Size = new System.Drawing.Size(948, 90);
@@ -128,18 +130,19 @@
             // 
             // CellValueLabel
             // 
+            this.CellValueLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.CellValueLabel.AutoSize = true;
-            this.CellValueLabel.Location = new System.Drawing.Point(136, 55);
+            this.CellValueLabel.Location = new System.Drawing.Point(52, 55);
             this.CellValueLabel.Name = "CellValueLabel";
             this.CellValueLabel.Size = new System.Drawing.Size(172, 20);
             this.CellValueLabel.TabIndex = 2;
             this.CellValueLabel.Text = "Cell Name:   Cell Value:";
-            this.CellValueLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.CellValueLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // StaticCellValueLabel
             // 
             this.StaticCellValueLabel.AutoSize = true;
-            this.StaticCellValueLabel.Location = new System.Drawing.Point(92, 17);
+            this.StaticCellValueLabel.Location = new System.Drawing.Point(52, 17);
             this.StaticCellValueLabel.Name = "StaticCellValueLabel";
             this.StaticCellValueLabel.Size = new System.Drawing.Size(279, 20);
             this.StaticCellValueLabel.TabIndex = 0;
@@ -147,20 +150,30 @@
             // 
             // SetCellContentsTextBox
             // 
-            this.SetCellContentsTextBox.Location = new System.Drawing.Point(77, 52);
+            this.SetCellContentsTextBox.Location = new System.Drawing.Point(28, 52);
             this.SetCellContentsTextBox.Name = "SetCellContentsTextBox";
-            this.SetCellContentsTextBox.Size = new System.Drawing.Size(346, 26);
+            this.SetCellContentsTextBox.Size = new System.Drawing.Size(295, 26);
             this.SetCellContentsTextBox.TabIndex = 3;
             this.SetCellContentsTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.SetCellContentsTextBox_KeyPress);
             // 
             // StaticSetContentsLabel
             // 
             this.StaticSetContentsLabel.AutoSize = true;
-            this.StaticSetContentsLabel.Location = new System.Drawing.Point(120, 17);
+            this.StaticSetContentsLabel.Location = new System.Drawing.Point(97, 17);
             this.StaticSetContentsLabel.Name = "StaticSetContentsLabel";
             this.StaticSetContentsLabel.Size = new System.Drawing.Size(252, 20);
             this.StaticSetContentsLabel.TabIndex = 1;
             this.StaticSetContentsLabel.Text = "Set Cell Contents of Selected Cell:";
+            // 
+            // EnterButton
+            // 
+            this.EnterButton.Location = new System.Drawing.Point(375, 49);
+            this.EnterButton.Name = "EnterButton";
+            this.EnterButton.Size = new System.Drawing.Size(75, 32);
+            this.EnterButton.TabIndex = 4;
+            this.EnterButton.Text = "Enter";
+            this.EnterButton.UseVisualStyleBackColor = true;
+            this.EnterButton.Click += new System.EventHandler(this.EnterButton_Click);
             // 
             // SpreadsheetGUI
             // 
@@ -202,6 +215,7 @@
         private System.Windows.Forms.Label StaticCellValueLabel;
         private System.Windows.Forms.TextBox SetCellContentsTextBox;
         private System.Windows.Forms.Label StaticSetContentsLabel;
+        private System.Windows.Forms.Button EnterButton;
     }
 }
 

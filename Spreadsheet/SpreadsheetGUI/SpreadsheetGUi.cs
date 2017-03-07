@@ -72,26 +72,28 @@ namespace SpreadsheetGUI
         {
             int row, col;
             String value;
+
             ss.GetSelection(out col, out row);
             ss.GetValue(col, row, out value);
-            if (value == "")
-            {
-
-                ss.SetValue(col, row, DateTime.Now.ToLocalTime().ToString("T"));
-                ss.GetValue(col, row, out value);
-                CellValueLabel.Text = "Cell Name: " + CellName(row, col) + "  Cell Value: " + value;
-            }
+            CellValueLabel.Text = CellName(row, col, value);
         }
 
-        private string CellName(int row, int col)
+        /// <summary>
+        /// Calculates the cell name for any given cell
+        /// on the grid and cell value.
+        /// </summary>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <returns></returns>
+        private string CellName(int row, int col, string value)
         {
             string result;
 
             Char c = (Char)(col + 97);
 
-            result = c + " " + row;
+            result = c + " " + (row + 1);
 
-            return result.ToUpper();
+            return "Cell name: " + result.ToUpper() + "  Cell Value: " + value;
         }
 
         private void MenuItemOpen_Click(object sender, EventArgs e)
@@ -137,6 +139,20 @@ namespace SpreadsheetGUI
         public void OpenNew()
         {
             throw new NotImplementedException();
+        }
+
+        private void EnterButton_Click(object sender, EventArgs e)
+        {
+            int row, col;
+
+            String cellContents = SetCellContentsTextBox.Text;
+
+            spreadsheetPanel.GetSelection(out col, out row);
+            spreadsheetPanel.SetValue(col, row, cellContents);
+
+            CellValueLabel.Text = CellName(row, col, cellContents);
+
+            SetCellContentsTextBox.Text = "";
         }
     }
 }
