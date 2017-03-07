@@ -12,5 +12,11 @@ namespace SS
     public interface ISpreadsheetView
     {
         event Action<String> FileChosen;
+        event Action CloseEvent;
+        event Action NewEvent;
+        void DoClose();
+        void OpenNew();
+        string Title { set; }
+        string message { set; }
     }
 }
