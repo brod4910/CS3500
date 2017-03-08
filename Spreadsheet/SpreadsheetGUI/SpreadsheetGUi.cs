@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using SS;
 using SSGui;
 using System.Collections.Generic;
+using Formulas;
 
 namespace SpreadsheetGUI
 {
@@ -51,6 +52,8 @@ namespace SpreadsheetGUI
         /// </summary>
         public event Action<string> SaveSpreadsheet;
 
+        public event Func<String, String> GetCellContent;
+
         public event Action CloseEvent;
 
         public event Action NewEvent;
@@ -85,7 +88,15 @@ namespace SpreadsheetGUI
             String value;
             ss.GetSelection(out col, out row);
             ss.GetValue(col, row, out value);
-            CellValueLabel.Text = CellName(row, col, value); ;
+            CellValueLabel.Text = CellName(row, col, value);
+
+            string result;
+
+            Char c = (Char)(col + 97);
+
+            result = c + "" + (row + 1);
+
+            SetCellContentsTextBox.Text = GetCellContent(result);
         }
 
         /// <summary>
@@ -183,20 +194,30 @@ namespace SpreadsheetGUI
             string name;
             Char charac = (Char)(col + 97);
             name = charac + "" + (row + 1);
-            ISet<string> values = SetContentsofCell(name, cellContents);
-
-            int c, r;
-            //set value of cell
-            foreach (string value in values)
+            try
             {
-                c = getCol(value);
-                r = getRow(value);
-                spreadsheetPanel.SetValue(c, r, GetCellValue(value));
+                ISet<string> values = SetContentsofCell(name, cellContents);
+
+
+                int c, r;
+                //set value of cell
+                foreach (string value in values)
+                {
+                    c = getCol(value);
+                    r = getRow(value);
+                    spreadsheetPanel.SetValue(c, r, GetCellValue(value));
+                }
+
+                SetCellContentsTextBox.Text = "";
             }
+            catch(FormulaFormatException)
+            {
+                MessageBox.Show("Invalid Formula has been entered.");
+            }
+
 
             CellValueLabel.Text = CellName(row, col, GetCellValue(name));
 
-            SetCellContentsTextBox.Text = "";
         }
 
         /// <summary>

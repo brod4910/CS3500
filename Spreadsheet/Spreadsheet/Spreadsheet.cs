@@ -440,7 +440,7 @@ namespace SS
             //if content is an empty string add it to the list of Cells
             if (content == "")
             {
-                Cells.Remove(name);
+                Cells.Remove(name.ToUpper());
                 Cells.Add(name.ToUpper(), new Cell(content));
                 dependencyGraph.ReplaceDependents(name.ToUpper(), new HashSet<string>());
                 toEvaluate = new HashSet<string>(GetCellsToRecalculate(name));
@@ -536,7 +536,7 @@ namespace SS
 
             //if name is null or regex is not a match
             //throw exception
-            if(name == null || !varPattern.IsMatch(name))
+            if(name == null || !varPattern.IsMatch(name.ToUpper()))
             {
                 throw new InvalidNameException();
             }
@@ -794,17 +794,17 @@ namespace SS
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
             //if cells does not contain key throw exception
-            if(!Cells.ContainsKey(name))
+            if(!Cells.ContainsKey(name.ToUpper()))
             {
                 throw new InvalidNameException();
             }
             // else if name == null then throw exception
-            else if(name == null)
+            else if(name.ToUpper() == null)
             {
                 throw new ArgumentNullException();
             }
             //return dependents of name
-            return dependencyGraph.GetDependents(name);
+            return dependencyGraph.GetDependents(name.ToUpper());
         }
 
         /// <summary>

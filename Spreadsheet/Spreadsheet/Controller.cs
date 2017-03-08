@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace SS
 {
@@ -27,7 +28,8 @@ namespace SS
             window.SetContentsofCell += HandleSetContentsofCell;
             window.SaveSpreadsheet += HandleFileSave;
             window.GetCellValue += HandleGetCellValue;
-            this.model = new Spreadsheet();
+            window.GetCellContent += HandleGetCellContent;
+            this.model = new Spreadsheet(new Regex(@"^[a-zA-Z][1-9]{1}[0-9]{0,1}$"));
         }
 
         /// <summary>
@@ -37,16 +39,17 @@ namespace SS
         {
             // I think we need to brute force put items back into Spreadsheet
             Regex varPattern = new Regex(@"^[a-zA-Z]+[1-9]+[0-9]*$");
+
             try
             {
                 TextReader sr = new StringReader(filename);
                 this.model = new Spreadsheet(sr, varPattern);
                 window.Title = filename;
-                window.message = "Successfully loaded " + filename;
+                MessageBox.Show("Successfully loaded " + filename);
             }
             catch (Exception ex)
             {
-                window.message = "Unable to open file\n" + ex.Message;
+                MessageBox.Show("Unable to open file\n" + ex.Message);
             }
         }
 
@@ -60,11 +63,11 @@ namespace SS
                 TextWriter sw = new StreamWriter(filename);
                 this.model.Save(sw);
                 window.Title = filename;
-                window.message = "Successfully Saved " + filename;
+                MessageBox.Show("Successfully Saved " + filename);
             }
             catch (Exception ex)
             {
-                window.message = "Unable to save file\n" + ex.Message;
+                MessageBox.Show("Unable to save file\n" + ex.Message);
             }
         }
 
@@ -87,6 +90,11 @@ namespace SS
         private String HandleGetCellValue(string name)
         {
             return this.model.GetCellValue(name).ToString();
+        }
+
+        private string HandleGetCellContent(string name)
+        {
+            return this.model.GetCellContents(name).ToString();
         }
 
         /// <summary>

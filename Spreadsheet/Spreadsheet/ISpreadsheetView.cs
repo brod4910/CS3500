@@ -42,6 +42,11 @@ namespace SS
         event Func<String, String> GetCellValue;
 
         /// <summary>
+        /// Get the content of any given cell
+        /// </summary>
+        event Func<String, String> GetCellContent;
+
+        /// <summary>
         /// Sets the contents of any given cell.
         /// </summary>
         event Func<String, String, ISet<string>> SetContentsofCell;
