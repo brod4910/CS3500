@@ -216,8 +216,7 @@ namespace SpreadsheetGUI
 
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-           // Close();
-            CloseEvent();
+           Close();
         }
 
         private void SetCellContentsTextBox_KeyPress(object sender, KeyPressEventArgs e)
@@ -278,6 +277,7 @@ namespace SpreadsheetGUI
 
 
             CellValueLabel.Text = CellName(row, col, GetCellValue(name));
+            label1.Text = "Unsaved Changes";
 
         }
 
@@ -312,7 +312,19 @@ namespace SpreadsheetGUI
         private void SpreadsheetGUI_FormClosing(object sender, FormClosingEventArgs e)
         {
             // Figure out Sender issues
-            Close();
+            if(label1.Text.ToString() != "Unsaved Changes")
+            {
+                SpreadsheetApplicationContext.GetContext().ExitThread();
+            }
+            else
+            {
+                if (MessageBox.Show("Do you want to save changes to this spreadsheet?", "Save", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    MenuItemSave_Click(sender, e);
+                    SpreadsheetApplicationContext.GetContext().ExitThread();
+                }
+
+            }
         }
     }
 }

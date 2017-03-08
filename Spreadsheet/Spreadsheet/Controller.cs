@@ -23,7 +23,6 @@ namespace SS
         {
             this.window = window;
             window.FileChosen += HandleFileChosen;
-            window.CloseEvent += HandleClose;
             window.NewEvent += HandleNew;
             window.SetContentsofCell += HandleSetContentsofCell;
             window.SaveSpreadsheet += HandleFileSave;
@@ -96,29 +95,6 @@ namespace SS
             return this.model.GetCellContents(name).ToString();
         }
 
-        /// <summary>
-        /// Handles request to close a file
-        /// </summary>
-        private void HandleClose()
-        {
-            if (this.model.Changed)
-            {
-                DialogResult dialogResult = MessageBox.Show("Would you like to exit?", "Unsaved Data", MessageBoxButtons.YesNo);
-                if (dialogResult == DialogResult.Yes)
-                {
-                    window.DoClose();
-                    
-                }
-                else if (dialogResult == DialogResult.No)
-                {
-                    
-                }
-            }
-            else
-            {
-                window.DoClose();
-            }
-        }
 
         /// <summary>
         /// Handles request to open a new Window
