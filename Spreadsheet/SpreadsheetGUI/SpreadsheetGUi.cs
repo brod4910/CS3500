@@ -139,43 +139,61 @@ namespace SpreadsheetGUI
                 {
                     openFile = openFileDialog.FileName;
                     FileChosen(openFile);
-                    read_file(openFile);
+                    PopulateGUI();
                 }
             }
         }
 
         /// <summary>
-        /// Helper method to parse XML file.
+        /// Populates the GUI when loaded from a file
         /// </summary>
-        private void read_file(string file)
+        private void PopulateGUI()
         {
-            int col, row;
-            if (file == null)
+            Char c;
+
+            for(int i = 0; i < 26;i++)
             {
-                throw new ArgumentNullException();
-            }
-            try
-            {
-                string content, value;
-                using (XmlReader reader = XmlReader.Create(file))
+                c = (Char)(97 + i);
+
+                for(int j = 0; j < 99;j++)
                 {
-                    while (reader.Read())
-                    {
-                        if (reader.Name == "cell")
-                        {
-                            content = reader["name"];
-                            CellNametoRow_col(out col, out row, content);
-                            value = reader["contents"];
-                            spreadsheetPanel.SetValue(col, row, value);
-                        }
-                    }
+                    spreadsheetPanel.SetValue(i, j, GetCellValue(c + "" + (j + 1)));
                 }
             }
-            catch (Exception)
-            {
-                throw new FormatException();
-            }
         }
+
+        ///// <summary>
+        ///// Helper method to parse XML file.
+        ///// </summary>
+        //private void read_file(string file)
+        //{
+        //    int col, row;
+        //    if (file == null)
+        //    {
+        //        throw new ArgumentNullException();
+        //    }
+        //    try
+        //    {
+        //        string content, value;
+        //        using (XmlReader reader = XmlReader.Create(file))
+        //        {
+        //            while (reader.Read())
+        //            {
+        //                if (reader.Name == "cell")
+        //                {
+        //                    content = reader["name"];
+        //                    CellNametoRow_col(out col, out row, content);
+        //                    value = reader["contents"];
+        //                    spreadsheetPanel.SetValue(col, row, value);
+        //                }
+        //            }
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw new FormatException();
+        //    }
+        //}
 
         private void MenuItemSave_Click(object sender, EventArgs e)
         {

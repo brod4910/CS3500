@@ -38,12 +38,12 @@ namespace SS
         private void HandleFileChosen(string filename)
         {
             // I think we need to brute force put items back into Spreadsheet
-            Regex varPattern = new Regex(@"^[a-zA-Z]+[1-9]+[0-9]*$");
+            Regex varPattern = new Regex(@"^[a-zA-Z][1-9]{1}[0-9]{0,1}$");
 
             try
             {
-                TextReader sr = new StringReader(filename);
-                this.model = new Spreadsheet(sr, varPattern);
+                TextReader tr = new StreamReader(File.OpenRead(filename));
+                this.model = new Spreadsheet(tr, varPattern);
                 window.Title = filename;
                 MessageBox.Show("Successfully loaded " + filename);
             }
