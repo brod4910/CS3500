@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -23,8 +24,9 @@ namespace SS
             window.FileChosen += HandleFileChosen;
             window.CloseEvent += HandleClose;
             window.NewEvent += HandleNew;
-            window.AddCell += HandleCell;
+            window.SetContentsofCell += HandleSetContentsofCell;
             window.SaveSpreadsheet += HandleFileSave;
+            window.GetCellValue += HandleGetCellValue;
             this.model = new Spreadsheet();
         }
 
@@ -66,9 +68,25 @@ namespace SS
             }
         }
 
-        private void HandleCell(string name, string content)
+        /// <summary>
+        /// Sets the Contents of any give cell
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="content"></param>
+        private ISet<string> HandleSetContentsofCell(string name, string content)
         {
-            this.model.SetContentsOfCell(name, content);
+            //set contents of cell
+            return this.model.SetContentsOfCell(name, content);
+        }
+
+        /// <summary>
+        /// Gets the value of any given cell
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private String HandleGetCellValue(string name)
+        {
+            return this.model.GetCellValue(name).ToString();
         }
 
         /// <summary>

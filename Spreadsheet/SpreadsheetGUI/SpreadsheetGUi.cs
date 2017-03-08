@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using SS;
 using SSGui;
+using System.Collections.Generic;
 
 namespace SpreadsheetGUI
 {
@@ -54,7 +55,12 @@ namespace SpreadsheetGUI
 
         public event Action NewEvent;
 
-        public event Action<string, string> AddCell;
+        /// <summary>
+        /// Sets the contents of any given cell
+        /// </summary>
+        public event Func<string, string, ISet<string>> SetContentsofCell;
+
+        public event Func<string, string> GetCellValue;
 
         /// <summary>
         /// Creates a top-level view of the Spreadsheet
@@ -145,8 +151,10 @@ namespace SpreadsheetGUI
         private void SetCellContentsTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
             // Enter Key is pressed
-            if(e.KeyChar == (char) Keys.Enter)
+            if (e.KeyChar == (char)Keys.Enter)
+            {
                 EnterButton_Click(sender, e);
+            }
         }
 
         public void DoClose()
@@ -167,22 +175,56 @@ namespace SpreadsheetGUI
         private void EnterButton_Click(object sender, EventArgs e)
         {
             int row, col;
-
+            
             String cellContents = SetCellContentsTextBox.Text;
-
             spreadsheetPanel.GetSelection(out col, out row);
-            spreadsheetPanel.SetValue(col, row, cellContents);
+
             // Add cell contents and name to Spreadsheet
-            string result;
+            string name;
+            Char charac = (Char)(col + 97);
+            name = charac + "" + (row + 1);
+            ISet<string> values = SetContentsofCell(name, cellContents);
 
-            Char c = (Char)(col + 97);
+            int c, r;
+            //set value of cell
+            foreach (string value in values)
+            {
+                c = getCol(value);
+                r = getRow(value);
+                spreadsheetPanel.SetValue(c, r, GetCellValue(value));
+            }
 
-            result = c + "" + (row + 1);
-            AddCell(result, cellContents);
-
-            CellValueLabel.Text = CellName(row, col, cellContents);
+            CellValueLabel.Text = CellName(row, col, GetCellValue(name));
 
             SetCellContentsTextBox.Text = "";
+        }
+
+        /// <summary>
+        /// Gets the column of the name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private int getCol (string name)
+        {
+            char charac;
+
+            Char.TryParse(name.Substring(0, 1), out charac);
+
+            return charac - 65;
+        }
+
+        /// <summary>
+        /// Gets the row of the name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private int getRow(string name)
+        {
+            int row;
+
+            int.TryParse(name.Substring(1), out row);
+
+            return row - 1;
         }
     }
 }

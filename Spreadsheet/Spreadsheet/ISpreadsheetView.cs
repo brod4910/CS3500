@@ -36,7 +36,15 @@ namespace SS
         /// </summary>
         event Action CloseEvent;
 
-        event Action<String, String> AddCell;
+        /// <summary>
+        /// Get the value of any given cell
+        /// </summary>
+        event Func<String, String> GetCellValue;
+
+        /// <summary>
+        /// Sets the contents of any given cell.
+        /// </summary>
+        event Func<String, String, ISet<string>> SetContentsofCell;
 
         /// <summary>
         /// Event is fired when a request for a new window is made
