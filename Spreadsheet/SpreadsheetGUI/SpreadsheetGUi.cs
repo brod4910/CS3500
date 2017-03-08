@@ -216,7 +216,8 @@ namespace SpreadsheetGUI
 
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Close();
+           // Close();
+            CloseEvent();
         }
 
         private void SetCellContentsTextBox_KeyPress(object sender, KeyPressEventArgs e)
@@ -306,6 +307,12 @@ namespace SpreadsheetGUI
             int.TryParse(name.Substring(1), out row);
 
             return row - 1;
+        }
+
+        private void SpreadsheetGUI_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Figure out Sender issues
+            Close();
         }
     }
 }

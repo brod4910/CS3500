@@ -37,7 +37,6 @@ namespace SS
         /// </summary>
         private void HandleFileChosen(string filename)
         {
-            // I think we need to brute force put items back into Spreadsheet
             Regex varPattern = new Regex(@"^[a-zA-Z][1-9]{1}[0-9]{0,1}$");
 
             try
@@ -102,7 +101,23 @@ namespace SS
         /// </summary>
         private void HandleClose()
         {
-            window.DoClose();
+            if (this.model.Changed)
+            {
+                DialogResult dialogResult = MessageBox.Show("Would you like to exit?", "Unsaved Data", MessageBoxButtons.YesNo);
+                if (dialogResult == DialogResult.Yes)
+                {
+                    window.DoClose();
+                    
+                }
+                else if (dialogResult == DialogResult.No)
+                {
+                    
+                }
+            }
+            else
+            {
+                window.DoClose();
+            }
         }
 
         /// <summary>

@@ -160,7 +160,7 @@
             this.EnterButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.EnterButton.Location = new System.Drawing.Point(286, 32);
             this.EnterButton.Name = "EnterButton";
-            this.EnterButton.Size = new System.Drawing.Size(125, 21);
+            this.EnterButton.Size = new System.Drawing.Size(127, 21);
             this.EnterButton.TabIndex = 4;
             this.EnterButton.Text = "Enter";
             this.EnterButton.UseVisualStyleBackColor = true;
@@ -229,6 +229,7 @@
             this.MinimumSize = new System.Drawing.Size(810, 460);
             this.Name = "SpreadsheetGUI";
             this.Text = "Spreadsheet";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SpreadsheetGUI_FormClosing);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.splitContainer.Panel1.ResumeLayout(false);
