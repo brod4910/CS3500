@@ -68,7 +68,7 @@ namespace SS
 
         private void HandleCell(string name, string content)
         {
-            this.model.SetContentsOfCell(name, content);
+                this.model.SetContentsOfCell(name, content);
         }
 
         /// <summary>

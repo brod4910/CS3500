@@ -178,9 +178,18 @@ namespace SpreadsheetGUI
             Char c = (Char)(col + 97);
 
             result = c + "" + (row + 1);
-            AddCell(result, cellContents);
-
-            CellValueLabel.Text = CellName(row, col, cellContents);
+            try
+            {
+                AddCell(result, cellContents);
+                CellValueLabel.Text = CellName(row, col, cellContents);
+            }
+            catch(Exception)
+            {
+                // Will be either Circular Exception or a Formula Evaluation Error
+                CellValueLabel.Text = "ERROR!!!";
+                spreadsheetPanel.SetValue(col, row, "ERROR!!!");
+            }
+           // CellValueLabel.Text = CellName(row, col, cellContents);
 
             SetCellContentsTextBox.Text = "";
         }
