@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using SS;
 using SSGui;
 using System.Collections.Generic;
+using System.Xml;
 
 namespace SpreadsheetGUI
 {
@@ -106,9 +107,15 @@ namespace SpreadsheetGUI
             return "Cell name: " + result.ToUpper() + "  Cell Value: " + value;
         }
 
+        private void CellNametoRow_col(out int col , out int row, string name)
+        {
+            col = (int)(name[0] - 97 + 32);
+            row = int.Parse(name[1].ToString()) - 1;
+        }
+
         private void MenuItemOpen_Click(object sender, EventArgs e)
         {
-            string savedFile = "";
+            string openFile = "";
             saveFileDialog.InitialDirectory = "C:/Users";
             saveFileDialog.Title = "Open a Spreadsheet File";
             saveFileDialog.FileName = "";
@@ -119,8 +126,43 @@ namespace SpreadsheetGUI
             {
                 if (FileChosen != null)
                 {
-                    FileChosen(openFileDialog.FileName);
+                    openFile = openFileDialog.FileName;
+                    FileChosen(openFile);
+                    read_file(openFile);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Helper method to parse XML file.
+        /// </summary>
+        private void read_file(string file)
+        {
+            int col, row;
+            if (file == null)
+            {
+                throw new ArgumentNullException();
+            }
+            try
+            {
+                string content, value;
+                using (XmlReader reader = XmlReader.Create(file))
+                {
+                    while (reader.Read())
+                    {
+                        if (reader.Name == "cell")
+                        {
+                            content = reader["name"];
+                            CellNametoRow_col(out col, out row, content);
+                            value = reader["contents"];
+                            spreadsheetPanel.SetValue(col, row, value);
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw new FormatException();
             }
         }
 
