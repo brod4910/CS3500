@@ -126,6 +126,7 @@ namespace SpreadsheetGUI
 
         private void MenuItemOpen_Click(object sender, EventArgs e)
         {
+
             string openFile = "";
             saveFileDialog.InitialDirectory = "C:/Users";
             saveFileDialog.Title = "Open a Spreadsheet File";
@@ -325,6 +326,13 @@ namespace SpreadsheetGUI
                 }
 
             }
+        }
+
+        private void helpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Spreadsheet Application for PS7 \nTo Use this spreadsheet, first you will need to click on a cell and enter a value \n" + 
+                "Values can be formulas, doubles or strings \nAny string that can be interpretated as a double, will be valued as a double and every Formula is denoted with a = as its first letter \n "
+                + "", "Help", MessageBoxButtons.OK);
         }
     }
 }
