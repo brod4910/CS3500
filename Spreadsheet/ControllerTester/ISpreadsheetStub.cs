@@ -15,6 +15,18 @@ namespace ControllerTester
             }
         }
 
+        public void FireCloseEvent()
+        {
+            if(CloseEvent != null)
+                CloseEvent();
+        }
+
+        public void FireOpenEvent()
+        {
+            if (NewEvent != null)
+                NewEvent();
+        }
+
         public string cellValue
         {
             set
@@ -39,6 +51,43 @@ namespace ControllerTester
             }
         }
 
+        public void FireNewWindow()
+        {
+            if (NewWindow != null)
+            {
+                NewWindow();
+                hasNewWindow = true;
+            }
+        }
+
+        public void FireSetContentsOfCell(string name, string value)
+        {
+            SetContentsofCell(name, value);
+        }
+
+        public object FireGetContentsOfCell(string name)
+        {
+            return GetCellContent(name);
+        }
+
+        public object FireGetValueOfCell(string name)
+        {
+            return GetCellValue(name);
+        }
+
+        public void FireSaveSpreadsheet(string filename)
+        {
+            SaveSpreadsheet(filename);
+            hasSavedSpreadsheet = true;  
+        }
+
+        public void FireOpenSpreadsheet(string filename)
+        {
+                FileChosen(filename);
+                hasFileOpen = true;
+            
+        }
+
         public event Action CloseEvent;
         public event Action<string> FileChosen;
         public event Func<string, string> GetCellContent;
@@ -47,41 +96,49 @@ namespace ControllerTester
         public event Action NewWindow;
         public event Action<string> SaveSpreadsheet;
         public event Func<string, string, ISet<string>> SetContentsofCell;
-
-        event Func<string, string> ISpreadsheetView.FileChosen
-        {
-            add
-            {
-                throw new NotImplementedException();
-            }
-
-            remove
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public bool HasClosed;
+        public bool HasNew;
+        public bool hasNewWindow;
+        public bool hasSavedSpreadsheet;
+        public bool hasFileOpen;
+        private Func<string, string> _savespreadsheet;
+        private Func<string, string> _openspreadsheet;
 
         event Func<string, string> ISpreadsheetView.SaveSpreadsheet
         {
             add
             {
-                throw new NotImplementedException();
+                _savespreadsheet += value;
             }
 
             remove
             {
-                throw new NotImplementedException();
+                _savespreadsheet -= value;
             }
         }
 
+        event Func<string, string> ISpreadsheetView.FileChosen
+        {
+            add
+            {
+                _openspreadsheet += value;
+            }
+
+            remove
+            {
+                _openspreadsheet -= value;
+            }
+        }
+        
+
         public void DoClose()
         {
-            throw new NotImplementedException();
+            HasClosed = true;
         }
 
         public void OpenNew()
         {
-            throw new NotImplementedException();
+            HasNew = true;
         }
     }
 }

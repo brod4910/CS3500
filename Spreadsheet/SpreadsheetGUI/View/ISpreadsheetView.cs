@@ -14,7 +14,7 @@ namespace SpreadsheetGUI
         /// <summary>
         /// Event is called when a File is chosen from the FileDialog
         /// </summary>
-        event Func<String,String> FileChosen;
+       event Func<String,String> FileChosen;
 
         /// <summary>
         /// Fired when the spreadsheet is saved
