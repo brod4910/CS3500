@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using SS;
 using SSGui;
 using System.Collections.Generic;
-using System.Xml;
-using Formulas;
 
 namespace SpreadsheetGUI
 {
-    public partial class SpreadsheetGUI : Form, ISpreadsheetView
+    public partial class SpreadSheetGUI : Form, ISpreadsheetView
     {
         public string Title
         {
@@ -46,30 +42,37 @@ namespace SpreadsheetGUI
         /// <summary>
         /// Fired when a file is chosen
         /// </summary>
-        public event Action<string> FileChosen;
+        public event Func<string, string> FileChosen;
 
         /// <summary>
         /// Fired when the spreadsheet is saved
         /// </summary>
-        public event Action<string> SaveSpreadsheet;
+        public event Func<string, string> SaveSpreadsheet;
 
+        /// <summary>
+        /// Fired when Cell content is needed
+        /// </summary>
         public event Func<String, String> GetCellContent;
-
-        public event Action CloseEvent;
-
-        public event Action NewEvent;
 
         /// <summary>
         /// Sets the contents of any given cell
         /// </summary>
         public event Func<string, string, ISet<string>> SetContentsofCell;
 
+        /// <summary>
+        /// Get the Value of any given cell
+        /// </summary>
         public event Func<string, string> GetCellValue;
+
+        /// <summary>
+        /// Handles opening of a new window
+        /// </summary>
+        public event Action NewWindow;
 
         /// <summary>
         /// Creates a top-level view of the Spreadsheet
         /// </summary>
-        public SpreadsheetGUI()
+        public SpreadSheetGUI()
         {
             InitializeComponent();
             string value;
@@ -124,6 +127,12 @@ namespace SpreadsheetGUI
             row = int.Parse(name[1].ToString()) - 1;
         }
 
+        /// <summary>
+        /// Displays openFile dialog when the user wants to
+        /// open a file
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MenuItemOpen_Click(object sender, EventArgs e)
         {
 
@@ -139,7 +148,7 @@ namespace SpreadsheetGUI
                 if (FileChosen != null)
                 {
                     openFile = openFileDialog.FileName;
-                    FileChosen(openFile);
+                    MessageBox.Show(FileChosen(openFile));
                     PopulateGUI();
                 }
             }
@@ -163,42 +172,13 @@ namespace SpreadsheetGUI
             }
         }
 
-        ///// <summary>
-        ///// Helper method to parse XML file.
-        ///// </summary>
-        //private void read_file(string file)
-        //{
-        //    int col, row;
-        //    if (file == null)
-        //    {
-        //        throw new ArgumentNullException();
-        //    }
-        //    try
-        //    {
-        //        string content, value;
-        //        using (XmlReader reader = XmlReader.Create(file))
-        //        {
-        //            while (reader.Read())
-        //            {
-        //                if (reader.Name == "cell")
-        //                {
-        //                    content = reader["name"];
-        //                    CellNametoRow_col(out col, out row, content);
-        //                    value = reader["contents"];
-        //                    spreadsheetPanel.SetValue(col, row, value);
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch (Exception)
-        //    {
-        //        throw new FormatException();
-        //    }
-        //}
-
+        /// <summary>
+        /// Handles the saveFile dialog
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MenuItemSave_Click(object sender, EventArgs e)
         {
-            string savedFile = "";
             saveFileDialog.InitialDirectory = "C:/Users";
             saveFileDialog.Title = "Save a Spreadsheet File";
             saveFileDialog.FileName = "";
@@ -210,7 +190,7 @@ namespace SpreadsheetGUI
             {
                 if (SaveSpreadsheet != null)
                 {
-                    SaveSpreadsheet(saveFileDialog.FileName);
+                    MessageBox.Show(SaveSpreadsheet(saveFileDialog.FileName));
                 }
             }
         }
@@ -220,6 +200,11 @@ namespace SpreadsheetGUI
            Close();
         }
 
+        /// <summary>
+        /// Sets the contents of the selected cell
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SetCellContentsTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
             // Enter Key is pressed
@@ -236,7 +221,7 @@ namespace SpreadsheetGUI
 
         public void OpenNew()
         {
-            SpreadsheetApplicationContext.GetContext().RunNew();
+            NewWindow();
         }
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
@@ -244,6 +229,12 @@ namespace SpreadsheetGUI
             OpenNew();
         }
 
+        /// <summary>
+        /// Sets the contents of the selected cell with
+        /// the button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void EnterButton_Click(object sender, EventArgs e)
         {
             int row, col;
@@ -271,15 +262,13 @@ namespace SpreadsheetGUI
 
                 SetCellContentsTextBox.Text = "";
             }
-            catch(FormulaFormatException)
+            catch(Exception)
             {
                 MessageBox.Show("Invalid Formula has been entered.");
             }
 
-
             CellValueLabel.Text = CellName(row, col, GetCellValue(name));
             label1.Text = "Unsaved Changes";
-
         }
 
         /// <summary>

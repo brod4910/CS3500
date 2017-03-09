@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
 using System.Windows.Forms;
+using SpreadsheetGUI;
 using SS;
+
 
 namespace SpreadsheetGUI
 {
@@ -8,7 +10,7 @@ namespace SpreadsheetGUI
     /// Keeps track of how many top-level forms are running, shuts down
     /// the application when there are no more.
     /// </summary>
-    class SpreadsheetApplicationContext : ApplicationContext
+    public class SpreadsheetApplicationContext : ApplicationContext
     {
         // Number of open forms
         private int windowCount = 0;
@@ -41,7 +43,8 @@ namespace SpreadsheetGUI
         public void RunNew()
         {
             // Create the window and the controller
-            SpreadsheetGUI window = new SpreadsheetGUI();
+            SpreadSheetGUI window = new SpreadSheetGUI();
+
             new Controller(window);
 
             // One more form is running

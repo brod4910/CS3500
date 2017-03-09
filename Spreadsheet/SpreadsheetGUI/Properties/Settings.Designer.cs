@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SpreadsheetGUI.Properties
+namespace SS.Properties
 {
 
 

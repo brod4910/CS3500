@@ -55,9 +55,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Spreadsheet\Spreadsheet.csproj">
-      <Project>{9025a594-df2a-4e6a-b8c2-f087ecc3e203}</Project>
-      <Name>Spreadsheet</Name>
+    <ProjectReference Include="..\Model\Model.csproj">
+      <Project>{60f44840-214e-4461-b0d8-0b7149af612c}</Project>
+      <Name>Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SpreadsheetGUI\SpreadsheetGUI.csproj">
+      <Project>{2d0588a9-50fa-4349-b2d6-56366c425d11}</Project>
+      <Name>SpreadsheetGUI</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

@@ -1,6 +1,6 @@
 ﻿namespace SpreadsheetGUI
 {
-    partial class SpreadsheetGUI
+    partial class SpreadSheetGUI
     {
         /// <summary>
         /// Required designer variable.

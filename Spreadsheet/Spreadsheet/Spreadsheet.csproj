@@ -45,7 +45,6 @@
   <ItemGroup>
     <Compile Include="AbstractSpreadsheet.cs" />
     <Compile Include="Controller.cs" />
-    <Compile Include="ISpreadsheetView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Spreadsheet.cs" />
   </ItemGroup>
