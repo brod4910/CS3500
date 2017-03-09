@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SpreadsheetGUI;
 using SS;
+using System.IO;
 
 namespace ControllerTester
 {
@@ -51,12 +52,20 @@ namespace ControllerTester
         {
             ISpreadsheetStub stub = new ISpreadsheetStub();
             Controller control = new Controller(stub);
-            stub.FireSetContentsOfCell("A1", "1");
-            stub.FireSaveSpreadsheet("test.ss");
-            Assert.AreEqual(stub.Title.ToString(), "test.ss");
-            // Opening Spreadsheet Fails
-            stub.FireOpenSpreadsheet("test.ss");
-            Assert.IsTrue(stub.hasFileOpen);
+            string addr = Path.GetFullPath("test.ss");
+            stub.FireOpenSpreadsheet(addr);
+            Assert.AreEqual(stub.Title.ToString(), addr);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(System.NullReferenceException))]
+        public void TestOpenFail()
+        {
+            ISpreadsheetStub stub = new ISpreadsheetStub();
+            Controller control = new Controller(stub);
+            stub.FireOpenSpreadsheet("testfail.ss");
+            // stub.Title is not obstantiated if OpenFile does not succeed
+            stub.Title.ToString();
         }
 
         [TestMethod]
