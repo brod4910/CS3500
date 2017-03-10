@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SpreadsheetGUI;
 using SS;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace ControllerTester
 {
@@ -12,7 +13,7 @@ namespace ControllerTester
         [TestMethod]
         public void TestGetSetCell()
         {
-            ISpreadsheetStub stub = new ISpreadsheetStub();
+            IStub stub = new IStub();
             Controller control = new Controller(stub);
             stub.FireSetContentsOfCell("A1", "1");
             Assert.AreEqual("1", stub.FireGetContentsOfCell("A1"));
@@ -21,7 +22,7 @@ namespace ControllerTester
         [TestMethod]
         public void TestGetCellContent()
         {
-            ISpreadsheetStub stub = new ISpreadsheetStub();
+            IStub stub = new IStub();
             Controller control = new Controller(stub);
             stub.FireSetContentsOfCell("A1", "1");
             Assert.AreEqual("1", stub.FireGetValueOfCell("A1"));
@@ -30,7 +31,7 @@ namespace ControllerTester
        [TestMethod]
        public void TestSave()
         {
-            ISpreadsheetStub stub = new ISpreadsheetStub();
+            IStub stub = new IStub();
             Controller control = new Controller(stub);
             stub.FireSetContentsOfCell("A1", "1");
             stub.FireSaveSpreadsheet("test1.ss");
@@ -40,7 +41,7 @@ namespace ControllerTester
         [TestMethod]
         public void TestNewWindow()
         {
-            ISpreadsheetStub stub = new ISpreadsheetStub();
+            IStub stub = new IStub();
             Controller control = new Controller(stub);
             stub.FireSetContentsOfCell("A1", "1");
             stub.FireNewWindow();
@@ -50,7 +51,7 @@ namespace ControllerTester
         [TestMethod]
         public void TestOpen()
         {
-            ISpreadsheetStub stub = new ISpreadsheetStub();
+            IStub stub = new IStub();
             Controller control = new Controller(stub);
             string addr = Path.GetFullPath("test.ss");
             stub.FireOpenSpreadsheet(addr);
@@ -61,7 +62,7 @@ namespace ControllerTester
         [ExpectedException(typeof(System.NullReferenceException))]
         public void TestOpenFail()
         {
-            ISpreadsheetStub stub = new ISpreadsheetStub();
+            IStub stub = new IStub();
             Controller control = new Controller(stub);
             stub.FireOpenSpreadsheet("testfail.ss");
             // stub.Title is not obstantiated if OpenFile does not succeed
@@ -71,15 +72,20 @@ namespace ControllerTester
         [TestMethod]
         public void TestSecondConstructor()
         {
-            ISpreadsheetStub stub = new ISpreadsheetStub();
-            Controller control = new Controller(stub, "test.ss");
+            IStub stub = new IStub();
+            string addr = Path.GetFullPath("test.ss");
+            TextReader tr = new StreamReader(File.OpenRead(addr));
+            Spreadsheet ss = new Spreadsheet(tr, new Regex(@".*"));
+            Controller control = new Controller(stub, ss, "test.ss");
+            stub.FireOpenSpreadsheet("test.ss");
+            Assert.AreEqual(addr, stub.Title.ToString());
         }
 
         [TestMethod]
         [ExpectedException(typeof(System.NullReferenceException))]
         public void TestSaveError()
         {
-            ISpreadsheetStub stub = new ISpreadsheetStub();
+            IStub stub = new IStub();
             Controller control = new Controller(stub);
             stub.FireSetContentsOfCell("A1", "1");
             stub.FireSaveSpreadsheet("");

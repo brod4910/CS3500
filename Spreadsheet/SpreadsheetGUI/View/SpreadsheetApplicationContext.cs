@@ -40,12 +40,20 @@ namespace SpreadsheetGUI
         /// <summary>
         /// Runs a form in this application context
         /// </summary>
-        public void RunNew()
+        public void RunNew(bool run, Spreadsheet model, string filename)
         {
             // Create the window and the controller
             SpreadSheetGUI window = new SpreadSheetGUI();
 
-            new Controller(window);
+            if (!run)
+            {
+                new Controller(window);
+            }
+            else
+            {
+                new Controller(window, model, filename);
+                
+            }
 
             // One more form is running
             windowCount++;

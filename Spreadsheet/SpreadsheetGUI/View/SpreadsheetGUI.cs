@@ -121,12 +121,6 @@ namespace SpreadsheetGUI
             return "Cell name: " + result.ToUpper() + "  Cell Value: " + value;
         }
 
-        private void CellNametoRow_col(out int col , out int row, string name)
-        {
-            col = (int)(name[0] - 97 + 32);
-            row = int.Parse(name[1].ToString()) - 1;
-        }
-
         /// <summary>
         /// Displays openFile dialog when the user wants to
         /// open a file
@@ -149,7 +143,7 @@ namespace SpreadsheetGUI
                 {
                     openFile = openFileDialog.FileName;
                     MessageBox.Show(FileChosen(openFile));
-                    PopulateGUI();
+                    //PopulateGUI();
                 }
             }
         }
@@ -157,7 +151,7 @@ namespace SpreadsheetGUI
         /// <summary>
         /// Populates the GUI when loaded from a file
         /// </summary>
-        private void PopulateGUI()
+        public void PopulateGUI()
         {
             Char c;
 
@@ -197,7 +191,7 @@ namespace SpreadsheetGUI
 
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-           Close();
+            DoClose();
         }
 
         /// <summary>
@@ -214,16 +208,39 @@ namespace SpreadsheetGUI
             }
         }
 
+        /// <summary>
+        /// Closes current window
+        /// </summary>
         public void DoClose()
         {
-            Close();
+            // Figure out Sender issues
+            if (label1.Text.ToString() != "Unsaved Changes")
+            {
+                SpreadsheetApplicationContext.GetContext().ExitThread();
+            }
+            else
+            {
+                if (MessageBox.Show("Do you want to save changes to this spreadsheet?", "Save", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    MenuItemSave_Click(null, null);
+                    SpreadsheetApplicationContext.GetContext().ExitThread();
+                }
+            }
         }
 
+        /// <summary>
+        /// Opens new empty window
+        /// </summary>
         public void OpenNew()
         {
             NewWindow();
         }
 
+        /// <summary>
+        /// Handles new in tool bar
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenNew();
@@ -250,14 +267,20 @@ namespace SpreadsheetGUI
             {
                 ISet<string> values = SetContentsofCell(name, cellContents);
 
-
                 int c, r;
                 //set value of cell
                 foreach (string value in values)
                 {
                     c = getCol(value);
                     r = getRow(value);
-                    spreadsheetPanel.SetValue(c, r, GetCellValue(value));
+                    if (GetCellValue(value).Equals("SS.FormulaError"))
+                    {
+                        spreadsheetPanel.SetValue(c, r, "Formula Error!");
+                    }
+                    else
+                    {
+                        spreadsheetPanel.SetValue(c, r, GetCellValue(value));
+                    }
                 }
 
                 SetCellContentsTextBox.Text = "";
@@ -267,7 +290,15 @@ namespace SpreadsheetGUI
                 MessageBox.Show("Invalid Formula has been entered.");
             }
 
-            CellValueLabel.Text = CellName(row, col, GetCellValue(name));
+            if (GetCellValue(name).Equals("SS.FormulaError"))
+            {
+                CellValueLabel.Text = CellName(row, col, "Formula Error!");
+            }
+            else
+            {
+                CellValueLabel.Text = CellName(row, col, GetCellValue(name));
+            }
+
             label1.Text = "Unsaved Changes";
         }
 
@@ -299,21 +330,27 @@ namespace SpreadsheetGUI
             return row - 1;
         }
 
+        /// <summary>
+        /// Handles when the form closes
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SpreadsheetGUI_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // Figure out Sender issues
-            if(label1.Text.ToString() != "Unsaved Changes")
+            if (e.CloseReason == CloseReason.UserClosing || e.CloseReason == CloseReason.TaskManagerClosing)
             {
-                SpreadsheetApplicationContext.GetContext().ExitThread();
-            }
-            else
-            {
-                if (MessageBox.Show("Do you want to save changes to this spreadsheet?", "Save", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                // Figure out Sender issues
+                if (label1.Text.ToString() != "Unsaved Changes")
                 {
-                    MenuItemSave_Click(sender, e);
-                    SpreadsheetApplicationContext.GetContext().ExitThread();
-                }
 
+                }
+                else
+                {
+                    if (MessageBox.Show("Do you want to save changes to this spreadsheet?", "Save", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        MenuItemSave_Click(sender, null);
+                    }
+                }
             }
         }
 

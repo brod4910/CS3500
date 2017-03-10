@@ -41,8 +41,7 @@ namespace SS
             try
             {
                 TextReader tr = new StreamReader(File.OpenRead(filename));
-                this.model = new Spreadsheet(tr, varPattern);
-                window.Title = filename;
+                SpreadsheetApplicationContext.GetContext().RunNew(true, new Spreadsheet(tr, varPattern), filename);
                 return "Successfully loaded " + filename;
             }
             catch (Exception ex)
@@ -90,6 +89,11 @@ namespace SS
             return this.model.GetCellValue(name).ToString();
         }
 
+        /// <summary>
+        /// Gets the contents of any give cell
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         private string HandleGetCellContent(string name)
         {
             return this.model.GetCellContents(name).ToString();
@@ -100,16 +104,25 @@ namespace SS
         /// </summary>
         private void HandleNewWindow()
         {
-            SpreadsheetApplicationContext.GetContext().RunNew();
+            SpreadsheetApplicationContext.GetContext().RunNew(false, null, null);
         }
 
-        /// <summary>
+        private void HandleCloseEvent()
+        {
+            window.DoClose();
+        }
+
+                /// <summary>
         /// Creates a controller from the given XML file.
         /// </summary>
         /// <param name="view"></param>
         /// <param name="file"></param>
-        public Controller(ISpreadsheetView view, String file) : this(view)
+        public Controller(ISpreadsheetView view, Spreadsheet model, string filename) : this(view)
         {
+            this.model = model;
+            this.window = view;
+            window.Title = filename;
+            window.PopulateGUI();
         }
     }
 }

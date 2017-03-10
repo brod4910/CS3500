@@ -57,6 +57,11 @@ namespace SpreadsheetGUI
         event Func<String, String, ISet<string>> SetContentsofCell;
 
         /// <summary>
+        /// Populates the GUI
+        /// </summary>
+        void PopulateGUI();
+
+        /// <summary>
         /// Handles opening of a new window
         /// </summary>
         event Action NewWindow;

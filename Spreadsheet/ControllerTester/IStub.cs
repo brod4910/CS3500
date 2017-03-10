@@ -5,7 +5,7 @@ using SS;
 
 namespace ControllerTester
 {
-    class ISpreadsheetStub : ISpreadsheetView
+    class IStub : ISpreadsheetView
     {
         public string cellContents
         {
@@ -118,6 +118,11 @@ namespace ControllerTester
         public void OpenNew()
         {
             HasNew = true;
+        }
+
+        public void PopulateGUI()
+        {
+            throw new NotImplementedException();
         }
     }
 }
