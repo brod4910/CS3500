@@ -53,6 +53,7 @@
       <DependentUpon>Boggle.cs</DependentUpon>
     </Compile>
     <Compile Include="BoggleGUI.cs" />
+    <Compile Include="IBoggleView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Boggle.resx">
       <DependentUpon>Boggle.cs</DependentUpon>
