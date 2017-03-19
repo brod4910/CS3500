@@ -18,7 +18,7 @@ namespace BoggleClient
         /// Fired when game time button is pressed
         /// Parameters are name.
         /// </summary>
-        event Action<string> GameTimePressed;
+        event Action<string> CreateGamePressed;
 
         /// <summary>
         /// Fired when cancelled button is pressed

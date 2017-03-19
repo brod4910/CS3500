@@ -30,9 +30,9 @@
         {
             this.OptionsSplitContainer = new System.Windows.Forms.SplitContainer();
             this.CancelButton = new System.Windows.Forms.Button();
-            this.GameTimeButton = new System.Windows.Forms.Button();
+            this.CreateGameButton = new System.Windows.Forms.Button();
             this.GameTimeTextBox = new System.Windows.Forms.TextBox();
-            this.GameTime = new System.Windows.Forms.Label();
+            this.GameTimeLabel = new System.Windows.Forms.Label();
             this.DomainLabel = new System.Windows.Forms.Label();
             this.UsernameLabel = new System.Windows.Forms.Label();
             this.DomainNameTextBox = new System.Windows.Forms.TextBox();
@@ -72,9 +72,9 @@
             // OptionsSplitContainer.Panel1
             // 
             this.OptionsSplitContainer.Panel1.Controls.Add(this.CancelButton);
-            this.OptionsSplitContainer.Panel1.Controls.Add(this.GameTimeButton);
+            this.OptionsSplitContainer.Panel1.Controls.Add(this.CreateGameButton);
             this.OptionsSplitContainer.Panel1.Controls.Add(this.GameTimeTextBox);
-            this.OptionsSplitContainer.Panel1.Controls.Add(this.GameTime);
+            this.OptionsSplitContainer.Panel1.Controls.Add(this.GameTimeLabel);
             this.OptionsSplitContainer.Panel1.Controls.Add(this.DomainLabel);
             this.OptionsSplitContainer.Panel1.Controls.Add(this.UsernameLabel);
             this.OptionsSplitContainer.Panel1.Controls.Add(this.DomainNameTextBox);
@@ -87,8 +87,8 @@
             this.OptionsSplitContainer.Panel2.Controls.Add(this.GameStartedButton);
             this.OptionsSplitContainer.Panel2.Controls.Add(this.EnterWordsLabel);
             this.OptionsSplitContainer.Panel2.Controls.Add(this.EnterWordsTextBox);
-            this.OptionsSplitContainer.Size = new System.Drawing.Size(923, 156);
-            this.OptionsSplitContainer.SplitterDistance = 461;
+            this.OptionsSplitContainer.Size = new System.Drawing.Size(886, 156);
+            this.OptionsSplitContainer.SplitterDistance = 454;
             this.OptionsSplitContainer.TabIndex = 0;
             // 
             // CancelButton
@@ -100,32 +100,35 @@
             this.CancelButton.TabIndex = 8;
             this.CancelButton.Text = "Cancel";
             this.CancelButton.UseVisualStyleBackColor = true;
+            this.CancelButton.Click += new System.EventHandler(this.CancelButton_Click);
             // 
-            // GameTimeButton
+            // CreateGameButton
             // 
-            this.GameTimeButton.Enabled = false;
-            this.GameTimeButton.Location = new System.Drawing.Point(255, 89);
-            this.GameTimeButton.Name = "GameTimeButton";
-            this.GameTimeButton.Size = new System.Drawing.Size(90, 39);
-            this.GameTimeButton.TabIndex = 7;
-            this.GameTimeButton.Text = "Time";
-            this.GameTimeButton.UseVisualStyleBackColor = true;
+            this.CreateGameButton.Enabled = false;
+            this.CreateGameButton.Location = new System.Drawing.Point(246, 85);
+            this.CreateGameButton.Name = "CreateGameButton";
+            this.CreateGameButton.Size = new System.Drawing.Size(90, 64);
+            this.CreateGameButton.TabIndex = 7;
+            this.CreateGameButton.Text = "Create Game";
+            this.CreateGameButton.UseVisualStyleBackColor = true;
+            this.CreateGameButton.Click += new System.EventHandler(this.CreateGameButton_Click);
             // 
             // GameTimeTextBox
             // 
-            this.GameTimeTextBox.Location = new System.Drawing.Point(149, 95);
+            this.GameTimeTextBox.Location = new System.Drawing.Point(140, 104);
             this.GameTimeTextBox.Name = "GameTimeTextBox";
             this.GameTimeTextBox.Size = new System.Drawing.Size(100, 26);
             this.GameTimeTextBox.TabIndex = 6;
+            this.GameTimeTextBox.TextChanged += new System.EventHandler(this.GameTimeTextBox_TextChanged);
             // 
-            // GameTime
+            // GameTimeLabel
             // 
-            this.GameTime.AutoSize = true;
-            this.GameTime.Location = new System.Drawing.Point(20, 97);
-            this.GameTime.Name = "GameTime";
-            this.GameTime.Size = new System.Drawing.Size(95, 20);
-            this.GameTime.TabIndex = 5;
-            this.GameTime.Text = "Game Time:";
+            this.GameTimeLabel.AutoSize = true;
+            this.GameTimeLabel.Location = new System.Drawing.Point(20, 108);
+            this.GameTimeLabel.Name = "GameTimeLabel";
+            this.GameTimeLabel.Size = new System.Drawing.Size(95, 20);
+            this.GameTimeLabel.TabIndex = 5;
+            this.GameTimeLabel.Text = "Game Time:";
             // 
             // DomainLabel
             // 
@@ -182,9 +185,9 @@
             // GameStartedButton
             // 
             this.GameStartedButton.Enabled = false;
-            this.GameStartedButton.Location = new System.Drawing.Point(131, 99);
+            this.GameStartedButton.Location = new System.Drawing.Point(119, 108);
             this.GameStartedButton.Name = "GameStartedButton";
-            this.GameStartedButton.Size = new System.Drawing.Size(180, 38);
+            this.GameStartedButton.Size = new System.Drawing.Size(189, 38);
             this.GameStartedButton.TabIndex = 17;
             this.GameStartedButton.Text = "Game Not Started";
             this.GameStartedButton.UseVisualStyleBackColor = true;
@@ -201,7 +204,7 @@
             // EnterWordsTextBox
             // 
             this.EnterWordsTextBox.Enabled = false;
-            this.EnterWordsTextBox.Location = new System.Drawing.Point(35, 56);
+            this.EnterWordsTextBox.Location = new System.Drawing.Point(39, 56);
             this.EnterWordsTextBox.Name = "EnterWordsTextBox";
             this.EnterWordsTextBox.Size = new System.Drawing.Size(348, 26);
             this.EnterWordsTextBox.TabIndex = 16;
@@ -397,9 +400,9 @@
         private System.Windows.Forms.TextBox RegisterUserTextBox;
         private System.Windows.Forms.Button RegisterButton;
         private System.Windows.Forms.Button CancelButton;
-        private System.Windows.Forms.Button GameTimeButton;
+        private System.Windows.Forms.Button CreateGameButton;
         private System.Windows.Forms.TextBox GameTimeTextBox;
-        private System.Windows.Forms.Label GameTime;
+        private System.Windows.Forms.Label GameTimeLabel;
         private System.Windows.Forms.Panel BogglePanel;
         private System.Windows.Forms.Label Letter03;
         private System.Windows.Forms.Label Letter02;

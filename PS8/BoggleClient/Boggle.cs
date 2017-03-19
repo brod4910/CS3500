@@ -22,7 +22,7 @@ namespace BoggleClient
         /// Fired when game time button is pressed
         /// Parameters are name.
         /// </summary>
-        public event Action<string> GameTimePressed;
+        public event Action<string> CreateGamePressed;
 
         /// <summary>
         /// Fired when cancelled button is pressed
@@ -67,7 +67,7 @@ namespace BoggleClient
         {
             RegisterButton.Enabled = state;
 
-            GameTimeButton.Enabled = state && UserRegistered && GameTimeTextBox.Text.Length > 0 && AreNumbers(GameTimeTextBox.Text);
+            CreateGameButton.Enabled = state && UserRegistered && GameTimeTextBox.Text.Trim().Length > 0 && AreNumbers(GameTimeTextBox.Text);
 
             foreach (Control control in OptionsSplitContainer.Panel2.Controls)
             {
@@ -96,6 +96,11 @@ namespace BoggleClient
             return Double.TryParse(numbers, out result);
         }
 
+        /// <summary>
+        /// Enables the Register button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Registration_TextChanged(object sender, EventArgs e)
         {
             RegisterButton.Enabled = DomainNameTextBox.Text.Trim().Length > 0 && RegisterUserTextBox.Text.Trim().Length > 0;
@@ -125,8 +130,44 @@ namespace BoggleClient
         {
             if(RegisterPressed != null)
             {
-                RegisterPressed(RegisterUserTextBox.Text, DomainNameTextBox.Text);
+                RegisterPressed(RegisterUserTextBox.Text.Trim(), DomainNameTextBox.Text.Trim());
             }
+        }
+
+        /// <summary>
+        /// Cancels previous request that was made.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CancelButton_Click(object sender, EventArgs e)
+        {
+            if(CancelPressed != null)
+            {
+                CancelPressed();
+            }
+        }
+
+        /// <summary>
+        /// Creates current game with the set amount of time
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CreateGameButton_Click(object sender, EventArgs e)
+        {
+            if(CreateGamePressed != null)
+            {
+                CreateGamePressed(GameTimeTextBox.Text);
+            }
+        }
+
+        /// <summary>
+        /// Enables the create game button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void GameTimeTextBox_TextChanged(object sender, EventArgs e)
+        {
+            CreateGameButton.Enabled = GameTimeTextBox.Text.Trim().Length > 0 && AreNumbers(GameTimeTextBox.Text) && UserRegistered;
         }
     }
 }

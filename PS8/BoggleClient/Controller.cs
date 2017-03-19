@@ -29,6 +29,11 @@ namespace BoggleClient
         /// </summary>
         private CancellationTokenSource tokenSource;
 
+        /// <summary>
+        /// Client used throughout game
+        /// </summary>
+        private HttpClient client;
+
         public Controller(IBoggleView view)
         {
             this.view = view;
@@ -54,12 +59,14 @@ namespace BoggleClient
             try
             {
                 view.EnableControls(false);
-                using (HttpClient client = CreateClient())
+
+                this.client = CreateClient(domain);
+
+                using (client)
                 {
                     //Create the parameter
                     dynamic user = new ExpandoObject();
-                    user.username = username;
-                    user.domain = domain;
+                    user.Nickname = username;
 
                     //compose and send the post request
                     tokenSource = new CancellationTokenSource();
@@ -69,7 +76,9 @@ namespace BoggleClient
                     if(response.IsSuccessStatusCode)
                     {
                         String result = response.Content.ReadAsStringAsync().Result;
-                        userToken = (string)JsonConvert.DeserializeObject(result);
+                        dynamic items = JsonConvert.DeserializeObject(result);
+
+                        userToken = items.UserToken;
                         view.UserRegistered = true;
                     }
                     else
@@ -88,11 +97,11 @@ namespace BoggleClient
             }
         }
 
-        private static HttpClient CreateClient()
+        private static HttpClient CreateClient(string domain)
         {
             HttpClient client = new HttpClient();
 
-            client.BaseAddress = new Uri("http://cs3500-boggle-s17.azurewebsites.net/BoggleService.svc/");
+            client.BaseAddress = new Uri(domain + "/BoggleService.svc/");
 
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Add("Accept", "application/json");
