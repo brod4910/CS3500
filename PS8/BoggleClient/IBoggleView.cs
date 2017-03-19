@@ -31,5 +31,16 @@ namespace BoggleClient
         /// Parameter is the word entered
         /// </summary>
         event Action<string> WordEntered;
+
+        /// <summary>
+        /// Getter and setter for registering a user
+        /// </summary>
+        bool UserRegistered { get; set;}
+
+        /// <summary>
+        /// If state == true, enables all controls that are normally enabled; disables Cancel.
+        /// If state == false, disables all controls; enables Cancel.
+        /// </summary>
+        void EnableControls(bool state);
     }
 }

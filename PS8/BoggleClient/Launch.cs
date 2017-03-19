@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace BoggleClient
 {
-    public class BoggleGUI
+    public class Launch
     {
         /// <summary>
         /// The main entry point for the application.
@@ -16,7 +16,10 @@ namespace BoggleClient
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Boggle());
+
+            var context = BoggleApplicationContext.GetContext();
+            BoggleApplicationContext.GetContext().RunNew();
+            Application.Run(context);
         }
     }
 }

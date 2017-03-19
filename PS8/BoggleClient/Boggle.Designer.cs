@@ -35,10 +35,11 @@
             this.GameTime = new System.Windows.Forms.Label();
             this.DomainLabel = new System.Windows.Forms.Label();
             this.UsernameLabel = new System.Windows.Forms.Label();
-            this.DomainName = new System.Windows.Forms.TextBox();
+            this.DomainNameTextBox = new System.Windows.Forms.TextBox();
             this.RegisterUserTextBox = new System.Windows.Forms.TextBox();
             this.RegisterButton = new System.Windows.Forms.Button();
             this.BogglePanel = new System.Windows.Forms.Panel();
+            this.GameStartedButton = new System.Windows.Forms.Button();
             this.EnterWordsLabel = new System.Windows.Forms.Label();
             this.EnterWordsTextBox = new System.Windows.Forms.TextBox();
             this.Letter03 = new System.Windows.Forms.Label();
@@ -57,7 +58,6 @@
             this.Letter21 = new System.Windows.Forms.Label();
             this.Letter22 = new System.Windows.Forms.Label();
             this.Letter23 = new System.Windows.Forms.Label();
-            this.GameStartedButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.OptionsSplitContainer)).BeginInit();
             this.OptionsSplitContainer.Panel1.SuspendLayout();
             this.OptionsSplitContainer.Panel2.SuspendLayout();
@@ -77,7 +77,7 @@
             this.OptionsSplitContainer.Panel1.Controls.Add(this.GameTime);
             this.OptionsSplitContainer.Panel1.Controls.Add(this.DomainLabel);
             this.OptionsSplitContainer.Panel1.Controls.Add(this.UsernameLabel);
-            this.OptionsSplitContainer.Panel1.Controls.Add(this.DomainName);
+            this.OptionsSplitContainer.Panel1.Controls.Add(this.DomainNameTextBox);
             this.OptionsSplitContainer.Panel1.Controls.Add(this.RegisterUserTextBox);
             this.OptionsSplitContainer.Panel1.Controls.Add(this.RegisterButton);
             this.OptionsSplitContainer.Panel1.Controls.Add(this.BogglePanel);
@@ -93,6 +93,7 @@
             // 
             // CancelButton
             // 
+            this.CancelButton.Enabled = false;
             this.CancelButton.Location = new System.Drawing.Point(363, 83);
             this.CancelButton.Name = "CancelButton";
             this.CancelButton.Size = new System.Drawing.Size(81, 44);
@@ -102,16 +103,17 @@
             // 
             // GameTimeButton
             // 
-            this.GameTimeButton.Location = new System.Drawing.Point(255, 88);
+            this.GameTimeButton.Enabled = false;
+            this.GameTimeButton.Location = new System.Drawing.Point(255, 89);
             this.GameTimeButton.Name = "GameTimeButton";
-            this.GameTimeButton.Size = new System.Drawing.Size(90, 27);
+            this.GameTimeButton.Size = new System.Drawing.Size(90, 39);
             this.GameTimeButton.TabIndex = 7;
             this.GameTimeButton.Text = "Time";
             this.GameTimeButton.UseVisualStyleBackColor = true;
             // 
             // GameTimeTextBox
             // 
-            this.GameTimeTextBox.Location = new System.Drawing.Point(140, 89);
+            this.GameTimeTextBox.Location = new System.Drawing.Point(149, 95);
             this.GameTimeTextBox.Name = "GameTimeTextBox";
             this.GameTimeTextBox.Size = new System.Drawing.Size(100, 26);
             this.GameTimeTextBox.TabIndex = 6;
@@ -119,7 +121,7 @@
             // GameTime
             // 
             this.GameTime.AutoSize = true;
-            this.GameTime.Location = new System.Drawing.Point(20, 95);
+            this.GameTime.Location = new System.Drawing.Point(20, 97);
             this.GameTime.Name = "GameTime";
             this.GameTime.Size = new System.Drawing.Size(95, 20);
             this.GameTime.TabIndex = 5;
@@ -143,12 +145,13 @@
             this.UsernameLabel.TabIndex = 3;
             this.UsernameLabel.Text = "Username:";
             // 
-            // DomainName
+            // DomainNameTextBox
             // 
-            this.DomainName.Location = new System.Drawing.Point(140, 53);
-            this.DomainName.Name = "DomainName";
-            this.DomainName.Size = new System.Drawing.Size(217, 26);
-            this.DomainName.TabIndex = 2;
+            this.DomainNameTextBox.Location = new System.Drawing.Point(140, 53);
+            this.DomainNameTextBox.Name = "DomainNameTextBox";
+            this.DomainNameTextBox.Size = new System.Drawing.Size(217, 26);
+            this.DomainNameTextBox.TabIndex = 2;
+            this.DomainNameTextBox.TextChanged += new System.EventHandler(this.Registration_TextChanged);
             // 
             // RegisterUserTextBox
             // 
@@ -156,15 +159,18 @@
             this.RegisterUserTextBox.Name = "RegisterUserTextBox";
             this.RegisterUserTextBox.Size = new System.Drawing.Size(217, 26);
             this.RegisterUserTextBox.TabIndex = 1;
+            this.RegisterUserTextBox.TextChanged += new System.EventHandler(this.Registration_TextChanged);
             // 
             // RegisterButton
             // 
+            this.RegisterButton.Enabled = false;
             this.RegisterButton.Location = new System.Drawing.Point(363, 31);
             this.RegisterButton.Name = "RegisterButton";
             this.RegisterButton.Size = new System.Drawing.Size(81, 32);
             this.RegisterButton.TabIndex = 0;
             this.RegisterButton.Text = "Register";
             this.RegisterButton.UseVisualStyleBackColor = true;
+            this.RegisterButton.Click += new System.EventHandler(this.RegisterButton_Click);
             // 
             // BogglePanel
             // 
@@ -172,6 +178,16 @@
             this.BogglePanel.Name = "BogglePanel";
             this.BogglePanel.Size = new System.Drawing.Size(901, 436);
             this.BogglePanel.TabIndex = 1;
+            // 
+            // GameStartedButton
+            // 
+            this.GameStartedButton.Enabled = false;
+            this.GameStartedButton.Location = new System.Drawing.Point(131, 99);
+            this.GameStartedButton.Name = "GameStartedButton";
+            this.GameStartedButton.Size = new System.Drawing.Size(180, 38);
+            this.GameStartedButton.TabIndex = 17;
+            this.GameStartedButton.Text = "Game Not Started";
+            this.GameStartedButton.UseVisualStyleBackColor = true;
             // 
             // EnterWordsLabel
             // 
@@ -184,10 +200,12 @@
             // 
             // EnterWordsTextBox
             // 
+            this.EnterWordsTextBox.Enabled = false;
             this.EnterWordsTextBox.Location = new System.Drawing.Point(35, 56);
             this.EnterWordsTextBox.Name = "EnterWordsTextBox";
             this.EnterWordsTextBox.Size = new System.Drawing.Size(348, 26);
             this.EnterWordsTextBox.TabIndex = 16;
+            this.EnterWordsTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.EnterWordsTextBox_KeyPress);
             // 
             // Letter03
             // 
@@ -333,16 +351,6 @@
             this.Letter23.TabIndex = 8;
             this.Letter23.Text = "label16";
             // 
-            // GameStartedButton
-            // 
-            this.GameStartedButton.Enabled = false;
-            this.GameStartedButton.Location = new System.Drawing.Point(131, 99);
-            this.GameStartedButton.Name = "GameStartedButton";
-            this.GameStartedButton.Size = new System.Drawing.Size(180, 28);
-            this.GameStartedButton.TabIndex = 17;
-            this.GameStartedButton.Text = "Game Not Started";
-            this.GameStartedButton.UseVisualStyleBackColor = true;
-            // 
             // Boggle
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -385,7 +393,7 @@
         private System.Windows.Forms.SplitContainer OptionsSplitContainer;
         private System.Windows.Forms.Label DomainLabel;
         private System.Windows.Forms.Label UsernameLabel;
-        private System.Windows.Forms.TextBox DomainName;
+        private System.Windows.Forms.TextBox DomainNameTextBox;
         private System.Windows.Forms.TextBox RegisterUserTextBox;
         private System.Windows.Forms.Button RegisterButton;
         private System.Windows.Forms.Button CancelButton;

@@ -56,7 +56,8 @@
     <Compile Include="Boggle.Designer.cs">
       <DependentUpon>Boggle.cs</DependentUpon>
     </Compile>
-    <Compile Include="BoggleGUI.cs" />
+    <Compile Include="BoggleApplicationContext.cs" />
+    <Compile Include="Launch.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="IBoggleView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
