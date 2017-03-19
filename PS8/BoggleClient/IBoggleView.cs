@@ -10,8 +10,26 @@ namespace BoggleClient
     {
         /// <summary>
         /// Fired when user must be registered.
-        /// Parameters are name and email.
+        /// Parameters are name and domain.
         /// </summary>
         event Action<string, string> RegisterPressed;
+
+        /// <summary>
+        /// Fired when game time button is pressed
+        /// Parameters are name.
+        /// </summary>
+        event Action<string> GameTimePressed;
+
+        /// <summary>
+        /// Fired when cancelled button is pressed
+        /// Parameters none
+        /// </summary>
+        event Action CancelPressed;
+
+        /// <summary>
+        /// Fired when a word is entered for boggle
+        /// Parameter is the word entered
+        /// </summary>
+        event Action<string> WordEntered;
     }
 }

@@ -39,6 +39,8 @@
             this.RegisterUserTextBox = new System.Windows.Forms.TextBox();
             this.RegisterButton = new System.Windows.Forms.Button();
             this.BogglePanel = new System.Windows.Forms.Panel();
+            this.EnterWordsLabel = new System.Windows.Forms.Label();
+            this.EnterWordsTextBox = new System.Windows.Forms.TextBox();
             this.Letter03 = new System.Windows.Forms.Label();
             this.Letter02 = new System.Windows.Forms.Label();
             this.Letter01 = new System.Windows.Forms.Label();
@@ -55,7 +57,7 @@
             this.Letter21 = new System.Windows.Forms.Label();
             this.Letter22 = new System.Windows.Forms.Label();
             this.Letter23 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.GameStartedButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.OptionsSplitContainer)).BeginInit();
             this.OptionsSplitContainer.Panel1.SuspendLayout();
             this.OptionsSplitContainer.Panel2.SuspendLayout();
@@ -82,7 +84,9 @@
             // 
             // OptionsSplitContainer.Panel2
             // 
-            this.OptionsSplitContainer.Panel2.Controls.Add(this.textBox1);
+            this.OptionsSplitContainer.Panel2.Controls.Add(this.GameStartedButton);
+            this.OptionsSplitContainer.Panel2.Controls.Add(this.EnterWordsLabel);
+            this.OptionsSplitContainer.Panel2.Controls.Add(this.EnterWordsTextBox);
             this.OptionsSplitContainer.Size = new System.Drawing.Size(923, 156);
             this.OptionsSplitContainer.SplitterDistance = 461;
             this.OptionsSplitContainer.TabIndex = 0;
@@ -168,6 +172,22 @@
             this.BogglePanel.Name = "BogglePanel";
             this.BogglePanel.Size = new System.Drawing.Size(901, 436);
             this.BogglePanel.TabIndex = 1;
+            // 
+            // EnterWordsLabel
+            // 
+            this.EnterWordsLabel.AutoSize = true;
+            this.EnterWordsLabel.Location = new System.Drawing.Point(146, 18);
+            this.EnterWordsLabel.Name = "EnterWordsLabel";
+            this.EnterWordsLabel.Size = new System.Drawing.Size(134, 20);
+            this.EnterWordsLabel.TabIndex = 16;
+            this.EnterWordsLabel.Text = "Enter words here:";
+            // 
+            // EnterWordsTextBox
+            // 
+            this.EnterWordsTextBox.Location = new System.Drawing.Point(35, 56);
+            this.EnterWordsTextBox.Name = "EnterWordsTextBox";
+            this.EnterWordsTextBox.Size = new System.Drawing.Size(348, 26);
+            this.EnterWordsTextBox.TabIndex = 16;
             // 
             // Letter03
             // 
@@ -313,18 +333,21 @@
             this.Letter23.TabIndex = 8;
             this.Letter23.Text = "label16";
             // 
-            // textBox1
+            // GameStartedButton
             // 
-            this.textBox1.Location = new System.Drawing.Point(41, 101);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(328, 26);
-            this.textBox1.TabIndex = 16;
+            this.GameStartedButton.Enabled = false;
+            this.GameStartedButton.Location = new System.Drawing.Point(131, 99);
+            this.GameStartedButton.Name = "GameStartedButton";
+            this.GameStartedButton.Size = new System.Drawing.Size(180, 28);
+            this.GameStartedButton.TabIndex = 17;
+            this.GameStartedButton.Text = "Game Not Started";
+            this.GameStartedButton.UseVisualStyleBackColor = true;
             // 
             // Boggle
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(878, 688);
+            this.ClientSize = new System.Drawing.Size(888, 688);
             this.Controls.Add(this.Letter30);
             this.Controls.Add(this.Letter31);
             this.Controls.Add(this.Letter32);
@@ -342,6 +365,8 @@
             this.Controls.Add(this.Letter02);
             this.Controls.Add(this.Letter03);
             this.Controls.Add(this.OptionsSplitContainer);
+            this.MaximumSize = new System.Drawing.Size(910, 743);
+            this.MinimumSize = new System.Drawing.Size(910, 743);
             this.Name = "Boggle";
             this.Text = "Boggle";
             this.OptionsSplitContainer.Panel1.ResumeLayout(false);
@@ -384,7 +409,9 @@
         private System.Windows.Forms.Label Letter21;
         private System.Windows.Forms.Label Letter22;
         private System.Windows.Forms.Label Letter23;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox EnterWordsTextBox;
+        private System.Windows.Forms.Label EnterWordsLabel;
+        private System.Windows.Forms.Button GameStartedButton;
     }
 }
 
