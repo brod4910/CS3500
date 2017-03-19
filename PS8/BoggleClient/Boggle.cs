@@ -41,6 +41,16 @@ namespace BoggleClient
         /// </summary>
         private bool _userRegistered = false;
 
+        /// <summary>
+        /// State of game at any given point
+        /// </summary>
+        private bool _gameState = false;
+
+        /// <summary>
+        /// Time left in any given game
+        /// </summary>
+        private double _time = 0;
+
         public Boggle()
         {
             InitializeComponent();
@@ -60,6 +70,21 @@ namespace BoggleClient
         }
 
         /// <summary>
+        /// Getter and setter for game state
+        /// </summary>
+        public bool GameState
+        {
+            get { return _gameState; }
+            set { _gameState = value; }
+        }
+
+        public double Time
+        {
+            get { return _time; }
+            set { _time = value; }
+        }
+
+        /// <summary>
         /// If state == true, enables all controls that are normally enabled; disables Cancel.
         /// If state == false, disables all controls; enables Cancel.
         /// </summary>
@@ -73,11 +98,11 @@ namespace BoggleClient
             {
                 if(control is Button)
                 {
-                    control.Enabled = state && UserRegistered;
+                    control.Enabled = state && UserRegistered && GameState;
                 }
                 else if(control is TextBox)
                 {
-                    control.Enabled = state && UserRegistered;
+                    control.Enabled = state && UserRegistered && GameState;
                 }
             }
 
@@ -168,6 +193,21 @@ namespace BoggleClient
         private void GameTimeTextBox_TextChanged(object sender, EventArgs e)
         {
             CreateGameButton.Enabled = GameTimeTextBox.Text.Trim().Length > 0 && AreNumbers(GameTimeTextBox.Text) && UserRegistered;
+        }
+
+        public void DisplayBoard(string board)
+        {
+            char[] charArray = board.ToCharArray();
+            int count = 0;
+
+            foreach(Control control in BogglePanel.Controls)
+            {
+                if(control is Label)
+                {
+                    control.Text = charArray[count] + "";
+                    count++;
+                }
+            }
         }
     }
 }

@@ -7,6 +7,7 @@ using System.Dynamic;
 using System.Net.Http;
 using Newtonsoft.Json;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace BoggleClient
 {
@@ -33,6 +34,11 @@ namespace BoggleClient
         /// Client used throughout game
         /// </summary>
         private HttpClient client;
+        
+        /// <summary>
+        /// GameId for any given game
+        /// </summary>
+        private string GameId;
 
         public Controller(IBoggleView view)
         {
@@ -83,7 +89,8 @@ namespace BoggleClient
                     }
                     else
                     {
-                        //DO SOMETHING IF RESPONSE CODE IS SOMETHING ELSE
+                        String errorMessage = "Error " + response.StatusCode + "\n" + response.ReasonPhrase;
+                        MessageBox.Show(errorMessage);
                     }
                 }
             }
@@ -97,6 +104,63 @@ namespace BoggleClient
             }
         }
 
+        /// <summary>
+        /// Refreshes the display when something has changed
+        /// </summary>
+        private void Refresh(bool brief)
+        {
+            using (client)
+            {
+                HttpResponseMessage response;
+
+                if (brief)
+                {
+                    String url = String.Format(" games/{0}&Brief={1]", GameId, "no");
+                    response = client.GetAsync(url).Result;
+                }
+                else
+                {
+                    String url = String.Format(" games/{0}&Brief={1]", GameId, "yes");
+                    response = client.GetAsync(url).Result;
+                }
+
+
+                if (response.IsSuccessStatusCode)
+                {
+                    String result = response.Content.ReadAsStringAsync().Result;
+                    dynamic items = JsonConvert.DeserializeObject(result);
+
+                    if (brief)
+                    {
+
+                    }
+                    else
+                    {
+                        if(items.GameState == "active")
+                        {
+                            view.GameState = true;
+                        }
+                        else
+                        {
+                            view.GameState = false;
+                        }
+                        view.DisplayBoard(items.Board);
+                    }
+                }
+                else
+                {
+                    String errorMessage = "Error " + response.StatusCode + "\n" + response.ReasonPhrase;
+                    MessageBox.Show(errorMessage);
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// Creates the client used for this instance
+        /// </summary>
+        /// <param name="domain"></param>
+        /// <returns></returns>
         private static HttpClient CreateClient(string domain)
         {
             HttpClient client = new HttpClient();

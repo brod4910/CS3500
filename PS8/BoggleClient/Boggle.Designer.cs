@@ -177,9 +177,9 @@
             // 
             // BogglePanel
             // 
-            this.BogglePanel.Location = new System.Drawing.Point(11, 162);
+            this.BogglePanel.Location = new System.Drawing.Point(11, 240);
             this.BogglePanel.Name = "BogglePanel";
-            this.BogglePanel.Size = new System.Drawing.Size(901, 436);
+            this.BogglePanel.Size = new System.Drawing.Size(864, 436);
             this.BogglePanel.TabIndex = 1;
             // 
             // GameStartedButton

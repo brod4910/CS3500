@@ -38,9 +38,17 @@ namespace BoggleClient
         bool UserRegistered { get; set;}
 
         /// <summary>
+        /// Getter and setter for game state
+        /// </summary>
+        bool GameState { get; set; }
+
+        /// <summary>
         /// If state == true, enables all controls that are normally enabled; disables Cancel.
         /// If state == false, disables all controls; enables Cancel.
         /// </summary>
         void EnableControls(bool state);
+
+        
+        void DisplayBoard(string board);
     }
 }
