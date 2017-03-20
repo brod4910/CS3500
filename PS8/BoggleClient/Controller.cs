@@ -20,11 +20,26 @@ namespace BoggleClient
         private IBoggleView view;
 
         /// <summary>
+        /// Holds the registered domain
+        /// </summary>
+        private string domain;
+
+        /// <summary>
+        /// Holds the registered game ID
+        /// </summary>
+        private string gameId;
+        /// <summary>
         /// The token of the most recently registered user, or "0" if no user
         /// has ever registered
         /// </summary>
         private string userToken;
 
+        /// <summary>
+        /// String representing the time entered
+        /// </summary>
+        private string timeLimit;
+
+        private System.Windows.Forms.Timer time = new System.Windows.Forms.Timer();
         /// <summary>
         /// For canceling the current operation
         /// </summary>
@@ -42,9 +57,11 @@ namespace BoggleClient
 
         public Controller(IBoggleView view)
         {
+            time.Interval = 1000;
             this.view = view;
             view.RegisterPressed += Register;
             view.CancelPressed += Cancel;
+            view.CreateGamePressed += HandleCreateGamePressed;
         }
 
         /// <summary>
@@ -53,6 +70,46 @@ namespace BoggleClient
         private void Cancel()
         {
             tokenSource.Cancel();
+        }
+
+        private async void HandleCreateGamePressed(string timeLimit)
+        {
+            try
+            {
+                using (HttpClient client = CreateClient(this.domain))
+                {
+                    dynamic data = new ExpandoObject();
+                    data.UserToken = userToken;
+                    data.TimeLimit = timeLimit;
+
+                    tokenSource = new CancellationTokenSource();
+                    StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                    HttpResponseMessage response = await client.PostAsync("games", content, tokenSource.Token);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string result = await response.Content.ReadAsStringAsync();
+                        dynamic items = JsonConvert.DeserializeObject(result);
+                        this.gameId = items.GameID;
+                       // time.Start();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error submitting: " + response.StatusCode);
+                        Console.WriteLine(response.ReasonPhrase);
+                    }
+
+                }
+            }
+            catch (TaskCanceledException)
+            {
+
+            }
+            finally
+            {
+                view.EnableControls(true);
+            }
+
         }
 
         /// <summary>
@@ -65,6 +122,7 @@ namespace BoggleClient
             try
             {
                 view.EnableControls(false);
+                this.domain = domain;
 
                 this.client = CreateClient(domain);
 
@@ -83,7 +141,6 @@ namespace BoggleClient
                     {
                         String result = response.Content.ReadAsStringAsync().Result;
                         dynamic items = JsonConvert.DeserializeObject(result);
-
                         userToken = items.UserToken;
                         view.UserRegistered = true;
                     }
