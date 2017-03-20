@@ -145,6 +145,7 @@ namespace BoggleClient
                             view.GameState = false;
                         }
                         view.DisplayBoard(items.Board);
+                        view.Time = items.Time;
                     }
                 }
                 else

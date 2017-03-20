@@ -58,10 +58,17 @@
             this.Letter21 = new System.Windows.Forms.Label();
             this.Letter22 = new System.Windows.Forms.Label();
             this.Letter23 = new System.Windows.Forms.Label();
+            this.Scorepanel = new System.Windows.Forms.Panel();
+            this.Player1Label = new System.Windows.Forms.Label();
+            this.Player1ScoreLabel = new System.Windows.Forms.Label();
+            this.TimeLabel = new System.Windows.Forms.Label();
+            this.Player2Label = new System.Windows.Forms.Label();
+            this.Player2ScoreLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.OptionsSplitContainer)).BeginInit();
             this.OptionsSplitContainer.Panel1.SuspendLayout();
             this.OptionsSplitContainer.Panel2.SuspendLayout();
             this.OptionsSplitContainer.SuspendLayout();
+            this.Scorepanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // OptionsSplitContainer
@@ -354,11 +361,69 @@
             this.Letter23.TabIndex = 8;
             this.Letter23.Text = "label16";
             // 
+            // Scorepanel
+            // 
+            this.Scorepanel.Controls.Add(this.Player2ScoreLabel);
+            this.Scorepanel.Controls.Add(this.Player2Label);
+            this.Scorepanel.Controls.Add(this.TimeLabel);
+            this.Scorepanel.Controls.Add(this.Player1ScoreLabel);
+            this.Scorepanel.Controls.Add(this.Player1Label);
+            this.Scorepanel.Location = new System.Drawing.Point(12, 162);
+            this.Scorepanel.Name = "Scorepanel";
+            this.Scorepanel.Size = new System.Drawing.Size(864, 72);
+            this.Scorepanel.TabIndex = 0;
+            // 
+            // Player1Label
+            // 
+            this.Player1Label.AutoSize = true;
+            this.Player1Label.Location = new System.Drawing.Point(27, 27);
+            this.Player1Label.Name = "Player1Label";
+            this.Player1Label.Size = new System.Drawing.Size(69, 20);
+            this.Player1Label.TabIndex = 0;
+            this.Player1Label.Text = "Player 1:";
+            // 
+            // Player1ScoreLabel
+            // 
+            this.Player1ScoreLabel.AutoSize = true;
+            this.Player1ScoreLabel.Location = new System.Drawing.Point(211, 27);
+            this.Player1ScoreLabel.Name = "Player1ScoreLabel";
+            this.Player1ScoreLabel.Size = new System.Drawing.Size(55, 20);
+            this.Player1ScoreLabel.TabIndex = 1;
+            this.Player1ScoreLabel.Text = "Score:";
+            // 
+            // TimeLabel
+            // 
+            this.TimeLabel.AutoSize = true;
+            this.TimeLabel.Location = new System.Drawing.Point(354, 27);
+            this.TimeLabel.Name = "TimeLabel";
+            this.TimeLabel.Size = new System.Drawing.Size(79, 20);
+            this.TimeLabel.TabIndex = 2;
+            this.TimeLabel.Text = "Time Left:";
+            // 
+            // Player2Label
+            // 
+            this.Player2Label.AutoSize = true;
+            this.Player2Label.Location = new System.Drawing.Point(500, 27);
+            this.Player2Label.Name = "Player2Label";
+            this.Player2Label.Size = new System.Drawing.Size(69, 20);
+            this.Player2Label.TabIndex = 3;
+            this.Player2Label.Text = "Player 2:";
+            // 
+            // Player2ScoreLabel
+            // 
+            this.Player2ScoreLabel.AutoSize = true;
+            this.Player2ScoreLabel.Location = new System.Drawing.Point(719, 27);
+            this.Player2ScoreLabel.Name = "Player2ScoreLabel";
+            this.Player2ScoreLabel.Size = new System.Drawing.Size(55, 20);
+            this.Player2ScoreLabel.TabIndex = 4;
+            this.Player2ScoreLabel.Text = "Score:";
+            // 
             // Boggle
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(888, 688);
+            this.Controls.Add(this.Scorepanel);
             this.Controls.Add(this.Letter30);
             this.Controls.Add(this.Letter31);
             this.Controls.Add(this.Letter32);
@@ -386,6 +451,8 @@
             this.OptionsSplitContainer.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.OptionsSplitContainer)).EndInit();
             this.OptionsSplitContainer.ResumeLayout(false);
+            this.Scorepanel.ResumeLayout(false);
+            this.Scorepanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -423,6 +490,12 @@
         private System.Windows.Forms.TextBox EnterWordsTextBox;
         private System.Windows.Forms.Label EnterWordsLabel;
         private System.Windows.Forms.Button GameStartedButton;
+        private System.Windows.Forms.Panel Scorepanel;
+        private System.Windows.Forms.Label Player2ScoreLabel;
+        private System.Windows.Forms.Label Player2Label;
+        private System.Windows.Forms.Label TimeLabel;
+        private System.Windows.Forms.Label Player1ScoreLabel;
+        private System.Windows.Forms.Label Player1Label;
     }
 }
 

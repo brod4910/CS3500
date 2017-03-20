@@ -78,6 +78,9 @@ namespace BoggleClient
             set { _gameState = value; }
         }
 
+        /// <summary>
+        /// Getter and setter for time
+        /// </summary>
         public double Time
         {
             get { return _time; }

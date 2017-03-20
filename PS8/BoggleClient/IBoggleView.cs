@@ -43,12 +43,20 @@ namespace BoggleClient
         bool GameState { get; set; }
 
         /// <summary>
+        /// Getter and setter for time
+        /// </summary>
+        double Time { get; set; }
+
+        /// <summary>
         /// If state == true, enables all controls that are normally enabled; disables Cancel.
         /// If state == false, disables all controls; enables Cancel.
         /// </summary>
         void EnableControls(bool state);
 
-        
+        /// <summary>
+        /// Displays the board on the GUI
+        /// </summary>
+        /// <param name="board"></param>
         void DisplayBoard(string board);
     }
 }
