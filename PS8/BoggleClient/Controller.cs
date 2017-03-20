@@ -62,6 +62,7 @@ namespace BoggleClient
             view.RegisterPressed += Register;
             view.CancelPressed += Cancel;
             view.CreateGamePressed += HandleCreateGamePressed;
+            view.GameStatus += GameStatus;
         }
 
         /// <summary>
@@ -124,9 +125,7 @@ namespace BoggleClient
                 view.EnableControls(false);
                 this.domain = domain;
 
-                this.client = CreateClient(domain);
-
-                using (client)
+                using (HttpClient client = CreateClient(this.domain))
                 {
                     //Create the parameter
                     dynamic user = new ExpandoObject();
@@ -164,9 +163,9 @@ namespace BoggleClient
         /// <summary>
         /// Refreshes the display when something has changed
         /// </summary>
-        private void Refresh(bool brief)
+        private bool GameStatus(bool brief)
         {
-            using (client)
+            using (HttpClient client = CreateClient(this.domain))
             {
                 HttpResponseMessage response;
 
@@ -187,28 +186,38 @@ namespace BoggleClient
                     String result = response.Content.ReadAsStringAsync().Result;
                     dynamic items = JsonConvert.DeserializeObject(result);
 
-                    if (brief)
+                    if (items.GameState != "pending")
                     {
-
-                    }
-                    else
-                    {
-                        if(items.GameState == "active")
+                        if (brief)
                         {
-                            view.GameState = true;
+
                         }
                         else
                         {
-                            view.GameState = false;
+                            if (items.GameState == "active")
+                            {
+                                view.GameState = true;
+                                view.DisplayBoard(items.Board);
+                                view.Time = items.Time;
+                                return true;
+                            }
+                            else
+                            {
+                                view.GameState = false;
+                                return false;
+                            }
                         }
-                        view.DisplayBoard(items.Board);
-                        view.Time = items.Time;
                     }
+                    {
+                        return false;
+                    }
+                
                 }
                 else
                 {
                     String errorMessage = "Error " + response.StatusCode + "\n" + response.ReasonPhrase;
                     MessageBox.Show(errorMessage);
+                    return false;
                 }
             }
 

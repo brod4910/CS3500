@@ -37,12 +37,19 @@ namespace BoggleClient
         public event Action<string> WordEntered;
 
         /// <summary>
+        /// Gets game status of game
+        /// </summary>
+        public event Func<bool, bool> GameStatus;
+
+        /// <summary>
         /// registered user is set to false
         /// </summary>
         private bool _userRegistered = false;
 
         /// <summary>
         /// State of game at any given point
+        /// False == completed or pending
+        /// true == active
         /// </summary>
         private bool _gameState = false;
 
@@ -185,6 +192,13 @@ namespace BoggleClient
             if(CreateGamePressed != null)
             {
                 CreateGamePressed(GameTimeTextBox.Text);
+                
+                //if game status is pending then keep calling
+                //to get board and time
+                while(!GameStatus(false))
+                {
+                    
+                }
             }
         }
 
@@ -198,6 +212,11 @@ namespace BoggleClient
             CreateGameButton.Enabled = GameTimeTextBox.Text.Trim().Length > 0 && AreNumbers(GameTimeTextBox.Text) && UserRegistered;
         }
 
+        /// <summary>
+        /// Displays the board on the intial game status
+        /// Not Tested
+        /// </summary>
+        /// <param name="board"></param>
         public void DisplayBoard(string board)
         {
             char[] charArray = board.ToCharArray();

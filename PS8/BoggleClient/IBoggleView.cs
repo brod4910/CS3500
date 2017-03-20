@@ -33,6 +33,11 @@ namespace BoggleClient
         event Action<string> WordEntered;
 
         /// <summary>
+        /// Gets game status of game
+        /// </summary>
+        event Func<bool, bool> GameStatus;
+
+        /// <summary>
         /// Getter and setter for registering a user
         /// </summary>
         bool UserRegistered { get; set;}
