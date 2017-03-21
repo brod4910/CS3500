@@ -63,5 +63,15 @@ namespace BoggleClient
         /// </summary>
         /// <param name="board"></param>
         void DisplayBoard(string board);
+
+        /// <summary>
+        /// Displays Interfaces Time variable on board
+        /// </summary>
+        void SetTime();
+
+        /// <summary>
+        /// Disabled Editable Text Boxes On Boggle Board
+        /// </summary>
+        void DisableNameAndServer();
     }
 }

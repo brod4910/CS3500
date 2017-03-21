@@ -192,13 +192,16 @@ namespace BoggleClient
             if(CreateGamePressed != null)
             {
                 CreateGamePressed(GameTimeTextBox.Text);
-                
+
+
                 //if game status is pending then keep calling
                 //to get board and time
-                while(!GameStatus(false))
+                /*
+                while (!GameStatus(false))
                 {
                     
                 }
+                */
             }
         }
 
@@ -221,7 +224,7 @@ namespace BoggleClient
         {
             char[] charArray = board.ToCharArray();
             int count = 0;
-
+            /*
             foreach(Control control in BogglePanel.Controls)
             {
                 if(control is Label)
@@ -230,6 +233,24 @@ namespace BoggleClient
                     count++;
                 }
             }
+            */
+        }
+
+        /// <summary>
+        /// Sets the Clock Time
+        /// </summary>
+        public void SetTime()
+        {
+            TimeLabel.Text = "Time Left: " +  Time.ToString();
+        }
+
+        /// <summary>
+        /// Disables Name and Server Text Boxes
+        /// </summary>
+        public void DisableNameAndServer()
+        {
+            DomainNameTextBox.Enabled = false;
+            RegisterUserTextBox.Enabled = false;
         }
     }
 }

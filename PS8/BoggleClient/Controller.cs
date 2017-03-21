@@ -73,6 +73,9 @@ namespace BoggleClient
             tokenSource.Cancel();
         }
 
+        /// <summary>
+        /// Handles when Create Game is pushed, sends request for new game to boggle api
+        /// </summary>
         private async void HandleCreateGamePressed(string timeLimit)
         {
             try
@@ -92,7 +95,13 @@ namespace BoggleClient
                         string result = await response.Content.ReadAsStringAsync();
                         dynamic items = JsonConvert.DeserializeObject(result);
                         this.gameId = items.GameID;
-                       // time.Start();
+                        // Cannot just spin, we need a more clever approach to this.
+                        while(!GameStatus(false))
+                        {
+                            Thread.Sleep(2000);
+                        }
+                        // Set Board
+                        view.SetTime();
                     }
                     else
                     {
@@ -110,7 +119,6 @@ namespace BoggleClient
             {
                 view.EnableControls(true);
             }
-
         }
 
         /// <summary>
@@ -142,6 +150,7 @@ namespace BoggleClient
                         dynamic items = JsonConvert.DeserializeObject(result);
                         userToken = items.UserToken;
                         view.UserRegistered = true;
+                        view.DisableNameAndServer();
                     }
                     else
                     {
@@ -171,12 +180,14 @@ namespace BoggleClient
 
                 if (brief)
                 {
-                    String url = String.Format(" games/{0}&Brief={1]", GameId, "no");
+                    String url = String.Format("games/{0}?Brief={1}", this.gameId, "no");
+                    //String url = String.Format("games/{0}", this.gameId);
                     response = client.GetAsync(url).Result;
                 }
                 else
                 {
-                    String url = String.Format(" games/{0}&Brief={1]", GameId, "yes");
+                    //String url = String.Format("games/{0}?Brief={1}", this.gameId, "yes");
+                    String url = String.Format("games/{0}", this.gameId);
                     response = client.GetAsync(url).Result;
                 }
 
@@ -197,8 +208,8 @@ namespace BoggleClient
                             if (items.GameState == "active")
                             {
                                 view.GameState = true;
-                                view.DisplayBoard(items.Board);
-                                view.Time = items.Time;
+                                view.DisplayBoard((string) items.Board);
+                                view.Time = items.TimeLeft;
                                 return true;
                             }
                             else
