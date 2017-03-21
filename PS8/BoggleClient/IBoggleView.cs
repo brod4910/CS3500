@@ -73,5 +73,15 @@ namespace BoggleClient
         /// Disabled Editable Text Boxes On Boggle Board
         /// </summary>
         void DisableNameAndServer();
+
+        /// <summary>
+        /// Enable Submit Button
+        /// </summary>
+        void SetSubmitButton(bool status);
+
+        /// <summary>
+        /// Sets Player Labels to given Nicknmes
+        /// </summary>
+        void SetPlayerNicknames(string nick1, string nick2);
     }
 }

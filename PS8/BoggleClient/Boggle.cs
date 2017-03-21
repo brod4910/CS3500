@@ -224,6 +224,23 @@ namespace BoggleClient
         {
             char[] charArray = board.ToCharArray();
             int count = 0;
+
+            Letter00.Text = charArray[0].ToString();
+            Letter01.Text = charArray[1].ToString();
+            Letter02.Text = charArray[2].ToString();
+            Letter03.Text = charArray[3].ToString();
+            Letter10.Text = charArray[4].ToString();
+            Letter11.Text = charArray[5].ToString();
+            Letter12.Text = charArray[6].ToString();
+            Letter13.Text = charArray[7].ToString();
+            Letter20.Text = charArray[8].ToString();
+            Letter21.Text = charArray[9].ToString();
+            Letter22.Text = charArray[10].ToString();
+            Letter23.Text = charArray[11].ToString();
+            Letter30.Text = charArray[12].ToString();
+            Letter31.Text = charArray[13].ToString();
+            Letter32.Text = charArray[14].ToString();
+            Letter33.Text = charArray[15].ToString();
             /*
             foreach(Control control in BogglePanel.Controls)
             {
@@ -251,6 +268,35 @@ namespace BoggleClient
         {
             DomainNameTextBox.Enabled = false;
             RegisterUserTextBox.Enabled = false;
+        }
+
+        /// <summary>
+        /// Enables / Disables the Game Started Button
+        /// </summary>
+        /// <param name="status"></param>
+        public void SetSubmitButton(bool status)
+        {
+            if(status)
+            {
+                GameStartedButton.Text = "Play word";
+            }
+            GameStartedButton.Enabled = status;
+        }
+
+        /// <summary>
+        /// Sets Player Labels to provided nicknames
+        /// </summary>
+        public void SetPlayerNicknames(string nick1, string nick2)
+        {
+            Player1Label.Text = nick1;
+            Player2Label.Text = nick2;
+        }
+
+        private void GameStartedButton_Click(object sender, EventArgs e)
+        {
+            WordEntered(EnterWordsTextBox.Text.ToString());
+            EnterWordsTextBox.Text = "";
+
         }
     }
 }

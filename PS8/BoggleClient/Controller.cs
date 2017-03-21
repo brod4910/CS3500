@@ -7,6 +7,7 @@ using System.Dynamic;
 using System.Net.Http;
 using Newtonsoft.Json;
 using System.Threading;
+using System.Timers;
 using System.Windows.Forms;
 
 namespace BoggleClient
@@ -18,6 +19,13 @@ namespace BoggleClient
         /// The view controlled by this Controller
         /// </summary>
         private IBoggleView view;
+
+        /// <summary>
+        /// Timer For Events
+        /// </summary>
+        private System.Timers.Timer eventTimer;
+
+        private bool gameHasStarted = false;
 
         /// <summary>
         /// Holds the registered domain
@@ -59,10 +67,12 @@ namespace BoggleClient
         {
             time.Interval = 1000;
             this.view = view;
+            eventTimer = new System.Timers.Timer(1000);
             view.RegisterPressed += Register;
             view.CancelPressed += Cancel;
             view.CreateGamePressed += HandleCreateGamePressed;
             view.GameStatus += GameStatus;
+            view.WordEntered += WordSubmitted;
         }
 
         /// <summary>
@@ -95,10 +105,10 @@ namespace BoggleClient
                         string result = await response.Content.ReadAsStringAsync();
                         dynamic items = JsonConvert.DeserializeObject(result);
                         this.gameId = items.GameID;
-                        // Cannot just spin, we need a more clever approach to this.
+                        // Need to Use a thread timer instead of just spinning
                         while(!GameStatus(false))
                         {
-                            Thread.Sleep(2000);
+                            Thread.Sleep(1000);
                         }
                         // Set Board
                         view.SetTime();
@@ -205,11 +215,13 @@ namespace BoggleClient
                         }
                         else
                         {
-                            if (items.GameState == "active")
+                            if (items.GameState == "active") // Need to use a timer to invoke calls every second to update score and timer
                             {
                                 view.GameState = true;
                                 view.DisplayBoard((string) items.Board);
                                 view.Time = items.TimeLeft;
+                                view.SetSubmitButton(true);
+                                view.SetPlayerNicknames((string) items.Player1.Nickname, (string) items.Player2.Nickname);
                                 return true;
                             }
                             else
@@ -232,6 +244,31 @@ namespace BoggleClient
                 }
             }
 
+        }
+
+        /// <summary>
+        /// Makes HTTP Put request to play the word
+        /// </summary>
+        /// <param name="word"></param>
+        private async void WordSubmitted(string word)
+        {
+            using (HttpClient client = CreateClient(this.domain))
+            {
+                dynamic data = new ExpandoObject();
+                data.UserToken = userToken;
+                data.Word = word;
+
+                tokenSource = new CancellationTokenSource();
+                StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                String url = String.Format("games/{0}", this.gameId);
+                HttpResponseMessage response = await client.PutAsync(url, content, tokenSource.Token);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string result = await response.Content.ReadAsStringAsync();
+                    dynamic items = JsonConvert.DeserializeObject(result);
+                }
+            }
         }
 
         /// <summary>
