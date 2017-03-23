@@ -192,16 +192,7 @@ namespace BoggleClient
             if(CreateGamePressed != null)
             {
                 CreateGamePressed(GameTimeTextBox.Text);
-
-
-                //if game status is pending then keep calling
-                //to get board and time
-                /*
-                while (!GameStatus(false))
-                {
-                    
-                }
-                */
+                GameTimeTextBox.Text = "";
             }
         }
 
@@ -223,7 +214,6 @@ namespace BoggleClient
         public void DisplayBoard(string board)
         {
             char[] charArray = board.ToCharArray();
-            int count = 0;
 
             Letter00.Text = charArray[0].ToString();
             Letter01.Text = charArray[1].ToString();
@@ -241,16 +231,38 @@ namespace BoggleClient
             Letter31.Text = charArray[13].ToString();
             Letter32.Text = charArray[14].ToString();
             Letter33.Text = charArray[15].ToString();
-            /*
+        }
+
+        /// <summary>
+        /// Displays the words played
+        /// </summary>
+        /// <param name="player1"></param>
+        /// <param name="player2"></param>
+        public void WordsPlayed(dynamic player1, dynamic player2)
+        {
+            foreach(dynamic word in player1)
+            {
+                Player1WordsPlayedLabel.Text = word + "\n";
+            }
+
+            foreach (dynamic word in player2)
+            {
+                Player2WordsPlayedLabel.Text = word + "\n";
+            }
+        }
+
+        /// <summary>
+        /// Clears the board
+        /// </summary>
+        public void ClearBoard()
+        {
             foreach(Control control in BogglePanel.Controls)
             {
                 if(control is Label)
                 {
-                    control.Text = charArray[count] + "";
-                    count++;
+                    control.Text = "";
                 }
             }
-            */
         }
 
         /// <summary>
@@ -259,6 +271,12 @@ namespace BoggleClient
         public void SetTime()
         {
             TimeLabel.Text = "Time Left: " +  Time.ToString();
+        }
+
+        public void SetScore(string player1Score, string player2Score)
+        {
+            Player1ScoreLabel.Text = "Score: " + player1Score;
+            Player2ScoreLabel.Text = "Score: " + player2Score;
         }
 
         /// <summary>
@@ -296,7 +314,6 @@ namespace BoggleClient
         {
             WordEntered(EnterWordsTextBox.Text.ToString());
             EnterWordsTextBox.Text = "";
-
         }
     }
 }

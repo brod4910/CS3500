@@ -65,6 +65,11 @@ namespace BoggleClient
         void DisplayBoard(string board);
 
         /// <summary>
+        /// Clears the board
+        /// </summary>
+        void ClearBoard();
+
+        /// <summary>
         /// Displays Interfaces Time variable on board
         /// </summary>
         void SetTime();
@@ -83,5 +88,14 @@ namespace BoggleClient
         /// Sets Player Labels to given Nicknmes
         /// </summary>
         void SetPlayerNicknames(string nick1, string nick2);
+
+        /// <summary>
+        /// Sets player scores at any given time
+        /// </summary>
+        /// <param name="player1Score"></param>
+        /// <param name="player2Score"></param>
+        void SetScore(string player1Score, string player2Score);
+
+        void WordsPlayed(dynamic player1, dynamic player2);
     }
 }

@@ -23,8 +23,11 @@ namespace BoggleClient
         /// <summary>
         /// Timer For Events
         /// </summary>
-        private System.Timers.Timer eventTimer;
+        private System.Windows.Forms.Timer timer;
 
+        /// <summary>
+        /// Bool for if the game has started of not
+        /// </summary>
         private bool gameHasStarted = false;
 
         /// <summary>
@@ -35,17 +38,12 @@ namespace BoggleClient
         /// <summary>
         /// Holds the registered game ID
         /// </summary>
-        private string gameId;
+        private string GameID;
         /// <summary>
         /// The token of the most recently registered user, or "0" if no user
         /// has ever registered
         /// </summary>
         private string userToken;
-
-        /// <summary>
-        /// String representing the time entered
-        /// </summary>
-        private string timeLimit;
 
         private System.Windows.Forms.Timer time = new System.Windows.Forms.Timer();
         /// <summary>
@@ -53,26 +51,20 @@ namespace BoggleClient
         /// </summary>
         private CancellationTokenSource tokenSource;
 
-        /// <summary>
-        /// Client used throughout game
-        /// </summary>
-        private HttpClient client;
-        
-        /// <summary>
-        /// GameId for any given game
-        /// </summary>
-        private string GameId;
 
         public Controller(IBoggleView view)
         {
             time.Interval = 1000;
             this.view = view;
-            eventTimer = new System.Timers.Timer(1000);
             view.RegisterPressed += Register;
             view.CancelPressed += Cancel;
             view.CreateGamePressed += HandleCreateGamePressed;
             view.GameStatus += GameStatus;
             view.WordEntered += WordSubmitted;
+            timer = new System.Windows.Forms.Timer();
+            timer.Interval = 1000;
+            timer.Tick += WaitingForGame;
+            timer.Start();
         }
 
         /// <summary>
@@ -92,6 +84,7 @@ namespace BoggleClient
             {
                 using (HttpClient client = CreateClient(this.domain))
                 {
+                    view.ClearBoard();
                     dynamic data = new ExpandoObject();
                     data.UserToken = userToken;
                     data.TimeLimit = timeLimit;
@@ -104,14 +97,11 @@ namespace BoggleClient
                     {
                         string result = await response.Content.ReadAsStringAsync();
                         dynamic items = JsonConvert.DeserializeObject(result);
-                        this.gameId = items.GameID;
+                        this.GameID = items.GameID;
                         // Need to Use a thread timer instead of just spinning
-                        while(!GameStatus(false))
-                        {
-                            Thread.Sleep(1000);
-                        }
+                        
                         // Set Board
-                        view.SetTime();
+                        //view.SetTime();
                     }
                     else
                     {
@@ -179,71 +169,117 @@ namespace BoggleClient
             }
         }
 
+
+        /// <summary>
+        /// Refreshes the game whilst waiting for the game.
+        /// </summary>
+        /// <returns></returns>
+        private void WaitingForGame(object sender, EventArgs e)
+        {
+            if (userToken != null)
+            {
+                if (GameID != null)
+                {
+                    if (GameStatus(false))
+                    {
+                        timer.Tick += PlayingGame;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Runs while playing game
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void PlayingGame(object sender, EventArgs e)
+        {
+            if(gameHasStarted)
+            {
+                GameStatus(false);
+            }
+            else
+            {
+                timer.Tick += WaitingForGame;
+            }
+        }
+
         /// <summary>
         /// Refreshes the display when something has changed
         /// </summary>
         private bool GameStatus(bool brief)
         {
-            using (HttpClient client = CreateClient(this.domain))
+            try
             {
-                HttpResponseMessage response;
-
-                if (brief)
+                using (HttpClient client = CreateClient(this.domain))
                 {
-                    String url = String.Format("games/{0}?Brief={1}", this.gameId, "no");
-                    //String url = String.Format("games/{0}", this.gameId);
-                    response = client.GetAsync(url).Result;
-                }
-                else
-                {
-                    //String url = String.Format("games/{0}?Brief={1}", this.gameId, "yes");
-                    String url = String.Format("games/{0}", this.gameId);
-                    response = client.GetAsync(url).Result;
-                }
+                    HttpResponseMessage response;
 
-
-                if (response.IsSuccessStatusCode)
-                {
-                    String result = response.Content.ReadAsStringAsync().Result;
-                    dynamic items = JsonConvert.DeserializeObject(result);
-
-                    if (items.GameState != "pending")
+                    if (brief)
                     {
-                        if (brief)
-                        {
+                        //havent gotten this to work
+                        String url = String.Format("games/{0}?Brief={1}", this.GameID, "yes");
+                        response = client.GetAsync(url).Result;
+                    }
+                    else
+                    {
+                        String url = String.Format("games/{0}", this.GameID);
+                        response = client.GetAsync(url).Result;
+                    }
 
-                        }
-                        else
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        String result = response.Content.ReadAsStringAsync().Result;
+                        dynamic items = JsonConvert.DeserializeObject(result);
+
+                        if (items.GameState != "pending")
                         {
-                            if (items.GameState == "active") // Need to use a timer to invoke calls every second to update score and timer
+                            if (brief)
                             {
-                                view.GameState = true;
-                                view.DisplayBoard((string) items.Board);
-                                view.Time = items.TimeLeft;
-                                view.SetSubmitButton(true);
-                                view.SetPlayerNicknames((string) items.Player1.Nickname, (string) items.Player2.Nickname);
-                                return true;
+
                             }
                             else
                             {
-                                view.GameState = false;
-                                return false;
+                                if (items.GameState == "active") // Need to use a timer to invoke calls every second to update score and timer
+                                {
+                                    gameHasStarted = true;
+                                    view.GameState = true;
+                                    view.DisplayBoard((string)items.Board);
+                                    view.Time = items.TimeLeft;
+                                    view.SetTime();
+                                    view.SetSubmitButton(true);
+                                    view.SetPlayerNicknames((string)items.Player1.Nickname, (string)items.Player2.Nickname);
+                                    view.SetScore((string)items.Player1.Score, (string)items.Player2.Score);
+                                    return true;
+                                }
+                                else
+                                {
+                                    view.ClearBoard();
+                                    view.WordsPlayed(items.Player1.WordsPlayed, items.Player2.WordsPlayed);
+                                    gameHasStarted = false;
+                                    view.GameState = false;
+                                    return false;
+                                }
                             }
                         }
+                        {
+                            return false;
+                        }
                     }
+                    else
                     {
+                        String errorMessage = "Error " + response.StatusCode + "\n" + response.ReasonPhrase;
+                        MessageBox.Show(errorMessage);
                         return false;
                     }
-                
-                }
-                else
-                {
-                    String errorMessage = "Error " + response.StatusCode + "\n" + response.ReasonPhrase;
-                    MessageBox.Show(errorMessage);
-                    return false;
                 }
             }
-
+            catch (TaskCanceledException)
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -252,22 +288,29 @@ namespace BoggleClient
         /// <param name="word"></param>
         private async void WordSubmitted(string word)
         {
-            using (HttpClient client = CreateClient(this.domain))
+            try
             {
-                dynamic data = new ExpandoObject();
-                data.UserToken = userToken;
-                data.Word = word;
-
-                tokenSource = new CancellationTokenSource();
-                StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-                String url = String.Format("games/{0}", this.gameId);
-                HttpResponseMessage response = await client.PutAsync(url, content, tokenSource.Token);
-
-                if (response.IsSuccessStatusCode)
+                using (HttpClient client = CreateClient(this.domain))
                 {
-                    string result = await response.Content.ReadAsStringAsync();
-                    dynamic items = JsonConvert.DeserializeObject(result);
+                    dynamic data = new ExpandoObject();
+                    data.UserToken = userToken;
+                    data.Word = word;
+
+                    tokenSource = new CancellationTokenSource();
+                    StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                    String url = String.Format("games/{0}", this.GameID);
+                    HttpResponseMessage response = await client.PutAsync(url, content, tokenSource.Token);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string result = await response.Content.ReadAsStringAsync();
+                        dynamic items = JsonConvert.DeserializeObject(result);
+                    }
                 }
+            }
+            finally
+            {
+                
             }
         }
 
