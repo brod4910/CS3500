@@ -25,6 +25,8 @@ namespace BoggleClient
         /// </summary>
         private System.Windows.Forms.Timer timer;
 
+        private System.Windows.Forms.Timer gameTimer;
+
         /// <summary>
         /// Bool for if the game has started of not
         /// </summary>
@@ -54,7 +56,6 @@ namespace BoggleClient
 
         public Controller(IBoggleView view)
         {
-            time.Interval = 1000;
             this.view = view;
             view.RegisterPressed += Register;
             view.CancelPressed += Cancel;
@@ -62,6 +63,9 @@ namespace BoggleClient
             view.GameStatus += GameStatus;
             view.WordEntered += WordSubmitted;
             timer = new System.Windows.Forms.Timer();
+            gameTimer = new System.Windows.Forms.Timer();
+            gameTimer.Interval = 1000;
+            gameTimer.Tick += PlayingGame;
             timer.Interval = 1000;
             timer.Tick += WaitingForGame;
             timer.Start();
@@ -118,7 +122,7 @@ namespace BoggleClient
 
             }
         }
-
+        
         /// <summary>
         /// Registers a user with the given username and domain
         /// </summary>
@@ -178,9 +182,12 @@ namespace BoggleClient
             {
                 if (GameID != null)
                 {
+                    // Change Game Button to Say Joining... Or some effect
                     if (GameStatus(false))
                     {
-                        timer.Tick += PlayingGame;
+                        timer.Stop();
+                        gameTimer.Start();
+                        //timer.Tick += PlayingGame;
                     }
                 }
             }
@@ -199,7 +206,9 @@ namespace BoggleClient
             }
             else
             {
-                timer.Tick += WaitingForGame;
+                timer.Stop();
+                gameTimer.Start();
+                //timer.Tick += WaitingForGame;
             }
         }
 
@@ -303,7 +312,7 @@ namespace BoggleClient
                 {
                     dynamic data = new ExpandoObject();
                     data.UserToken = userToken;
-                    data.Word = word;
+                    data.Word = word.ToLower();
 
                     tokenSource = new CancellationTokenSource();
                     StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");

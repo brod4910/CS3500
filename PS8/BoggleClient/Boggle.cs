@@ -103,6 +103,8 @@ namespace BoggleClient
             RegisterButton.Enabled = state;
 
             CreateGameButton.Enabled = state && UserRegistered && GameTimeTextBox.Text.Trim().Length > 0 && AreNumbers(GameTimeTextBox.Text);
+            Player1WordsPlayedLabel.Text = "";
+            Player2WordsPlayedLabel.Text = "";
 
             foreach (Control control in OptionsSplitContainer.Panel2.Controls)
             {
@@ -116,7 +118,7 @@ namespace BoggleClient
                 }
             }
 
-            ButtonCancel.Enabled = !state;
+            CancelButton.Enabled = true;
         }
 
         /// <summary>
@@ -166,6 +168,7 @@ namespace BoggleClient
             if(RegisterPressed != null)
             {
                 RegisterPressed(RegisterUserTextBox.Text.Trim(), DomainNameTextBox.Text.Trim());
+                RegisterButton.Enabled = false;
             }
         }
 
@@ -240,16 +243,35 @@ namespace BoggleClient
         /// <param name="player2"></param>
         public void WordsPlayed(dynamic player1, dynamic player2)
         {
-            foreach(dynamic word in player1)
+            Player1WordsPlayedLabel.Text = "Words Played:\n";
+            Player2WordsPlayedLabel.Text = "Words Played:\n";
+            Dictionary<string, int> dict1 = new Dictionary<string, int>();
+            Dictionary<string, int> dict2 = new Dictionary<string, int>();
+            List<string> wordsPlayed1 = new List<string>();
+            List<string> wordsPlayed2 = new List<string>();
+            foreach (dynamic word in player1)
             {
-                Player1WordsPlayedLabel.Text = word + "\n";
+               // wordsPlayed1.Add((string) word.Word);
+                dict1.Add((string)word.Word, (int)word.Score);
+               // Player1WordsPlayedLabel.Text = word.Word + "\n";
             }
 
             foreach (dynamic word in player2)
             {
-                Player2WordsPlayedLabel.Text = word + "\n";
+                //wordsPlayed2.Add((string) word.Word);
+                dict2.Add((string)word.Word, (int)word.Score);
+                //Player2WordsPlayedLabel.Text = word.Word + "\n";
+            }
+            foreach(var item in dict1)
+            {
+                Player1WordsPlayedLabel.Text += item.Key + " : " + item.Value + "\n";
+            }
+            foreach(var item in dict2)
+            {
+                Player2WordsPlayedLabel.Text += item.Key + " :" + item.Value + "\n";
             }
         }
+
 
         /// <summary>
         /// Clears the board
@@ -308,6 +330,7 @@ namespace BoggleClient
                 GameStartedButton.Text = "Play word";
             }
             GameStartedButton.Enabled = status;
+            EnterWordsTextBox.Enabled = status;
         }
 
         /// <summary>
