@@ -86,6 +86,7 @@ namespace BoggleClient
                 {
                     view.ClearBoard();
                     dynamic data = new ExpandoObject();
+                    view.EnableControls(false);
                     data.UserToken = userToken;
                     data.TimeLimit = timeLimit;
 
@@ -98,6 +99,7 @@ namespace BoggleClient
                         string result = await response.Content.ReadAsStringAsync();
                         dynamic items = JsonConvert.DeserializeObject(result);
                         this.GameID = items.GameID;
+                        view.DisableGameTime(false);
                         // Need to Use a thread timer instead of just spinning
                         
                         // Set Board
@@ -114,10 +116,6 @@ namespace BoggleClient
             catch (TaskCanceledException)
             {
 
-            }
-            finally
-            {
-                view.EnableControls(true);
             }
         }
 
@@ -150,7 +148,7 @@ namespace BoggleClient
                         dynamic items = JsonConvert.DeserializeObject(result);
                         userToken = items.UserToken;
                         view.UserRegistered = true;
-                        view.DisableNameAndServer();
+                        view.DisableNameAndServer(false);
                     }
                     else
                     {
@@ -256,10 +254,7 @@ namespace BoggleClient
                                 }
                                 else
                                 {
-                                    view.ClearBoard();
-                                    view.WordsPlayed(items.Player1.WordsPlayed, items.Player2.WordsPlayed);
-                                    gameHasStarted = false;
-                                    view.GameState = false;
+                                    Reset(items);
                                     return false;
                                 }
                             }
@@ -280,6 +275,20 @@ namespace BoggleClient
             {
                 return false;
             }
+        }
+
+        private void Reset(dynamic items)
+        {
+            userToken = null;
+            view.UserRegistered = false;
+            GameID = null;
+            view.ClearBoard();
+            view.EnableControls(true);
+            view.DisableNameAndServer(true);
+            view.WordsPlayed(items.Player1.WordsPlayed, items.Player2.WordsPlayed);
+            view.DisableGameTime(true);
+            gameHasStarted = false;
+            view.GameState = false;
         }
 
         /// <summary>

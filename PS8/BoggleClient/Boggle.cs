@@ -116,7 +116,7 @@ namespace BoggleClient
                 }
             }
 
-            CancelButton.Enabled = !state;
+            ButtonCancel.Enabled = !state;
         }
 
         /// <summary>
@@ -256,13 +256,12 @@ namespace BoggleClient
         /// </summary>
         public void ClearBoard()
         {
-            foreach(Control control in BogglePanel.Controls)
-            {
-                if(control is Label)
-                {
-                    control.Text = "";
-                }
-            }
+            string board = "                ";
+
+            DisplayBoard(board);
+
+            Player1ScoreLabel.Text = "";
+            Player2ScoreLabel.Text = "";
         }
 
         /// <summary>
@@ -282,10 +281,20 @@ namespace BoggleClient
         /// <summary>
         /// Disables Name and Server Text Boxes
         /// </summary>
-        public void DisableNameAndServer()
+        public void DisableNameAndServer(bool state)
         {
-            DomainNameTextBox.Enabled = false;
-            RegisterUserTextBox.Enabled = false;
+            DomainNameTextBox.Enabled = state;
+            RegisterUserTextBox.Enabled = state;
+        }
+
+        /// <summary>
+        /// Disables game time and create button
+        /// </summary>
+        /// <param name="state"></param>
+        public void DisableGameTime(bool state)
+        {
+            GameTimeTextBox.Enabled = state;
+            CreateGameButton.Enabled = state;
         }
 
         /// <summary>

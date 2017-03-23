@@ -77,7 +77,7 @@ namespace BoggleClient
         /// <summary>
         /// Disabled Editable Text Boxes On Boggle Board
         /// </summary>
-        void DisableNameAndServer();
+        void DisableNameAndServer(bool state);
 
         /// <summary>
         /// Enable Submit Button
@@ -96,6 +96,18 @@ namespace BoggleClient
         /// <param name="player2Score"></param>
         void SetScore(string player1Score, string player2Score);
 
+        /// <summary>
+        /// Displays the words that were played
+        /// </summary>
+        /// <param name="player1"></param>
+        /// <param name="player2"></param>
         void WordsPlayed(dynamic player1, dynamic player2);
+
+        /// <summary>
+        /// Disables game time and create button
+        /// </summary>
+        /// <param name="state"></param>
+        void DisableGameTime(bool state);
+
     }
 }

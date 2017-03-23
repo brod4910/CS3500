@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.OptionsSplitContainer = new System.Windows.Forms.SplitContainer();
-            this.CancelButton = new System.Windows.Forms.Button();
+            this.ButtonCancel = new System.Windows.Forms.Button();
             this.CreateGameButton = new System.Windows.Forms.Button();
             this.GameTimeTextBox = new System.Windows.Forms.TextBox();
             this.GameTimeLabel = new System.Windows.Forms.Label();
@@ -80,7 +80,7 @@
             // 
             // OptionsSplitContainer.Panel1
             // 
-            this.OptionsSplitContainer.Panel1.Controls.Add(this.CancelButton);
+            this.OptionsSplitContainer.Panel1.Controls.Add(this.ButtonCancel);
             this.OptionsSplitContainer.Panel1.Controls.Add(this.CreateGameButton);
             this.OptionsSplitContainer.Panel1.Controls.Add(this.GameTimeTextBox);
             this.OptionsSplitContainer.Panel1.Controls.Add(this.GameTimeLabel);
@@ -102,14 +102,14 @@
             // 
             // CancelButton
             // 
-            this.CancelButton.Enabled = false;
-            this.CancelButton.Location = new System.Drawing.Point(363, 83);
-            this.CancelButton.Name = "CancelButton";
-            this.CancelButton.Size = new System.Drawing.Size(81, 45);
-            this.CancelButton.TabIndex = 8;
-            this.CancelButton.Text = "Cancel";
-            this.CancelButton.UseVisualStyleBackColor = true;
-            this.CancelButton.Click += new System.EventHandler(this.CancelButton_Click);
+            this.ButtonCancel.Enabled = false;
+            this.ButtonCancel.Location = new System.Drawing.Point(363, 83);
+            this.ButtonCancel.Name = "CancelButton";
+            this.ButtonCancel.Size = new System.Drawing.Size(81, 45);
+            this.ButtonCancel.TabIndex = 8;
+            this.ButtonCancel.Text = "Cancel";
+            this.ButtonCancel.UseVisualStyleBackColor = true;
+            this.ButtonCancel.Click += new System.EventHandler(this.CancelButton_Click);
             // 
             // CreateGameButton
             // 
@@ -489,7 +489,7 @@
         private System.Windows.Forms.TextBox DomainNameTextBox;
         private System.Windows.Forms.TextBox RegisterUserTextBox;
         private System.Windows.Forms.Button RegisterButton;
-        private System.Windows.Forms.Button CancelButton;
+        private System.Windows.Forms.Button ButtonCancel;
         private System.Windows.Forms.Button CreateGameButton;
         private System.Windows.Forms.TextBox GameTimeTextBox;
         private System.Windows.Forms.Label GameTimeLabel;
