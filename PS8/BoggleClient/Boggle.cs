@@ -143,7 +143,7 @@ namespace BoggleClient
         /// <param name="e"></param>
         private void Registration_TextChanged(object sender, EventArgs e)
         {
-            RegisterButton.Enabled = DomainNameTextBox.Text.Trim().Length > 0 && RegisterUserTextBox.Text.Trim().Length > 0;
+            RegisterButton.Enabled = DomainNameTextBox.Text.Trim().Length > 0 && RegisterUserTextBox.Text.Trim().Length > 0 && !GameState;
         }
 
         /// <summary>
@@ -255,16 +255,12 @@ namespace BoggleClient
 
             foreach (dynamic word in player1)
             {
-               // wordsPlayed1.Add((string) word.Word);
                 dict1.Add((string)word.Word, (double)word.Score);
-               // Player1WordsPlayedLabel.Text = word.Word + "\n";
             }
 
             foreach (dynamic word in player2)
             {
-                //wordsPlayed2.Add((string) word.Word);
                 dict2.Add((string)word.Word, (double)word.Score);
-                //Player2WordsPlayedLabel.Text = word.Word + "\n";
             }
             foreach(var item in dict1)
             {
@@ -288,6 +284,9 @@ namespace BoggleClient
 
             Player1ScoreLabel.Text = "";
             Player2ScoreLabel.Text = "";
+
+            Player1WordsPlayedLabel.Text = "";
+            Player2WordsPlayedLabel.Text = "";
         }
 
         /// <summary>
@@ -321,6 +320,16 @@ namespace BoggleClient
         {
             GameTimeTextBox.Enabled = state;
             CreateGameButton.Enabled = state;
+        }
+
+        /// <summary>
+        /// Disables the text boxes fo domain and user
+        /// </summary>
+        /// <param name="state"></param>
+        public void DisableDomainAndUser(bool state)
+        {
+            RegisterUserTextBox.Enabled = state;
+            DomainNameTextBox.Enabled = state;
         }
 
         /// <summary>

@@ -264,7 +264,7 @@
             // 
             this.Letter10.AutoSize = true;
             this.Letter10.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Letter10.Location = new System.Drawing.Point(139, 411);
+            this.Letter10.Location = new System.Drawing.Point(139, 400);
             this.Letter10.Name = "Letter10";
             this.Letter10.Size = new System.Drawing.Size(0, 46);
             this.Letter10.TabIndex = 7;
@@ -273,7 +273,7 @@
             // 
             this.Letter11.AutoSize = true;
             this.Letter11.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Letter11.Location = new System.Drawing.Point(333, 411);
+            this.Letter11.Location = new System.Drawing.Point(333, 400);
             this.Letter11.Name = "Letter11";
             this.Letter11.Size = new System.Drawing.Size(0, 46);
             this.Letter11.TabIndex = 6;
@@ -282,7 +282,7 @@
             // 
             this.Letter12.AutoSize = true;
             this.Letter12.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Letter12.Location = new System.Drawing.Point(529, 411);
+            this.Letter12.Location = new System.Drawing.Point(529, 400);
             this.Letter12.Name = "Letter12";
             this.Letter12.Size = new System.Drawing.Size(0, 46);
             this.Letter12.TabIndex = 5;
@@ -291,7 +291,7 @@
             // 
             this.Letter13.AutoSize = true;
             this.Letter13.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Letter13.Location = new System.Drawing.Point(723, 411);
+            this.Letter13.Location = new System.Drawing.Point(723, 400);
             this.Letter13.Name = "Letter13";
             this.Letter13.Size = new System.Drawing.Size(0, 46);
             this.Letter13.TabIndex = 4;
@@ -300,7 +300,7 @@
             // 
             this.Letter30.AutoSize = true;
             this.Letter30.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Letter30.Location = new System.Drawing.Point(139, 621);
+            this.Letter30.Location = new System.Drawing.Point(139, 610);
             this.Letter30.Name = "Letter30";
             this.Letter30.Size = new System.Drawing.Size(0, 46);
             this.Letter30.TabIndex = 15;
@@ -309,7 +309,7 @@
             // 
             this.Letter31.AutoSize = true;
             this.Letter31.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Letter31.Location = new System.Drawing.Point(333, 621);
+            this.Letter31.Location = new System.Drawing.Point(333, 610);
             this.Letter31.Name = "Letter31";
             this.Letter31.Size = new System.Drawing.Size(0, 46);
             this.Letter31.TabIndex = 14;
@@ -318,7 +318,7 @@
             // 
             this.Letter32.AutoSize = true;
             this.Letter32.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Letter32.Location = new System.Drawing.Point(529, 621);
+            this.Letter32.Location = new System.Drawing.Point(529, 610);
             this.Letter32.Name = "Letter32";
             this.Letter32.Size = new System.Drawing.Size(0, 46);
             this.Letter32.TabIndex = 13;
@@ -327,7 +327,7 @@
             // 
             this.Letter33.AutoSize = true;
             this.Letter33.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Letter33.Location = new System.Drawing.Point(723, 621);
+            this.Letter33.Location = new System.Drawing.Point(723, 610);
             this.Letter33.Name = "Letter33";
             this.Letter33.Size = new System.Drawing.Size(0, 46);
             this.Letter33.TabIndex = 12;
@@ -336,7 +336,7 @@
             // 
             this.Letter20.AutoSize = true;
             this.Letter20.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Letter20.Location = new System.Drawing.Point(139, 505);
+            this.Letter20.Location = new System.Drawing.Point(139, 494);
             this.Letter20.Name = "Letter20";
             this.Letter20.Size = new System.Drawing.Size(0, 46);
             this.Letter20.TabIndex = 11;
@@ -345,7 +345,7 @@
             // 
             this.Letter21.AutoSize = true;
             this.Letter21.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Letter21.Location = new System.Drawing.Point(333, 505);
+            this.Letter21.Location = new System.Drawing.Point(333, 494);
             this.Letter21.Name = "Letter21";
             this.Letter21.Size = new System.Drawing.Size(0, 46);
             this.Letter21.TabIndex = 10;
@@ -354,7 +354,7 @@
             // 
             this.Letter22.AutoSize = true;
             this.Letter22.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Letter22.Location = new System.Drawing.Point(529, 505);
+            this.Letter22.Location = new System.Drawing.Point(529, 494);
             this.Letter22.Name = "Letter22";
             this.Letter22.Size = new System.Drawing.Size(0, 46);
             this.Letter22.TabIndex = 9;
@@ -363,7 +363,7 @@
             // 
             this.Letter23.AutoSize = true;
             this.Letter23.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Letter23.Location = new System.Drawing.Point(723, 505);
+            this.Letter23.Location = new System.Drawing.Point(723, 494);
             this.Letter23.Name = "Letter23";
             this.Letter23.Size = new System.Drawing.Size(0, 46);
             this.Letter23.TabIndex = 8;
