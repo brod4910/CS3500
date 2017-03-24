@@ -110,12 +110,6 @@ namespace BoggleClient
         void DisableGameTime(bool state);
 
         /// <summary>
-        /// Disables Domain and User text boxes
-        /// </summary>
-        /// <param name="state"></param>
-        void DisableDomainAndUser(bool state);
-
-        /// <summary>
         /// Handles opening of a new window
         /// </summary>
         event Action NewWindow;

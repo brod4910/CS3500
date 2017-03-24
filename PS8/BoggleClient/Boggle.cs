@@ -323,16 +323,6 @@ namespace BoggleClient
         }
 
         /// <summary>
-        /// Disables the text boxes fo domain and user
-        /// </summary>
-        /// <param name="state"></param>
-        public void DisableDomainAndUser(bool state)
-        {
-            RegisterUserTextBox.Enabled = state;
-            DomainNameTextBox.Enabled = state;
-        }
-
-        /// <summary>
         /// Enables / Disables the Game Started Button
         /// </summary>
         /// <param name="status"></param>
@@ -368,7 +358,9 @@ namespace BoggleClient
 
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string message = "";
+            string message = "1. Enter a Username and a Domain Name. \n" + "2. Set a time to play. The server will take the average of the two times. \n" + 
+                "3. Use the Text box on the right to enter words. \n" + "4. You are able to cancel any operation at any given time. \n" + 
+                "5. New button at the top is to open a new window of boggle. For testing purposes.";
 
             MessageBox.Show(message);
         }
