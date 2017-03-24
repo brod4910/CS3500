@@ -109,5 +109,9 @@ namespace BoggleClient
         /// <param name="state"></param>
         void DisableGameTime(bool state);
 
+        /// <summary>
+        /// Handles opening of a new window
+        /// </summary>
+        event Action NewWindow;
     }
 }

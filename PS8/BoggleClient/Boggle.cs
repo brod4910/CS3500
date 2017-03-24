@@ -37,6 +37,11 @@ namespace BoggleClient
         public event Action<string> WordEntered;
 
         /// <summary>
+        /// Handles opening of a new window
+        /// </summary>
+        public event Action NewWindow;
+
+        /// <summary>
         /// Gets game status of game
         /// </summary>
         public event Func<bool, bool> GameStatus;
@@ -100,11 +105,9 @@ namespace BoggleClient
         /// </summary>
         public void EnableControls(bool state)
         {
-            RegisterButton.Enabled = state;
+            RegisterButton.Enabled = state && !UserRegistered;
 
             CreateGameButton.Enabled = state && UserRegistered && GameTimeTextBox.Text.Trim().Length > 0 && AreNumbers(GameTimeTextBox.Text);
-            Player1WordsPlayedLabel.Text = "";
-            Player2WordsPlayedLabel.Text = "";
 
             foreach (Control control in OptionsSplitContainer.Panel2.Controls)
             {
@@ -118,7 +121,7 @@ namespace BoggleClient
                 }
             }
 
-            CancelButton.Enabled = true;
+            cancelButton.Enabled = !state;
         }
 
         /// <summary>
@@ -245,21 +248,22 @@ namespace BoggleClient
         {
             Player1WordsPlayedLabel.Text = "Words Played:\n";
             Player2WordsPlayedLabel.Text = "Words Played:\n";
-            Dictionary<string, int> dict1 = new Dictionary<string, int>();
-            Dictionary<string, int> dict2 = new Dictionary<string, int>();
+            Dictionary<string, double> dict1 = new Dictionary<string, double>();
+            Dictionary<string, double> dict2 = new Dictionary<string, double>();
             List<string> wordsPlayed1 = new List<string>();
             List<string> wordsPlayed2 = new List<string>();
+
             foreach (dynamic word in player1)
             {
                // wordsPlayed1.Add((string) word.Word);
-                dict1.Add((string)word.Word, (int)word.Score);
+                dict1.Add((string)word.Word, (double)word.Score);
                // Player1WordsPlayedLabel.Text = word.Word + "\n";
             }
 
             foreach (dynamic word in player2)
             {
                 //wordsPlayed2.Add((string) word.Word);
-                dict2.Add((string)word.Word, (int)word.Score);
+                dict2.Add((string)word.Word, (double)word.Score);
                 //Player2WordsPlayedLabel.Text = word.Word + "\n";
             }
             foreach(var item in dict1)
@@ -346,6 +350,18 @@ namespace BoggleClient
         {
             WordEntered(EnterWordsTextBox.Text.ToString());
             EnterWordsTextBox.Text = "";
+        }
+
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            NewWindow();
+        }
+
+        private void helpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string message = "";
+
+            MessageBox.Show(message);
         }
     }
 }
