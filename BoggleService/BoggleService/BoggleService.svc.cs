@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.ServiceModel.Web;
+using System.Threading;
 using static System.Net.HttpStatusCode;
 
 namespace Boggle
 {
     public class BoggleService : IBoggleService
     {
+        private readonly static Dictionary<Token, UserInfo> users = new Dictionary<Token, UserInfo>();
+        private readonly static Dictionary<GameId, GameStatus> games = new Dictionary<GameId, GameStatus>();
+        private static readonly object sync = new object();
+
         /// <summary>
         /// The most recent call to SetStatus determines the response code used when
         /// an http response is sent.
@@ -42,7 +47,25 @@ namespace Boggle
         /// <returns></returns>
         public Token Register(UserInfo user)
         {
-            throw new NotImplementedException();
+            lock (sync)
+            {
+                if(user.Nickname.StartsWith("@"))
+                {
+                    Thread.Sleep(10000);
+                }
+                if(user.Nickname == null || user.Nickname.Trim().Length == 0)
+                {
+                    SetStatus(Forbidden);
+                    return null;
+                }
+                else
+                {
+                    Token token = new Token();
+                    token.UserToken = Guid.NewGuid().ToString();
+                    users.Add(token, user);
+                    return token;
+                }
+            }
         }
 
         /// <summary>
