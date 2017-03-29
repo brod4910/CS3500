@@ -33,7 +33,7 @@ namespace Boggle
         /// <param name="game"></param>
         /// <returns></returns>
         [WebInvoke(Method = "POST", UriTemplate = "games")]
-        GameId JoinGame(PostGame game);
+        GameId JoinGame(PostingGame game);
 
         /// <summary>
         /// Cancels the users join request.

@@ -15,6 +15,7 @@ namespace Boggle
         private readonly static Dictionary<GameId, Status> activeGames = new Dictionary<GameId, Status>();
         private static readonly object sync = new object();
         private static int gameid = 0;
+        private Timer timer;
 
         /// <summary>
         /// The most recent call to SetStatus determines the response code used when
@@ -80,21 +81,19 @@ namespace Boggle
         /// Returns the new active game's GameID (which should be the same as the old pending game's GameID). 
         /// Responds with status 201 (Created).
         /// </summary>
-        /// <param name="game"></param>
+        /// <param name="postingGame"></param>
         /// <returns></returns>
-        public GameId JoinGame(PostGame game)
+        public GameId JoinGame(PostingGame postingGame)
         {
             lock (sync)
             {
                 int timeLimit;
                 GameId id = new GameId();
                 id.GameID = "" + gameid;
-                Status status = new Status();
-                status.GameState = "pending";
 
-                int.TryParse(game.TimeLimit, out timeLimit);
+                int.TryParse(postingGame.TimeLimit, out timeLimit);
 
-                if (timeLimit < 5 || timeLimit < 120 || tokenIsValid(game.UserToken))
+                if (timeLimit < 5 || timeLimit < 120 || tokenIsValid(postingGame.UserToken))
                 {
                     SetStatus(Forbidden);
                     return null;
@@ -103,7 +102,7 @@ namespace Boggle
                 //Check if a pending game contains the usertoken
                 foreach (PendingGame pendingGame in PendingGames)
                 {
-                    if (pendingGame.Player1Token.Equals(game.UserToken) || pendingGame.Player2Token.Equals(game.UserToken))
+                    if (pendingGame.Player1Token.Equals(postingGame.UserToken) || pendingGame.Player2Token.Equals(postingGame.UserToken))
                     {
                         SetStatus(Conflict);
                         return null;
@@ -119,16 +118,31 @@ namespace Boggle
                 //adds a new player to a game
                 foreach (PendingGame pendingGame in PendingGames)
                 {
+                    //if the player 1 token is is null add
+                    //the users information to the pending game
                     if(pendingGame.Player1Token == null)
                     {
-                        pendingGame.Player1Token = game.UserToken;
+                        pendingGame.Player1Token = postingGame.UserToken;
                         pendingGame.GameId = "" + gameid;
+                        pendingGame.status.TimeLimit = postingGame.TimeLimit;
+                        pendingGame.status.Player1.NickName = GetUserInfo(null, postingGame);
+                        pendingGame.status.Player1.Score = "0";
+
                         SetStatus(Accepted);
                         break;
                     }
+                    //if player 2 token is null prepare the game to be started
+                    //and add it to the list of active games
                     else if(pendingGame.Player2Token == null)
                     {
-                        pendingGame.Player2Token = game.UserToken;
+                        pendingGame.Player2Token = postingGame.UserToken;
+                        Status status = createGame(pendingGame, postingGame, timeLimit, id);
+
+                        if(!activeGames.ContainsKey(id))
+                        {
+                            activeGames.Add(id, status);
+                        }
+
                         SetStatus(Created);
                         gameid++;
                         PendingGames.Remove(pendingGame);
@@ -136,42 +150,33 @@ namespace Boggle
                     }
                 }
 
-                if(!activeGames.ContainsKey(id))
-                {
-                    //prepare status message of pending game.
-                    status.TimeLimit = game.TimeLimit;
-
-                    //Set player 2 stats
-                    status.Player1.NickName = GetUserInfo(game);
-                    status.Player1.Score = "0";
-
-                    //add the game to list of active games
-                    activeGames.Add(id, status);
-                }
-                else if (activeGames.ContainsKey(id))
-                {
-                    //get status
-                    activeGames.TryGetValue(id, out status);
-
-                    //calculate the time limit for the game
-                    status.TimeLimit = CalculateTimeLimit(status, timeLimit);
-                    status.TimeLeft = status.TimeLimit;
-
-                    //set player 2 stats
-                    status.Player2.NickName = GetUserInfo(game);
-                    status.Player2.Score = "0";
-
-                    //Set game state to active
-                    status.GameState = "active";
-                }
-
                 return id;
             }
         }
 
-        private bool stopGame(dynamic info)
+        private Status createGame(PendingGame pendingGame, PostingGame postGame, int timelimit, GameId id)
         {
+            Status status = new Status();
 
+            status.Board = new BoggleBoard().ToString();
+            status.TimeLimit = CalculateTimeLimit(pendingGame, postGame);
+            status.GameState = "active";
+            status.Player1.NickName = GetUserInfo(pendingGame, null);
+            status.Player2.NickName = GetUserInfo(null, postGame);
+            status.Player1.Score = "0";
+            status.Player2.Score = "0";
+            timer = new Timer(gameTimer, id, Timeout.Infinite, 1000);
+            status.TimeLeft = status.TimeLimit;
+            return status;
+        }
+
+        private void gameTimer(Object id)
+        {
+            GameId ID = (GameId)id;
+            if(activeGames.ContainsKey(ID))
+            {
+
+            }
         }
 
         /// <summary>
@@ -180,10 +185,13 @@ namespace Boggle
         /// <param name="status"></param>
         /// <param name="t2"></param>
         /// <returns></returns>
-        private string CalculateTimeLimit(Status status, int t2)
+        private string CalculateTimeLimit(PendingGame pengame, PostingGame posgame)
         {
             int t1;
-            int.TryParse(status.TimeLimit, out t1);
+            int t2;
+
+            int.TryParse(pengame.status.TimeLimit, out t1);
+            int.TryParse(posgame.TimeLimit, out t2);
 
             return ((t1 + t2) / 2) + "";
         }
@@ -194,14 +202,26 @@ namespace Boggle
         /// </summary>
         /// <param name="game"></param>
         /// <returns></returns>
-        private string GetUserInfo(PostGame game)
+        private string GetUserInfo(PendingGame pengame, PostingGame posgame)
         {
-            UserInfo info;
-            Token tok = new Token();
-            tok.UserToken = game.UserToken;
-            users.TryGetValue(tok, out info);
+            if (posgame != null)
+            {
+                UserInfo info;
+                Token tok = new Token();
+                tok.UserToken = posgame.UserToken;
+                users.TryGetValue(tok, out info);
 
-            return info.Nickname;
+                return info.Nickname;
+            }
+            else
+            {
+                UserInfo info;
+                Token tok = new Token();
+                tok.UserToken = pengame.Player1Token;
+                users.TryGetValue(tok, out info);
+
+                return info.Nickname;
+            }
         }
 
         /// <summary>

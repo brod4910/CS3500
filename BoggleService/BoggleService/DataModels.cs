@@ -26,7 +26,7 @@ namespace Boggle
     /// Contains the usertoken of the user and
     /// the desired timelimit
     /// </summary>
-    public class PostGame
+    public class PostingGame
     {
         public string UserToken { get; set; }
 
@@ -63,6 +63,9 @@ namespace Boggle
 
         [DataMember(EmitDefaultValue = false)]
         public string GameId { get; set; }
+
+        [DataMember(EmitDefaultValue = false)]
+        public Status status;
     }
 
 
