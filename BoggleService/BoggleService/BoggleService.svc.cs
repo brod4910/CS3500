@@ -151,6 +151,14 @@ namespace Boggle
             }
         }
 
+        /// <summary>
+        /// Creates the initial game status for the game
+        /// </summary>
+        /// <param name="pendingGame"></param>
+        /// <param name="postGame"></param>
+        /// <param name="timelimit"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
         private Status createGame(PendingGame pendingGame, PostingGame postGame, int timelimit, GameId id)
         {
             Status status = new Status();
