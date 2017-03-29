@@ -10,9 +10,9 @@ namespace Boggle
 {
     public class BoggleService : IBoggleService
     {
-        private readonly static Dictionary<Token, UserInfo> users = new Dictionary<Token, UserInfo>();
+        private readonly static Dictionary<string, UserInfo> users = new Dictionary<string, UserInfo>();
         private readonly static HashSet<PendingGame> PendingGames = new HashSet<PendingGame>();
-        private readonly static Dictionary<GameId, Status> activeGames = new Dictionary<GameId, Status>();
+        private readonly static Dictionary<string, Status> activeGames = new Dictionary<string, Status>();
         private static readonly object sync = new object();
         private static int gameid = 0;
         private Timer timer;
@@ -65,7 +65,7 @@ namespace Boggle
                 {
                     Token token = new Token();
                     token.UserToken = Guid.NewGuid().ToString();
-                    users.Add(token, user);
+                    users.Add(token.UserToken, user);
                     return token;
                 }
             }
@@ -170,7 +170,7 @@ namespace Boggle
                         pendingGame.Player2Token = postingGame.UserToken;
                         Status status = createGame(pendingGame, postingGame, timeLimit, id);
 
-                        activeGames.Add(id, status);
+                        activeGames.Add(id.GameID, status);
 
                         SetStatus(Created);
                         gameid++;
@@ -216,12 +216,12 @@ namespace Boggle
             GameId ID = (GameId)id;
             Status status;
             int time;
-            if(activeGames.ContainsKey(ID))
+            if(activeGames.ContainsKey(ID.GameID))
             {
-                activeGames.TryGetValue(ID, out status);
+                activeGames.TryGetValue(ID.GameID, out status);
                 int.TryParse(status.TimeLeft, out time);
                 status.TimeLeft = time-- + "";
-                activeGames[ID] = status;
+                activeGames[ID.GameID] = status;
             }
         }
 
@@ -255,7 +255,7 @@ namespace Boggle
                 UserInfo info;
                 Token tok = new Token();
                 tok.UserToken = posgame.UserToken;
-                users.TryGetValue(tok, out info);
+                users.TryGetValue(tok.UserToken, out info);
 
                 return info.Nickname;
             }
@@ -264,7 +264,7 @@ namespace Boggle
                 UserInfo info;
                 Token tok = new Token();
                 tok.UserToken = pengame.Player1Token;
-                users.TryGetValue(tok, out info);
+                users.TryGetValue(tok.UserToken, out info);
 
                 return info.Nickname;
             }
@@ -281,7 +281,7 @@ namespace Boggle
             Token tok = new Token();
             tok.UserToken = token;
 
-            if(users.ContainsKey(tok))
+            if(users.ContainsKey(tok.UserToken))
             {
                 return true;
             }

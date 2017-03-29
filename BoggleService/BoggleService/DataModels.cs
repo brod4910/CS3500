@@ -65,7 +65,7 @@ namespace Boggle
         public string GameId { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
-        public Status status;
+        public Status status = new Status();
     }
 
 
@@ -116,10 +116,10 @@ namespace Boggle
         public string TimeLeft { get; set; }
 
         [DataMember]
-        public FirstPlayer Player1;
+        public FirstPlayer Player1 = new FirstPlayer();
 
         [DataMember]
-        public SecondPlayer Player2;
+        public SecondPlayer Player2 = new SecondPlayer();
 
         [DataContract]
         public class FirstPlayer
