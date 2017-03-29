@@ -125,7 +125,7 @@ namespace Boggle
 
                 int.TryParse(postingGame.TimeLimit, out timeLimit);
 
-                if (timeLimit < 5 || timeLimit < 120 || tokenIsValid(postingGame.UserToken))
+                if (timeLimit < 5 || timeLimit > 120 || !tokenIsValid(postingGame.UserToken))
                 {
                     SetStatus(Forbidden);
                     return null;
@@ -134,10 +134,22 @@ namespace Boggle
                 //Check if a pending game contains the usertoken
                 foreach (PendingGame pendingGame in PendingGames)
                 {
-                    if (pendingGame.Player1Token.Equals(postingGame.UserToken) || pendingGame.Player2Token.Equals(postingGame.UserToken))
+                    if (pendingGame.Player1Token != null)
                     {
-                        SetStatus(Conflict);
-                        return null;
+                        if (pendingGame.Player1Token.Equals(postingGame.UserToken))
+                        {
+                            SetStatus(Conflict);
+                            return null;
+                        }
+                    }
+
+                    if(pendingGame.Player2Token != null)
+                    {
+                        if(pendingGame.Player2Token.Equals(postingGame.UserToken))
+                        {
+                            SetStatus(Conflict);
+                            return null;
+                        }
                     }
                 }
 
@@ -222,6 +234,12 @@ namespace Boggle
                 int.TryParse(status.TimeLeft, out time);
                 status.TimeLeft = time-- + "";
                 activeGames[ID.GameID] = status;
+
+                if(time <= 0)
+                {
+                    timer.Change(Timeout.Infinite, 0);
+                    timer.Dispose();
+                }
             }
         }
 
@@ -278,10 +296,7 @@ namespace Boggle
         /// <returns></returns>
         private bool tokenIsValid(string token)
         {
-            Token tok = new Token();
-            tok.UserToken = token;
-
-            if(users.ContainsKey(tok.UserToken))
+            if(users.ContainsKey(token))
             {
                 return true;
             }
