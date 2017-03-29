@@ -138,10 +138,7 @@ namespace Boggle
                         pendingGame.Player2Token = postingGame.UserToken;
                         Status status = createGame(pendingGame, postingGame, timeLimit, id);
 
-                        if(!activeGames.ContainsKey(id))
-                        {
-                            activeGames.Add(id, status);
-                        }
+                        activeGames.Add(id, status);
 
                         SetStatus(Created);
                         gameid++;
@@ -165,17 +162,26 @@ namespace Boggle
             status.Player2.NickName = GetUserInfo(null, postGame);
             status.Player1.Score = "0";
             status.Player2.Score = "0";
-            timer = new Timer(gameTimer, id, Timeout.Infinite, 1000);
             status.TimeLeft = status.TimeLimit;
+            timer = new Timer(gameTimer, id, 0, 1000);
             return status;
         }
 
+        /// <summary>
+        /// Updates the game timer
+        /// </summary>
+        /// <param name="id"></param>
         private void gameTimer(Object id)
         {
             GameId ID = (GameId)id;
+            Status status;
+            int time;
             if(activeGames.ContainsKey(ID))
             {
-
+                activeGames.TryGetValue(ID, out status);
+                int.TryParse(status.TimeLeft, out time);
+                status.TimeLeft = time-- + "";
+                activeGames[ID] = status;
             }
         }
 
