@@ -11,8 +11,10 @@ namespace Boggle
     public class BoggleService : IBoggleService
     {
         private readonly static Dictionary<Token, UserInfo> users = new Dictionary<Token, UserInfo>();
-        private readonly static Dictionary<GameId, GameStatus> games = new Dictionary<GameId, GameStatus>();
+        private readonly static HashSet<PendingGame> PendingGames = new HashSet<PendingGame>();
+        private readonly static Dictionary<GameId, Status> activeGames = new Dictionary<GameId, Status>();
         private static readonly object sync = new object();
+        private static int gameid = 0;
 
         /// <summary>
         /// The most recent call to SetStatus determines the response code used when
@@ -80,9 +82,147 @@ namespace Boggle
         /// </summary>
         /// <param name="game"></param>
         /// <returns></returns>
-        public GameId JoinGame(Game game)
+        public GameId JoinGame(PostGame game)
         {
-            throw new NotImplementedException();
+            lock (sync)
+            {
+                int timeLimit;
+                GameId id = new GameId();
+                id.GameID = "" + gameid;
+                Status status = new Status();
+                status.GameState = "pending";
+
+                int.TryParse(game.TimeLimit, out timeLimit);
+
+                if (timeLimit < 5 || timeLimit < 120 || tokenIsValid(game.UserToken))
+                {
+                    SetStatus(Forbidden);
+                    return null;
+                }
+
+                //Check if a pending game contains the usertoken
+                foreach (PendingGame pendingGame in PendingGames)
+                {
+                    if (pendingGame.Player1Token.Equals(game.UserToken) || pendingGame.Player2Token.Equals(game.UserToken))
+                    {
+                        SetStatus(Conflict);
+                        return null;
+                    }
+                }
+
+                //Creates a new game and adds it to the list of games
+                PendingGame g = new PendingGame();
+                g.GameState = "pending";
+
+                PendingGames.Add(g);
+
+                //adds a new player to a game
+                foreach (PendingGame pendingGame in PendingGames)
+                {
+                    if(pendingGame.Player1Token == null)
+                    {
+                        pendingGame.Player1Token = game.UserToken;
+                        pendingGame.GameId = "" + gameid;
+                        SetStatus(Accepted);
+                        break;
+                    }
+                    else if(pendingGame.Player2Token == null)
+                    {
+                        pendingGame.Player2Token = game.UserToken;
+                        SetStatus(Created);
+                        gameid++;
+                        PendingGames.Remove(pendingGame);
+                        break;
+                    }
+                }
+
+                if(!activeGames.ContainsKey(id))
+                {
+                    //prepare status message of pending game.
+                    status.TimeLimit = game.TimeLimit;
+
+                    //Set player 2 stats
+                    status.Player1.NickName = GetUserInfo(game);
+                    status.Player1.Score = "0";
+
+                    //add the game to list of active games
+                    activeGames.Add(id, status);
+                }
+                else if (activeGames.ContainsKey(id))
+                {
+                    //get status
+                    activeGames.TryGetValue(id, out status);
+
+                    //calculate the time limit for the game
+                    status.TimeLimit = CalculateTimeLimit(status, timeLimit);
+                    status.TimeLeft = status.TimeLimit;
+
+                    //set player 2 stats
+                    status.Player2.NickName = GetUserInfo(game);
+                    status.Player2.Score = "0";
+
+                    //Set game state to active
+                    status.GameState = "active";
+                }
+
+                return id;
+            }
+        }
+
+        private bool stopGame(dynamic info)
+        {
+
+        }
+
+        /// <summary>
+        /// Calculates the average time from status and t2
+        /// </summary>
+        /// <param name="status"></param>
+        /// <param name="t2"></param>
+        /// <returns></returns>
+        private string CalculateTimeLimit(Status status, int t2)
+        {
+            int t1;
+            int.TryParse(status.TimeLimit, out t1);
+
+            return ((t1 + t2) / 2) + "";
+        }
+
+        /// <summary>
+        /// Gets the Nickname of the player posting the
+        /// game
+        /// </summary>
+        /// <param name="game"></param>
+        /// <returns></returns>
+        private string GetUserInfo(PostGame game)
+        {
+            UserInfo info;
+            Token tok = new Token();
+            tok.UserToken = game.UserToken;
+            users.TryGetValue(tok, out info);
+
+            return info.Nickname;
+        }
+
+        /// <summary>
+        /// Checks to see if the token is a valid
+        /// user token.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        private bool tokenIsValid(string token)
+        {
+            Token tok = new Token();
+            tok.UserToken = token;
+
+            if(users.ContainsKey(tok))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -108,7 +248,7 @@ namespace Boggle
         /// <param name="GameID"></param>
         /// <param name="word"></param>
         /// <returns></returns>
-        public score PlayWord(string GameID, word word)
+        public WordScore PlayWord(string GameID, PlayedWord word)
         {
             throw new NotImplementedException();
         }
@@ -125,42 +265,9 @@ namespace Boggle
         /// <param name="GameID"></param>
         /// <param name="Option"></param>
         /// <returns></returns>
-        public GameStatus Gamestatus(string GameID, string Option)
+        public Status Gamestatus(string GameID, string Option)
         {
             throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Demo.  You can delete this.
-        /// </summary>
-        public string WordAtIndex(int n)
-        {
-            if (n < 0)
-            {
-                SetStatus(Forbidden);
-                return null;
-            }
-
-            string line;
-            using (StreamReader file = new System.IO.StreamReader(AppDomain.CurrentDomain.BaseDirectory + "dictionary.txt"))
-            {
-                while ((line = file.ReadLine()) != null)
-                {
-                    if (n == 0) break;
-                    n--;
-                }
-            }
-
-            if (n == 0)
-            {
-                SetStatus(OK);
-                return line;
-            }
-            else
-            {
-                SetStatus(Forbidden);
-                return null;
-            }
         }
     }
 }

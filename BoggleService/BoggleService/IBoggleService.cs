@@ -33,7 +33,7 @@ namespace Boggle
         /// <param name="game"></param>
         /// <returns></returns>
         [WebInvoke(Method = "POST", UriTemplate = "games")]
-        GameId JoinGame(Game game);
+        GameId JoinGame(PostGame game);
 
         /// <summary>
         /// Cancels the users join request.
@@ -57,7 +57,7 @@ namespace Boggle
         /// <param name="word"></param>
         /// <returns></returns>
         [WebInvoke(Method = "PUT", UriTemplate = "games/{GameID}")]
-        score PlayWord(string GameID, word word);
+        WordScore PlayWord(string GameID, PlayedWord word);
 
         /// <summary>
         /// Get game status information.
@@ -72,20 +72,12 @@ namespace Boggle
         /// <param name="Option"></param>
         /// <returns></returns>
         [WebGet(UriTemplate = "games{GameID}?Brief={Option}")]
-        GameStatus Gamestatus(string GameID, string Option);
+        Status Gamestatus(string GameID, string Option);
 
         /// <summary>
         /// Sends back index.html as the response body.
         /// </summary>
         [WebGet(UriTemplate = "/api")]
         Stream API();
-
-        /// <summary>
-        /// Returns the nth word from dictionary.txt.  If there is
-        /// no nth word, responds with code 403. This is a demo;
-        /// you can delete it.
-        /// </summary>
-        [WebGet(UriTemplate = "/word?index={n}")]
-        string WordAtIndex(int n);
     }
 }
