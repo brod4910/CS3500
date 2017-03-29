@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static System.Net.HttpStatusCode;
 using System.Diagnostics;
 using Newtonsoft.Json;
+using Boggle;
 
 namespace Boggle
 {
@@ -79,8 +80,238 @@ namespace Boggle
             r = client.DoGetAsync("word?index={0}", "5").Result;
             Assert.AreEqual(OK, r.Status);
 
-            string word = (string) r.Data;
+            string word = (string)r.Data;
             Assert.AreEqual("AAL", word);
         }
+
+        [TestMethod]
+        public void TestRegister()
+        {
+            UserInfo user = new UserInfo();
+            user.Nickname = "test";
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(OK, r.Status);
+        }
+
+        [TestMethod]
+        public void TestRegisterNull()
+        {
+            UserInfo user = new UserInfo();
+            user.Nickname = "";
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(Forbidden, r.Status);
+        }
+
+        [TestMethod]
+        public void TestJoinGame()
+        {
+            // Register a User
+            UserInfo user = new UserInfo();
+            user.Nickname = "test";
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(OK, r.Status);
+
+            // Join Game
+            PostingGame game = new PostingGame();
+            game.UserToken = r.Data["UserToken"];
+            game.TimeLimit = "30";
+            Response f = client.DoPostAsync("games", game).Result;
+            Assert.AreEqual(OK, f.Status);
+
+            // Add Test that checks if it is 201 or 202
+        }
+
+        [TestMethod]
+        public void TestJoinGameTimeError()
+        {
+            // Register a User
+            UserInfo user = new UserInfo();
+            user.Nickname = "test";
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(OK, r.Status);
+
+            // Join Game with forbidden timelimit
+            PostingGame game = new PostingGame();
+            game.UserToken = r.Data["UserToken"];
+            game.TimeLimit = "2";
+            Response f = client.DoPostAsync("games", game).Result;
+            Assert.AreEqual(Forbidden, f.Status);
+
+            game.TimeLimit = "125";
+            Response e = client.DoPostAsync("games", game).Result;
+            Assert.AreEqual(Forbidden, f.Status);
+        }
+
+        [TestMethod]
+        public void TestCancelGame()
+        {
+            // Register a User
+            UserInfo user = new UserInfo();
+            user.Nickname = "test";
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(OK, r.Status);
+
+            // Join Game
+            PostingGame game = new PostingGame();
+            game.UserToken = r.Data["UserToken"];
+            game.TimeLimit = "30";
+            Response f = client.DoPostAsync("games", game).Result;
+            Assert.AreEqual(OK, f.Status);
+
+            // Cancel Game Request
+            Token cancel = new Token();
+            cancel.UserToken = r.Data["UserToken"];
+            Response e = client.DoPutAsync("games", cancel.UserToken).Result;
+            Assert.AreEqual(OK, f.Status);
+        }
+
+        [TestMethod]
+        public void TestGameStatus()
+        {
+            // Register a User
+            UserInfo user = new UserInfo();
+            user.Nickname = "test";
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(OK, r.Status);
+
+            // Join Game
+            PostingGame game = new PostingGame();
+            game.UserToken = r.Data["UserToken"];
+            game.TimeLimit = "30";
+            Response f = client.DoPostAsync("games", game).Result;
+            Assert.AreEqual(OK, f.Status);
+
+            // Do Game Status
+            Response e = client.DoGetAsync("games/{0}", f.Data["GameID"]).Result;
+            Assert.AreEqual(OK, e.Status);
+        }
+
+        [TestMethod]
+        public void TestGameStatusForbidden()
+        {
+            // Register a User
+            UserInfo user = new UserInfo();
+            user.Nickname = "test";
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(OK, r.Status);
+
+            // Join Game
+            PostingGame game = new PostingGame();
+            game.UserToken = r.Data["UserToken"];
+            game.TimeLimit = "30";
+            Response f = client.DoPostAsync("games", game).Result;
+            Assert.AreEqual(OK, f.Status);
+
+            // Do Game Status Forbidden
+            Response e = client.DoGetAsync("games/{0}", "1234123").Result;
+            Assert.AreEqual(Forbidden, e.Status);
+        }
+
+        [TestMethod]
+        public void TestGameStatusOutput()
+        {
+            // Register a User
+            UserInfo user = new UserInfo();
+            user.Nickname = "test";
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(OK, r.Status);
+
+            // Join Game
+            PostingGame game = new PostingGame();
+            game.UserToken = r.Data["UserToken"];
+            game.TimeLimit = "30";
+            Response f = client.DoPostAsync("games", game).Result;
+            Assert.AreEqual(OK, f.Status);
+
+            // Do Game Status
+            Response e = client.DoGetAsync("games/{0}", f.Data["GameID"]).Result;
+            Assert.AreEqual(OK, e.Status);
+            if (e.Data["GameState"] == "active")
+            {
+                Assert.IsNotNull(e.Data["GameState"]);
+                Assert.IsNotNull(e.Data["TimeLeft"]);
+                Assert.IsNotNull(e.Data["TimeLimit"]);
+                Assert.IsNotNull(e.Data["Board"]);
+                Assert.IsNotNull(e.Data["Player1"]);
+                Assert.IsNotNull(e.Data["Player2"]);
+            }
+            // Add in Completed Test and Pending
+        }
+
+        [TestMethod]
+        public void TestPlayWord()
+        {
+            // Register a User
+            UserInfo user = new UserInfo();
+            user.Nickname = "test";
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(OK, r.Status);
+
+            // Join Game
+            PostingGame game = new PostingGame();
+            game.UserToken = r.Data["UserToken"];
+            game.TimeLimit = "30";
+            Response f = client.DoPostAsync("games", game).Result;
+            Assert.AreEqual(OK, f.Status);
+
+            // Do Play Word
+            PlayedWord word = new PlayedWord();
+            word.UserToken = r.Data["UserToken"];
+            word.Word = "word";
+            Response e = client.DoPutAsync(word, "games/" + f.Data["GameID"]).Result;
+            Assert.AreEqual(OK, e.Status);
+        }
+
+        [TestMethod]
+        public void TestPlayWordForbidden()
+        {
+            // Register a User
+            UserInfo user = new UserInfo();
+            user.Nickname = "test";
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(OK, r.Status);
+
+            // Join Game
+            PostingGame game = new PostingGame();
+            game.UserToken = r.Data["UserToken"];
+            game.TimeLimit = "30";
+            Response f = client.DoPostAsync("games", game).Result;
+            Assert.AreEqual(OK, f.Status);
+
+            // Do Play Word
+            PlayedWord word = new PlayedWord();
+            word.UserToken = ""; // Missing usertoken
+            word.Word = "word";
+            Response e = client.DoPutAsync(word, "games/" + f.Data["GameID"]).Result;
+            Assert.AreEqual(Forbidden, e.Status);
+        }
+
+        [TestMethod]
+        public void TestPlayWordConflict()
+        {
+            // Register a User
+            UserInfo user = new UserInfo();
+            user.Nickname = "test";
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(OK, r.Status);
+
+            // Join Game
+            PostingGame game = new PostingGame();
+            game.UserToken = r.Data["UserToken"];
+            game.TimeLimit = "30";
+            Response f = client.DoPostAsync("games", game).Result;
+            Assert.AreEqual(OK, f.Status);
+            
+            // Find better way to check if game state
+            /*
+            // Do Play Word
+            PlayedWord word = new PlayedWord();
+            word.UserToken = "word"; // Missing usertoken
+            word.Word = "word";
+            Response e = client.DoPutAsync(word, "games/" + f.Data["GameID"]).Result;
+            Assert.AreEqual(Forbidden, e.Status);
+            */
+        }
+
     }
 }
