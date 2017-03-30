@@ -206,6 +206,36 @@ namespace Boggle
             Assert.AreEqual(OK, e.Status);
         }
 
+        public void TestGameStatusBrief()
+        {
+            // Register a User
+            UserInfo user = new UserInfo();
+            user.Nickname = "test";
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(OK, r.Status);
+
+            // Join Game
+            PostingGame game = new PostingGame();
+            game.UserToken = r.Data["UserToken"];
+            game.TimeLimit = "30";
+            Response f = client.DoPostAsync("games", game).Result;
+            if (f.Status == OK || f.Status == Accepted || f.Status == Created)
+            {
+                Assert.IsTrue(true);
+            }
+
+            // Do Game Status
+            string gameId = f.Data["GameID"];
+            Response e = client.DoGetAsync("games" + gameId + "?Brief=yes").Result;
+            Assert.AreEqual(OK, e.Status);
+            if (e.Data["GameState"] != "pending")
+            {
+                Assert.IsNotNull(e.Data["TimeLeft"]);
+                Assert.IsNotNull(e.Data["Player1"]);
+                Assert.IsNotNull(e.Data["Player2"]);
+            }
+        }
+
         [TestMethod]
         public void TestGameStatusForbidden()
         {
