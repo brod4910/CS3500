@@ -317,7 +317,23 @@ namespace Boggle
         /// <param name="token"></param>
         public void CancelJoin(Token token)
         {
-            throw new NotImplementedException();
+            foreach(PendingGame game in PendingGames)
+            {
+                if(token.UserToken == game.Player1Token)
+                {
+                    game.Player1Token = "";
+                    SetStatus(OK);
+                    return;
+                }
+                else if(token.UserToken == game.Player2Token)
+                {
+                    game.Player2Token = "";
+                    SetStatus(OK);
+                    return;
+                }
+            }
+            SetStatus(Forbidden);
+            return;
         }
 
         /// <summary>
@@ -351,8 +367,6 @@ namespace Boggle
         /// <returns></returns>
         public Status Gamestatus(string GameID, string Option)
         {
-            lock (sync)
-            {
                 int enteredID;
                 // Check If It parses correctly
                 if (!int.TryParse(GameID, out enteredID))
@@ -400,7 +414,7 @@ namespace Boggle
                     }
                     // Add a completed game option
                 }
-            }
+
             SetStatus(Forbidden);
             return null;
 
