@@ -179,6 +179,7 @@ namespace Boggle
                     {
                         pendingGame.Player2Token = postingGame.UserToken;
                         SetStatus(Created);
+                       // SetStatus(OK);
                     }
 
                     //Make the pending game an active game
@@ -350,7 +351,59 @@ namespace Boggle
         /// <returns></returns>
         public Status Gamestatus(string GameID, string Option)
         {
-            throw new NotImplementedException();
+            lock (sync)
+            {
+                int enteredID;
+                // Check If It parses correctly
+                if (!int.TryParse(GameID, out enteredID))
+                {
+                    SetStatus(Forbidden);
+                    return null;
+                }
+                foreach (PendingGame game in PendingGames)
+                {
+                    if (game.GameId == GameID)
+                    {
+                        SetStatus(OK);
+                        Status pending = new Status();
+                        pending.GameState = game.GameState;
+                        return pending;
+                    }
+                }
+                foreach (var game in activeGames)
+                {
+                    if (game.Key == GameID)
+                    {
+                        SetStatus(OK);
+                        Status active = new Status();
+                        active.GameState = game.Value.GameState;
+                        if (Option == "yes")
+                        {
+                            active.TimeLeft = game.Value.TimeLeft;
+                            active.Player1.NickName = game.Value.Player1.NickName;
+                            active.Player1.Score = game.Value.Player1.Score;
+                            active.Player2.NickName = game.Value.Player2.NickName;
+                            active.Player2.Score = game.Value.Player2.Score;
+                            return active;
+                        }
+                        else
+                        {
+                            active.TimeLeft = game.Value.TimeLeft;
+                            active.Player1.NickName = game.Value.Player1.NickName;
+                            active.Player1.Score = game.Value.Player1.Score;
+                            active.Player2.NickName = game.Value.Player2.NickName;
+                            active.Player2.Score = game.Value.Player2.Score;
+                            active.Board = game.Value.Board;
+                            active.TimeLimit = game.Value.TimeLimit;
+                            return active;
+                        }
+                    }
+                    // Add a completed game option
+                }
+            }
+            SetStatus(Forbidden);
+            return null;
+
         }
     }
 }
