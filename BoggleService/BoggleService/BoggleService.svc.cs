@@ -168,9 +168,7 @@ namespace Boggle
                     {
                         pendingGame.Player1Token = postingGame.UserToken;
                         pendingGame.GameId = "" + gameid;
-                        pendingGame.status.TimeLimit = postingGame.TimeLimit;
-                        pendingGame.status.Player1.NickName = GetUserInfo(null, postingGame);
-                        pendingGame.status.Player1.Score = "0";
+                        pendingGame.TimeLimit = postingGame.TimeLimit;
 
                         SetStatus(Accepted);
                         break;
@@ -180,11 +178,16 @@ namespace Boggle
                     else if(pendingGame.Player2Token == null)
                     {
                         pendingGame.Player2Token = postingGame.UserToken;
-                        Status status = createGame(pendingGame, postingGame, timeLimit, id);
+                        SetStatus(Created);
+                    }
+
+                    //Make the pending game an active game
+                    if(pendingGame.Player1Token != null && pendingGame.Player2Token != null)
+                    {
+                        Status status = createGame(pendingGame, postingGame, id);
 
                         activeGames.Add(id.GameID, status);
 
-                        SetStatus(Created);
                         gameid++;
                         PendingGames.Remove(pendingGame);
                         break;
@@ -200,10 +203,9 @@ namespace Boggle
         /// </summary>
         /// <param name="pendingGame"></param>
         /// <param name="postGame"></param>
-        /// <param name="timelimit"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        private Status createGame(PendingGame pendingGame, PostingGame postGame, int timelimit, GameId id)
+        private Status createGame(PendingGame pendingGame, PostingGame postGame, GameId id)
         {
             Status status = new Status();
 
@@ -254,7 +256,7 @@ namespace Boggle
             int t1;
             int t2;
 
-            int.TryParse(pengame.status.TimeLimit, out t1);
+            int.TryParse(pengame.TimeLimit, out t1);
             int.TryParse(posgame.TimeLimit, out t2);
 
             return ((t1 + t2) / 2) + "";

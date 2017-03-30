@@ -128,7 +128,7 @@ namespace Boggle
             PostingGame game2 = new PostingGame();
             game2.UserToken = r2.Data["UserToken"];
             game2.TimeLimit = "30";
-            Response f2 = client.DoPostAsync("games", game).Result;
+            Response f2 = client.DoPostAsync("games", game2).Result;
             Assert.AreEqual(Created, f2.Status);
 
             // Add Test that checks if it is 201 or 202

@@ -65,7 +65,7 @@ namespace Boggle
         public string GameId { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
-        public Status status = new Status();
+        public string TimeLimit { get; set; }
     }
 
 
