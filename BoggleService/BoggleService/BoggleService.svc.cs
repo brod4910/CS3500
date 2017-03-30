@@ -16,6 +16,7 @@ namespace Boggle
         private static readonly object sync = new object();
         private static int gameid = 0;
         private Timer timer;
+        private BoggleBoard boggleBoard;
 
         /// <summary>
         /// The most recent call to SetStatus determines the response code used when
@@ -210,7 +211,8 @@ namespace Boggle
         {
             Status status = new Status();
 
-            status.Board = new BoggleBoard().ToString();
+            this.boggleBoard = new BoggleBoard();
+            status.Board = boggleBoard.ToString();
             status.TimeLimit = CalculateTimeLimit(pendingGame, postGame);
             status.GameState = "active";
             status.Player1.NickName = GetUserInfo(pendingGame, null);
@@ -236,13 +238,14 @@ namespace Boggle
                 activeGames.TryGetValue(ID.GameID, out status);
                 int.TryParse(status.TimeLeft, out time);
                 status.TimeLeft = time-- + "";
-                activeGames[ID.GameID] = status;
 
                 if(time <= 0)
                 {
                     timer.Change(Timeout.Infinite, 0);
                     timer.Dispose();
                 }
+
+                activeGames[ID.GameID] = status;
             }
         }
 
@@ -350,7 +353,79 @@ namespace Boggle
         /// <returns></returns>
         public WordScore PlayWord(string GameID, PlayedWord word)
         {
-            throw new NotImplementedException();
+            Status status;
+            UserInfo userInfo;
+            WordScore wordScore = new WordScore();
+
+            if(word.Word == null || word.Word.Trim().Length == 0 || word.UserToken == null || !tokenIsValid(word.UserToken)
+                || !activeGames.ContainsKey(GameID) || GameID == null)
+            {
+                SetStatus(Forbidden);
+                return null;
+            }
+
+
+            activeGames.TryGetValue(GameID, out status);
+            users.TryGetValue(word.UserToken, out userInfo);
+
+            if(status.Player1.NickName != userInfo.Nickname)
+            {
+                SetStatus(Forbidden);
+                return null;
+            }
+            else if (status.Player2.NickName != userInfo.Nickname)
+            {
+                SetStatus(Forbidden);
+                return null;
+            }
+
+            if(status.GameState != "active")
+            {
+                SetStatus(Conflict);
+                return null;
+            }
+            else
+            {
+                if(boggleBoard.CanBeFormed(word.Word.Trim()))
+                {
+                    if(status.Player1.NickName.Equals(userInfo.Nickname))
+                    {
+                        foreach(var Word in status.Player1.WordsPlayed)
+                        {
+                            if(Word.Word.Equals(word.Word))
+                            {
+                                wordScore.Score = "0";
+                                SetStatus(OK);
+                                return wordScore;
+                            }
+                        }
+                        wordScore.Score = "1";
+                        SetStatus(OK);
+                        return wordScore;
+                    }
+                    else
+                    {
+                        foreach (var Word in status.Player2.WordsPlayed)
+                        {
+                            if (Word.Word.Equals(word.Word))
+                            {
+                                wordScore.Score = "0";
+                                SetStatus(OK);
+                                return wordScore;
+                            }
+                        }
+                        wordScore.Score = "1";
+                        SetStatus(OK);
+                        return wordScore;
+                    }
+                }
+                else
+                {
+                    wordScore.Score = "0";
+                    SetStatus(OK);
+                    return wordScore;
+                }
+            }
         }
 
         /// <summary>
