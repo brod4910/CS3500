@@ -131,6 +131,22 @@ namespace Boggle
             Response f2 = client.DoPostAsync("games", game2).Result;
             Assert.AreEqual(Created, f2.Status);
 
+            string GameID = f2.Data["GameID"];
+
+
+            int time;
+
+            System.Threading.Thread.Sleep(3000);
+
+            Response f3 = client.DoGetAsync("games/{0}?Brief={1}", GameID, "no").Result;
+
+            string timeleft = f3.Data["TimeLeft"];
+
+            int.TryParse(timeleft, out time);
+
+
+            Assert.IsTrue(time < 30);
+
             // Add Test that checks if it is 201 or 202
         }
 

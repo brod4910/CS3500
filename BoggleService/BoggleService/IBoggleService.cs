@@ -71,7 +71,7 @@ namespace Boggle
         /// <param name="GameID"></param>
         /// <param name="Option"></param>
         /// <returns></returns>
-        [WebGet(UriTemplate = "games{GameID}?Brief={Option}")]
+        [WebGet(UriTemplate = "games/{GameID}?Brief={Option}")]
         Status Gamestatus(string GameID, string Option);
 
 

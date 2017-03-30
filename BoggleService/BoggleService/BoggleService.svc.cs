@@ -16,7 +16,6 @@ namespace Boggle
         private static readonly object sync = new object();
         private static int gameid = 0;
         private Timer timer;
-        private BoggleBoard boggleBoard;
 
         /// <summary>
         /// The most recent call to SetStatus determines the response code used when
@@ -157,6 +156,7 @@ namespace Boggle
                 //Creates a new game and adds it to the list of games
                 PendingGame g = new PendingGame();
                 g.GameState = "pending";
+                g.GameId =  "" + gameid++;
 
                 PendingGames.Add(g);
 
@@ -168,7 +168,6 @@ namespace Boggle
                     if(pendingGame.Player1Token == null)
                     {
                         pendingGame.Player1Token = postingGame.UserToken;
-                        pendingGame.GameId = "" + gameid;
                         pendingGame.TimeLimit = postingGame.TimeLimit;
 
                         SetStatus(Accepted);
@@ -190,7 +189,6 @@ namespace Boggle
 
                         activeGames.Add(id.GameID, status);
 
-                        gameid++;
                         PendingGames.Remove(pendingGame);
                         break;
                     }
@@ -211,8 +209,7 @@ namespace Boggle
         {
             Status status = new Status();
 
-            this.boggleBoard = new BoggleBoard();
-            status.Board = boggleBoard.ToString();
+            status.Board = new BoggleBoard().ToString();
             status.TimeLimit = CalculateTimeLimit(pendingGame, postGame);
             status.GameState = "active";
             status.Player1.NickName = GetUserInfo(pendingGame, null);
@@ -233,13 +230,13 @@ namespace Boggle
             GameId ID = (GameId)id;
             Status status;
             int time;
-            if(activeGames.ContainsKey(ID.GameID))
+            if (activeGames.ContainsKey(ID.GameID))
             {
                 activeGames.TryGetValue(ID.GameID, out status);
                 int.TryParse(status.TimeLeft, out time);
                 status.TimeLeft = time-- + "";
 
-                if(time <= 0)
+                if (time <= 0)
                 {
                     timer.Change(Timeout.Infinite, 0);
                     timer.Dispose();
@@ -247,6 +244,13 @@ namespace Boggle
 
                 activeGames[ID.GameID] = status;
             }
+        }
+
+        private string CalculateTimeLeft(DateTime dt)
+        {
+
+
+            return null;
         }
 
         /// <summary>
@@ -386,7 +390,7 @@ namespace Boggle
             }
             else
             {
-                if(boggleBoard.CanBeFormed(word.Word.Trim()))
+                if(new BoggleBoard(status.Board).CanBeFormed(word.Word.Trim()))
                 {
                     if(status.Player1.NickName.Equals(userInfo.Nickname))
                     {
@@ -451,7 +455,7 @@ namespace Boggle
                 }
                 foreach (PendingGame game in PendingGames)
                 {
-                    if (game.GameId == GameID)
+                    if (game.GameId.Equals(GameID))
                     {
                         SetStatus(OK);
                         Status pending = new Status();
@@ -461,7 +465,7 @@ namespace Boggle
                 }
                 foreach (var game in activeGames)
                 {
-                    if (game.Key == GameID)
+                    if (game.Key.Equals(GameID))
                     {
                         SetStatus(OK);
                         Status active = new Status();

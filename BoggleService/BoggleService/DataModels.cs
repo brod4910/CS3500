@@ -120,31 +120,31 @@ namespace Boggle
 
         [DataMember]
         public SecondPlayer Player2 = new SecondPlayer();
+    }
 
-        [DataContract]
-        public class FirstPlayer
-        {
-            [DataMember(EmitDefaultValue = false)]
-            public string NickName { get; set; }
-            
-            [DataMember]
-            public string Score { get; set; }
+    [DataContract]
+    public class FirstPlayer
+    {
+        [DataMember(EmitDefaultValue = false)]
+        public string NickName { get; set; }
 
-            [DataMember(EmitDefaultValue = false)]
-            public List<AlreadyPlayedWord> WordsPlayed;
-        }
+        [DataMember]
+        public string Score { get; set; }
 
-        [DataContract]
-        public class SecondPlayer
-        {
-            [DataMember(EmitDefaultValue = false)]
-            public string NickName { get; set; }
+        [DataMember(EmitDefaultValue = false)]
+        public List<AlreadyPlayedWord> WordsPlayed;
+    }
 
-            [DataMember]
-            public string Score { get; set; }
+    [DataContract]
+    public class SecondPlayer
+    {
+        [DataMember(EmitDefaultValue = false)]
+        public string NickName { get; set; }
 
-            [DataMember(EmitDefaultValue = false)]
-            public List<AlreadyPlayedWord> WordsPlayed;
-        }
+        [DataMember]
+        public string Score { get; set; }
+
+        [DataMember(EmitDefaultValue = false)]
+        public List<AlreadyPlayedWord> WordsPlayed;
     }
 }
