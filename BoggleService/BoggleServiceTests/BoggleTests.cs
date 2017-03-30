@@ -218,7 +218,7 @@ namespace Boggle
 
             // Do Game Status
             string gameId = f.Data["GameID"];
-            Response e = client.DoGetAsync("games" + gameId).Result;
+            Response e = client.DoGetAsync("games/{0}", gameId).Result;
             Assert.AreEqual(OK, e.Status);
         }
 
@@ -272,7 +272,7 @@ namespace Boggle
             }
 
             // Do Game Status Forbidden
-            Response e = client.DoGetAsync("games{0}", "1234123").Result;
+            Response e = client.DoGetAsync("games/{0}", "1234123").Result;
             Assert.AreEqual(Forbidden, e.Status);
         }
 
@@ -290,13 +290,25 @@ namespace Boggle
             game.UserToken = r.Data["UserToken"];
             game.TimeLimit = "30";
             Response f = client.DoPostAsync("games", game).Result;
-            if (f.Status == OK || f.Status == Accepted || f.Status == Created)
-            {
-                Assert.IsTrue(true);
-            }
+            Assert.AreEqual(Accepted, f.Status);
+
+            // Register a User
+            UserInfo user2 = new UserInfo();
+            user2.Nickname = "test2";
+            Response r2 = client.DoPostAsync("users", user2).Result;
+            Assert.AreEqual(OK, r2.Status);
+
+            // Join Game
+            PostingGame game2 = new PostingGame();
+            game2.UserToken = r2.Data["UserToken"];
+            game2.TimeLimit = "30";
+            Response f2 = client.DoPostAsync("games", game2).Result;
+            Assert.AreEqual(Created, f2.Status);
+
+            string gameID = f2.Data["GameID"];
 
             // Do Game Status
-            Response e = client.DoGetAsync("games" + f.Data["GameID"]).Result;
+            Response e = client.DoGetAsync("games/{0}?Brief={1}", gameID, "no").Result; ;
             Assert.AreEqual(OK, e.Status);
             if (e.Data["GameState"] == "active")
             {
