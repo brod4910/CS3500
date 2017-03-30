@@ -321,13 +321,13 @@ namespace Boggle
             {
                 if(token.UserToken == game.Player1Token)
                 {
-                    game.Player1Token = "";
+                    game.Player1Token = null;
                     SetStatus(OK);
                     return;
                 }
                 else if(token.UserToken == game.Player2Token)
                 {
-                    game.Player2Token = "";
+                    game.Player2Token = null;
                     SetStatus(OK);
                     return;
                 }
