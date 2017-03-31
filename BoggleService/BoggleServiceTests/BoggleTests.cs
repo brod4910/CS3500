@@ -270,6 +270,23 @@ namespace Boggle
             {
                 Assert.IsTrue(true);
             }
+            else
+            {
+                Assert.IsFalse(true);
+            }
+
+            // Register a User
+            UserInfo user2 = new UserInfo();
+            user2.Nickname = "test2";
+            Response r2 = client.DoPostAsync("users", user2).Result;
+            Assert.AreEqual(OK, r2.Status);
+
+            // Join Game
+            PostingGame game2 = new PostingGame();
+            game2.UserToken = r2.Data["UserToken"];
+            game2.TimeLimit = "30";
+            Response f2 = client.DoPostAsync("games", game2).Result;
+            Assert.AreEqual(Created, f2.Status);
 
             // Do Game Status
             string gameId = f.Data["GameID"];
