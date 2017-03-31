@@ -51,11 +51,7 @@ namespace Boggle
         {
             lock (sync)
             {
-                if(user.Nickname.StartsWith("@"))
-                {
-                    Thread.Sleep(10000);
-                }
-                if(user.Nickname == null || user.Nickname.Trim().Length == 0)
+                if (user.Nickname == null || user.Nickname.Trim().Length == 0)
                 {
                     SetStatus(Forbidden);
                     return null;
@@ -315,13 +311,13 @@ namespace Boggle
         {
             foreach(PendingGame game in PendingGames)
             {
-                if(token.UserToken == game.Player1Token)
+                if(token != null && token.UserToken.Equals(game.Player1Token))
                 {
                     game.Player1Token = null;
                     SetStatus(OK);
                     return;
                 }
-                else if(token.UserToken == game.Player2Token)
+                else if(token != null && token.UserToken.Equals(game.Player2Token))
                 {
                     game.Player2Token = null;
                     SetStatus(OK);

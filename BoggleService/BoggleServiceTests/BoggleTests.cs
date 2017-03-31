@@ -99,7 +99,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = null;
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(BadRequest, r.Status);
+            Assert.AreEqual(Forbidden, r.Status);
         }
 
 
@@ -215,6 +215,12 @@ namespace Boggle
             game.TimeLimit = "70";
             Response g = client.DoPostAsync("games", game).Result;
             Assert.AreEqual(Conflict, g.Status);
+
+            Token cancel = new Token();
+            cancel.UserToken = r.Data["UserToken"];
+            Console.WriteLine("UserToken of Cancel: " + r.Data["UserToken"]);
+            Response h = client.DoPutAsync(cancel, "games").Result;
+            Assert.AreEqual(OK, h.Status);
         }
 
 
@@ -241,12 +247,10 @@ namespace Boggle
             string gameId = f.Data["GameID"];
             Response e = client.DoGetAsync("games/{0}", gameId).Result;
             Assert.AreEqual(OK, e.Status);
-            Console.WriteLine("GameStatus of Cancel: " + e.Data["GameState"]);
             // Cancel Game Request
-            System.Threading.Thread.Sleep(1000);
             Token cancel = new Token();
             cancel.UserToken = r.Data["UserToken"];
-            Console.WriteLine("UserToken of Cancel: " +r.Data["UserToken"]);
+            Console.WriteLine("UserToken of Cancel: " + r.Data["UserToken"]);
             Response g = client.DoPutAsync(cancel, "games").Result;
             Assert.AreEqual(OK, g.Status);
         }
