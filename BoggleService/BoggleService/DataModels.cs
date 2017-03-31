@@ -125,10 +125,10 @@ namespace Boggle
         public DateTime datetime { get; set; }
 
         [IgnoreDataMember]
-        public List<AlreadyPlayedWord> Player1Words;
+        public List<AlreadyPlayedWord> Player1Words = new List<AlreadyPlayedWord>();
 
         [IgnoreDataMember]
-        public List<AlreadyPlayedWord> Player2Words;
+        public List<AlreadyPlayedWord> Player2Words = new List<AlreadyPlayedWord>();
     }
 
     [DataContract]
