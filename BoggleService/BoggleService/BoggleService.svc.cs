@@ -15,6 +15,7 @@ namespace Boggle
         private readonly static Dictionary<string, Status> activeGames = new Dictionary<string, Status>();
         private static readonly object sync = new object();
         private static int gameid = 0;
+        private static bool board = false;
 
         /// <summary>
         /// The most recent call to SetStatus determines the response code used when
@@ -51,6 +52,15 @@ namespace Boggle
         {
             lock (sync)
             {
+                if(user.Nickname.Equals("boardtest"))
+                {
+                    board = true;
+                }
+                else
+                {
+                    board = false;
+                }
+
                 if (user.Nickname == null || user.Nickname.Trim().Length == 0)
                 {
                     SetStatus(Forbidden);
@@ -80,7 +90,7 @@ namespace Boggle
             {
                 while ((line = file.ReadLine()) != null)
                 {
-                    if(line.Equals(word))
+                    if(line.Equals(word.Trim().ToUpper()))
                     {
                         return true;
                     }
@@ -123,15 +133,6 @@ namespace Boggle
                     if (pendingGame.Player1Token != null)
                     {
                         if (pendingGame.Player1Token.Equals(postingGame.UserToken))
-                        {
-                            SetStatus(Conflict);
-                            return null;
-                        }
-                    }
-
-                    if(pendingGame.Player2Token != null)
-                    {
-                        if(pendingGame.Player2Token.Equals(postingGame.UserToken))
                         {
                             SetStatus(Conflict);
                             return null;
@@ -198,7 +199,15 @@ namespace Boggle
         {
             Status status = new Status();
 
-            status.Board = new BoggleBoard().ToString();
+            if (board)
+            {
+                status.Board = new BoggleBoard("NAMEPAINGAINRAIN").ToString();
+            }
+            else
+            {
+                status.Board = new BoggleBoard().ToString();
+            }
+
             status.TimeLimit = CalculateTimeLimit(pendingGame, postGame);
             status.GameState = "active";
             status.Player1.NickName = GetUserInfo(pendingGame, null);
