@@ -305,6 +305,36 @@ namespace Boggle
         }
 
         [TestMethod]
+        public void TestGameStatusPending()
+        {
+            client = new RestTestClient("http://localhost:60000/BoggleService.svc/");
+            // Register a User
+            UserInfo user = new UserInfo();
+            user.Nickname = "testGameStatus";
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(OK, r.Status);
+
+            // Join Game
+            PostingGame game = new PostingGame();
+            game.UserToken = r.Data["UserToken"];
+            game.TimeLimit = "30";
+            Response f = client.DoPostAsync("games", game).Result;
+            if (f.Status == OK || f.Status == Accepted || f.Status == Created)
+            {
+                Assert.IsTrue(true);
+            }
+            else
+            {
+                Assert.IsFalse(true);
+            }
+
+            // Do Game Status
+            string gameId = f.Data["GameID"];
+            Response e = client.DoGetAsync("games/{0}", gameId).Result;
+            Assert.AreEqual(OK, e.Status);
+        }
+
+        [TestMethod]
         public void TestGameStatusGameIDInvalid()
         {
             client = new RestTestClient("http://localhost:60000/BoggleService.svc/");
@@ -367,8 +397,21 @@ namespace Boggle
                 Assert.IsTrue(true);
             }
 
+            // Register a User
+            UserInfo user2 = new UserInfo();
+            user2.Nickname = "test2";
+            Response r2 = client.DoPostAsync("users", user2).Result;
+            Assert.AreEqual(OK, r2.Status);
+
+            // Join Game
+            PostingGame game2 = new PostingGame();
+            game2.UserToken = r2.Data["UserToken"];
+            game2.TimeLimit = "30";
+            Response f2 = client.DoPostAsync("games", game2).Result;
+            Assert.AreEqual(Created, f2.Status);
+
             // Do Game Status
-            string gameId = f.Data["GameID"];
+            string gameId = f2.Data["GameID"];
             Response e = client.DoGetAsync("games/{0}?Brief={1}",gameId, "yes").Result;
             Assert.AreEqual(OK, e.Status);
             if (e.Data["GameState"] != "pending")
