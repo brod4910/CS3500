@@ -367,12 +367,7 @@ namespace Boggle
                 return null;
             }
 
-            if(status.Player1.NickName != userInfo.Nickname)
-            {
-                SetStatus(Forbidden);
-                return null;
-            }
-            else if (status.Player2.NickName != userInfo.Nickname)
+            if(status.Player1.NickName != userInfo.Nickname && status.Player2.NickName != userInfo.Nickname)
             {
                 SetStatus(Forbidden);
                 return null;

@@ -231,7 +231,7 @@ namespace Boggle
             // Join Game
             PostingGame game = new PostingGame();
             game.UserToken = r.Data["UserToken"];
-            game.TimeLimit = "30";
+            game.TimeLimit = "100";
             Response f = client.DoPostAsync("games", game).Result;
             if (f.Status == OK || f.Status == Accepted || f.Status == Created)
             {
@@ -455,7 +455,7 @@ namespace Boggle
             // Do Play Word
             PlayedWord word = new PlayedWord();
             word.UserToken = r.Data["UserToken"];
-            word.Word = "asd";
+            word.Word = "sad";
             string url = String.Format("games/{0}", gameID);
             Response g = client.DoPutAsync(word, url).Result;
             Assert.AreEqual(OK, g.Status);
@@ -509,7 +509,7 @@ namespace Boggle
             word.Word = "asd";
             string url = String.Format("games/{0}", gameID);
             Response g = client.DoPutAsync(word, url).Result;
-            Assert.AreEqual(OK, g.Status);
+            Assert.AreEqual(Forbidden, g.Status);
         }
 
         [TestMethod]
