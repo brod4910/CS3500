@@ -560,16 +560,12 @@ namespace Boggle
             {
                 Assert.IsTrue(true);
             }
-
-            // Find better way to check if game state
-            /*
             // Do Play Word
             PlayedWord word = new PlayedWord();
             word.UserToken = "word"; // Missing usertoken
             word.Word = "word";
             Response e = client.DoPutAsync(word, "games/" + f.Data["GameID"]).Result;
             Assert.AreEqual(Forbidden, e.Status);
-            */
         }
 
     }
