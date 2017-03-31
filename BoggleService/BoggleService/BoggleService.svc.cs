@@ -357,11 +357,6 @@ namespace Boggle
             activeGames.TryGetValue(GameID, out status);
            users.TryGetValue(word.UserToken, out userInfo);
 
-            if(userInfo.Nickname.Trim().Equals(""))
-            {
-                SetStatus(Forbidden);
-                return null;
-            }
 
             if(status.Player1.NickName.Equals(userInfo.Nickname) && status.Player2.NickName.Equals(userInfo.Nickname))
             {
