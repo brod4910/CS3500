@@ -136,6 +136,8 @@ namespace Boggle
 
             int time;
 
+            System.Threading.Thread.Sleep(3000);
+
             Response f3 = client.DoGetAsync("games/{0}?Brief={1}", GameID, "no").Result;
 
             string timeleft = f3.Data["TimeLeft"];

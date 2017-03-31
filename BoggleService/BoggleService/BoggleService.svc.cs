@@ -250,11 +250,13 @@ namespace Boggle
             int timeLimit;
             int.TryParse(status.TimeLimit, out timeLimit);
 
-            int created = status.datetime.AddSeconds(timeLimit).CompareTo(DateTime.Now);
+            DateTime start = status.datetime;
 
-            int now = DateTime.Now.Second;
+            DateTime now = DateTime.Now;
 
-            return now - created + "";
+            int timeElapsed = (int) now.Subtract(start).TotalSeconds;
+
+            return timeLimit - timeElapsed + "";
         }
 
         /// <summary>
