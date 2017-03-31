@@ -52,7 +52,7 @@ namespace Boggle
         {
             lock (sync)
             {
-                if(user.Nickname.Equals("boardtest"))
+                if (user != null && user.Nickname.Equals("boardtest"))
                 {
                     board = true;
                 }
@@ -438,6 +438,9 @@ namespace Boggle
 
                         status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
                         status.Player1.Score += -1;
+                        wordScore.Score = -1;
+                        SetStatus(OK);
+                        return wordScore;
                     }
                     else
                     {
@@ -453,10 +456,10 @@ namespace Boggle
                         }
                         status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
                         status.Player2.Score += -1;
+                        wordScore.Score = -1;
+                        SetStatus(OK);
+                        return wordScore;
                     }
-                    wordScore.Score = -1;
-                    SetStatus(OK);
-                    return wordScore;
                 }
             }
         }
@@ -509,6 +512,8 @@ namespace Boggle
                             active.Player1.Score = game.Value.Player1.Score;
                             active.Player2.NickName = game.Value.Player2.NickName;
                             active.Player2.Score = game.Value.Player2.Score;
+                            SetStatus(OK);
+                            return active;
                         }
                         else
                         {
@@ -521,6 +526,8 @@ namespace Boggle
                             active.Player2.NickName = game.Value.Player2.NickName;
                             active.Player2.WordsPlayed = game.Value.Player2Words;
                             active.Player2.Score = game.Value.Player2.Score;
+                            SetStatus(OK);
+                            return active;
                         }
                     }
                     else
