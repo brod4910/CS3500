@@ -243,16 +243,40 @@ namespace Boggle
             {
                 Assert.IsTrue(true);
             }
-            // Check Game Status REMOVE AFTER DEBUGGING
-            string gameId = f.Data["GameID"];
-            Response e = client.DoGetAsync("games/{0}", gameId).Result;
-            Assert.AreEqual(OK, e.Status);
             // Cancel Game Request
             Token cancel = new Token();
             cancel.UserToken = r.Data["UserToken"];
             Console.WriteLine("UserToken of Cancel: " + r.Data["UserToken"]);
             Response g = client.DoPutAsync(cancel, "games").Result;
             Assert.AreEqual(OK, g.Status);
+        }
+
+        [TestMethod]
+        public void TestCancelGameForbidden()
+        {
+            client = new RestTestClient("http://localhost:60000/BoggleService.svc/");
+            // Register a User
+            UserInfo user = new UserInfo();
+            user.Nickname = "testCancelGame";
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(OK, r.Status);
+
+            // Join Game
+            PostingGame game = new PostingGame();
+            game.UserToken = r.Data["UserToken"];
+            game.TimeLimit = "100";
+            Response f = client.DoPostAsync("games", game).Result;
+            if (f.Status == OK || f.Status == Accepted || f.Status == Created)
+            {
+                Assert.IsTrue(true);
+            }
+            // Cancel Game Request
+            System.Threading.Thread.Sleep(1000);
+            Token cancel = new Token();
+            cancel.UserToken = "25";
+            Console.WriteLine("UserToken of Cancel: " + r.Data["UserToken"]);
+            Response g = client.DoPutAsync(cancel, "games").Result;
+            Assert.AreEqual(Forbidden, g.Status);
         }
 
         [TestMethod]
@@ -564,16 +588,12 @@ namespace Boggle
             {
                 Assert.IsTrue(true);
             }
-
-            // Find better way to check if game state
-            /*
             // Do Play Word
             PlayedWord word = new PlayedWord();
             word.UserToken = "word"; // Missing usertoken
             word.Word = "word";
             Response e = client.DoPutAsync(word, "games/" + f.Data["GameID"]).Result;
             Assert.AreEqual(Forbidden, e.Status);
-            */
         }
 
     }
