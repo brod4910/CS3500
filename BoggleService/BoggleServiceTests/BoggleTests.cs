@@ -88,13 +88,23 @@ namespace Boggle
         public void TestRegister()
         {
             UserInfo user = new UserInfo();
-            user.Nickname = "test";
+            user.Nickname = "testRegister";
             Response r = client.DoPostAsync("users", user).Result;
             Assert.AreEqual(OK, r.Status);
         }
 
         [TestMethod]
         public void TestRegisterNull()
+        {
+            UserInfo user = new UserInfo();
+            user.Nickname = null;
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(BadRequest, r.Status);
+        }
+
+
+        [TestMethod]
+        public void TestRegisterBlank()
         {
             UserInfo user = new UserInfo();
             user.Nickname = "";
@@ -105,9 +115,10 @@ namespace Boggle
         [TestMethod]
         public void TestJoinGame()
         {
+            client = new RestTestClient("http://localhost:60000/BoggleService.svc/");
             // Register a User
             UserInfo user = new UserInfo();
-            user.Nickname = "test";
+            user.Nickname = "testJoinGame1";
             Response r = client.DoPostAsync("users", user).Result;
             Assert.AreEqual(OK, r.Status);
 
@@ -120,7 +131,7 @@ namespace Boggle
 
             // Register a User
             UserInfo user2 = new UserInfo();
-            user2.Nickname = "test2";
+            user2.Nickname = "testJoinGame2";
             Response r2 = client.DoPostAsync("users", user2).Result;
             Assert.AreEqual(OK, r2.Status);
 
@@ -153,9 +164,10 @@ namespace Boggle
         [TestMethod]
         public void TestJoinGameTimeError()
         {
+            client = new RestTestClient("http://localhost:60000/BoggleService.svc/");
             // Register a User
             UserInfo user = new UserInfo();
-            user.Nickname = "test";
+            user.Nickname = "testJoinGameTimeError";
             Response r = client.DoPostAsync("users", user).Result;
             Assert.AreEqual(OK, r.Status);
 
@@ -172,11 +184,47 @@ namespace Boggle
         }
 
         [TestMethod]
-        public void TestCancelGame()
+        public void TestJoinGameMultiple()
         {
+            client = new RestTestClient("http://localhost:60000/BoggleService.svc/");
             // Register a User
             UserInfo user = new UserInfo();
-            user.Nickname = "test";
+            user.Nickname = "testJoinGameMultiple";
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(OK, r.Status);
+
+            // Join Game
+            PostingGame game = new PostingGame();
+            game.UserToken = r.Data["UserToken"];
+            game.TimeLimit = "30";
+            Response f = client.DoPostAsync("games", game).Result;
+            if(f.Status != Accepted && f.Status != Created)
+            {
+                Assert.IsTrue(false); // Throw error
+            }
+            System.Threading.Thread.Sleep(1000);
+
+            PostingGame second_game = new PostingGame();
+            game.UserToken = r.Data["UserToken"];
+            game.TimeLimit = "60";
+            Response e = client.DoPostAsync("games", game).Result;
+            Assert.AreEqual(Conflict, e.Status);
+
+            PostingGame third_game = new PostingGame();
+            game.UserToken = r.Data["UserToken"];
+            game.TimeLimit = "70";
+            Response g = client.DoPostAsync("games", game).Result;
+            Assert.AreEqual(Conflict, g.Status);
+        }
+
+
+        [TestMethod]
+        public void TestCancelGame()
+        {
+            client = new RestTestClient("http://localhost:60000/BoggleService.svc/");
+            // Register a User
+            UserInfo user = new UserInfo();
+            user.Nickname = "testCancelGame";
             Response r = client.DoPostAsync("users", user).Result;
             Assert.AreEqual(OK, r.Status);
 
@@ -189,20 +237,27 @@ namespace Boggle
             {
                 Assert.IsTrue(true);
             }
-
+            // Check Game Status REMOVE AFTER DEBUGGING
+            string gameId = f.Data["GameID"];
+            Response e = client.DoGetAsync("games/{0}", gameId).Result;
+            Assert.AreEqual(OK, e.Status);
+            Console.WriteLine("GameStatus of Cancel: " + e.Data["GameState"]);
             // Cancel Game Request
+            System.Threading.Thread.Sleep(1000);
             Token cancel = new Token();
             cancel.UserToken = r.Data["UserToken"];
-            Response e = client.DoPutAsync(cancel, "games").Result;
-            Assert.AreEqual(OK, e.Status);
+            Console.WriteLine("UserToken of Cancel: " +r.Data["UserToken"]);
+            Response g = client.DoPutAsync(cancel, "games").Result;
+            Assert.AreEqual(OK, g.Status);
         }
 
         [TestMethod]
         public void TestGameStatus()
         {
+            client = new RestTestClient("http://localhost:60000/BoggleService.svc/");
             // Register a User
             UserInfo user = new UserInfo();
-            user.Nickname = "test";
+            user.Nickname = "testGameStatus";
             Response r = client.DoPostAsync("users", user).Result;
             Assert.AreEqual(OK, r.Status);
 
@@ -224,9 +279,10 @@ namespace Boggle
 
         public void TestGameStatusBrief()
         {
+            client = new RestTestClient("http://localhost:60000/BoggleService.svc/");
             // Register a User
             UserInfo user = new UserInfo();
-            user.Nickname = "test";
+            user.Nickname = "testGameStatusBreif";
             Response r = client.DoPostAsync("users", user).Result;
             Assert.AreEqual(OK, r.Status);
 
@@ -255,9 +311,10 @@ namespace Boggle
         [TestMethod]
         public void TestGameStatusForbidden()
         {
+            client = new RestTestClient("http://localhost:60000/BoggleService.svc/");
             // Register a User
             UserInfo user = new UserInfo();
-            user.Nickname = "test";
+            user.Nickname = "testGameStatusForbidden";
             Response r = client.DoPostAsync("users", user).Result;
             Assert.AreEqual(OK, r.Status);
 
@@ -279,16 +336,17 @@ namespace Boggle
         [TestMethod]
         public void TestGameStatusOutput()
         {
+            client = new RestTestClient("http://localhost:60000/BoggleService.svc/");
             // Register a User
             UserInfo user = new UserInfo();
-            user.Nickname = "test";
+            user.Nickname = "testGameStatusOutput";
             Response r = client.DoPostAsync("users", user).Result;
             Assert.AreEqual(OK, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
             game.UserToken = r.Data["UserToken"];
-            game.TimeLimit = "30";
+            game.TimeLimit = "31";
             Response f = client.DoPostAsync("games", game).Result;
             Assert.AreEqual(Accepted, f.Status);
 
@@ -301,7 +359,7 @@ namespace Boggle
             // Join Game
             PostingGame game2 = new PostingGame();
             game2.UserToken = r2.Data["UserToken"];
-            game2.TimeLimit = "30";
+            game2.TimeLimit = "31";
             Response f2 = client.DoPostAsync("games", game2).Result;
             Assert.AreEqual(Created, f2.Status);
 
@@ -338,6 +396,7 @@ namespace Boggle
         [TestMethod]
         public void TestPlayWord()
         {
+            client = new RestTestClient("http://localhost:60000/BoggleService.svc/");
             // Register a User
             UserInfo user = new UserInfo();
             user.Nickname = "test";
@@ -349,22 +408,97 @@ namespace Boggle
             game.UserToken = r.Data["UserToken"];
             game.TimeLimit = "30";
             Response f = client.DoPostAsync("games", game).Result;
-            if (f.Status == OK || f.Status == Accepted || f.Status == Created)
-            {
-                Assert.IsTrue(true);
-            }
+            Assert.AreEqual(Accepted, f.Status);
 
+            // Register a User
+            UserInfo user2 = new UserInfo();
+            user2.Nickname = "test2";
+            Response r2 = client.DoPostAsync("users", user2).Result;
+            Assert.AreEqual(OK, r2.Status);
+
+            // Join Game
+            PostingGame game2 = new PostingGame();
+            game2.UserToken = r2.Data["UserToken"];
+            game2.TimeLimit = "30";
+            Response f2 = client.DoPostAsync("games", game2).Result;
+            Assert.AreEqual(Created, f2.Status);
+
+            // Get Game Status
+            string gameID = f2.Data["GameID"];
+            Response e = client.DoGetAsync("games/{0}", gameID).Result;
+            Assert.AreEqual(OK, e.Status);
+
+            // Wait until game has started
+            while (e.Data["GameState"] != "active")
+            {
+                e = client.DoGetAsync("games/{0}", gameID).Result;
+                System.Threading.Thread.Sleep(1000);
+
+            }
             // Do Play Word
             PlayedWord word = new PlayedWord();
             word.UserToken = r.Data["UserToken"];
-            word.Word = "word";
-            Response e = client.DoPutAsync(word, "games" + f.Data["GameID"]).Result;
-            Assert.AreEqual(OK, e.Status);
+            word.Word = "asd";
+            string url = String.Format("games/{0}", gameID);
+            Response g = client.DoPutAsync(word, url).Result;
+            Assert.AreEqual(OK, g.Status);
         }
 
         [TestMethod]
         public void TestPlayWordForbidden()
         {
+            client = new RestTestClient("http://localhost:60000/BoggleService.svc/");
+            // Register a User
+            UserInfo user = new UserInfo();
+            user.Nickname = "test";
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(OK, r.Status);
+
+            // Join Game
+            PostingGame game = new PostingGame();
+            game.UserToken = r.Data["UserToken"];
+            game.TimeLimit = "30";
+            Response f = client.DoPostAsync("games", game).Result;
+            Assert.AreEqual(Accepted, f.Status);
+
+            // Register a User
+            UserInfo user2 = new UserInfo();
+            user2.Nickname = "test2";
+            Response r2 = client.DoPostAsync("users", user2).Result;
+            Assert.AreEqual(OK, r2.Status);
+
+            // Join Game
+            PostingGame game2 = new PostingGame();
+            game2.UserToken = r2.Data["UserToken"];
+            game2.TimeLimit = "30";
+            Response f2 = client.DoPostAsync("games", game2).Result;
+            Assert.AreEqual(Created, f2.Status);
+
+            // Get Game Status
+            string gameID = f2.Data["GameID"];
+            Response e = client.DoGetAsync("games/{0}", gameID).Result;
+            Assert.AreEqual(OK, e.Status);
+
+            // Wait until game has started
+            while (e.Data["GameState"] != "active")
+            {
+                e = client.DoGetAsync("games/{0}", gameID).Result;
+                System.Threading.Thread.Sleep(1000);
+
+            }
+            // Do Play Word
+            PlayedWord word = new PlayedWord();
+            word.UserToken = "";
+            word.Word = "asd";
+            string url = String.Format("games/{0}", gameID);
+            Response g = client.DoPutAsync(word, url).Result;
+            Assert.AreEqual(OK, g.Status);
+        }
+
+        [TestMethod]
+        public void TestPlayWordUserTokenFalse()
+        {
+            client = new RestTestClient("http://localhost:60000/BoggleService.svc/");
             // Register a User
             UserInfo user = new UserInfo();
             user.Nickname = "test";
@@ -383,15 +517,17 @@ namespace Boggle
 
             // Do Play Word
             PlayedWord word = new PlayedWord();
-            word.UserToken = ""; // Missing usertoken
-            word.Word = "word";
-            Response e = client.DoPutAsync(word, "games" + f.Data["GameID"]).Result;
-            Assert.AreEqual(Forbidden, e.Status);
+            word.UserToken = "1235235";
+            word.Word = "asd";
+            string gameID = f.Data["GameID"];
+            string url = String.Format("games/{0}", gameID);
+            Response e = client.DoPutAsync(word, url).Result;
         }
 
         [TestMethod]
         public void TestPlayWordConflict()
         {
+            client = new RestTestClient("http://localhost:60000/BoggleService.svc/");
             // Register a User
             UserInfo user = new UserInfo();
             user.Nickname = "test";
