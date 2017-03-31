@@ -237,11 +237,6 @@ namespace Boggle
             {
                 Assert.IsTrue(true);
             }
-            // Check Game Status REMOVE AFTER DEBUGGING
-            string gameId = f.Data["GameID"];
-            Response e = client.DoGetAsync("games/{0}", gameId).Result;
-            Assert.AreEqual(OK, e.Status);
-            Console.WriteLine("GameStatus of Cancel: " + e.Data["GameState"]);
             // Cancel Game Request
             System.Threading.Thread.Sleep(1000);
             Token cancel = new Token();
@@ -249,6 +244,34 @@ namespace Boggle
             Console.WriteLine("UserToken of Cancel: " +r.Data["UserToken"]);
             Response g = client.DoPutAsync(cancel, "games").Result;
             Assert.AreEqual(OK, g.Status);
+        }
+
+        [TestMethod]
+        public void TestCancelGameForbidden()
+        {
+            client = new RestTestClient("http://localhost:60000/BoggleService.svc/");
+            // Register a User
+            UserInfo user = new UserInfo();
+            user.Nickname = "testCancelGame";
+            Response r = client.DoPostAsync("users", user).Result;
+            Assert.AreEqual(OK, r.Status);
+
+            // Join Game
+            PostingGame game = new PostingGame();
+            game.UserToken = r.Data["UserToken"];
+            game.TimeLimit = "100";
+            Response f = client.DoPostAsync("games", game).Result;
+            if (f.Status == OK || f.Status == Accepted || f.Status == Created)
+            {
+                Assert.IsTrue(true);
+            }
+            // Cancel Game Request
+            System.Threading.Thread.Sleep(1000);
+            Token cancel = new Token();
+            cancel.UserToken = "25";
+            Console.WriteLine("UserToken of Cancel: " + r.Data["UserToken"]);
+            Response g = client.DoPutAsync(cancel, "games").Result;
+            Assert.AreEqual(Forbidden, g.Status);
         }
 
         [TestMethod]
