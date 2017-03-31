@@ -145,7 +145,7 @@ namespace Boggle
             int.TryParse(timeleft, out time);
 
 
-            Assert.IsTrue(time < 30);
+           Assert.IsTrue(time < 30);
 
             // Add Test that checks if it is 201 or 202
         }
@@ -190,6 +190,7 @@ namespace Boggle
                 Assert.IsTrue(true);
             }
 
+
             // Cancel Game Request
             Token cancel = new Token();
             cancel.UserToken = r.Data["UserToken"];
@@ -215,9 +216,26 @@ namespace Boggle
             {
                 Assert.IsTrue(true);
             }
+            else
+            {
+                Assert.IsFalse(true);
+            }
+
+            // Register a User
+            UserInfo user2 = new UserInfo();
+            user2.Nickname = "test2";
+            Response r2 = client.DoPostAsync("users", user2).Result;
+            Assert.AreEqual(OK, r2.Status);
+
+            // Join Game
+            PostingGame game2 = new PostingGame();
+            game2.UserToken = r2.Data["UserToken"];
+            game2.TimeLimit = "30";
+            Response f2 = client.DoPostAsync("games", game2).Result;
+            Assert.AreEqual(Created, f2.Status);
 
             // Do Game Status
-            string gameId = f.Data["GameID"];
+            string gameId = f2.Data["GameID"];
             Response e = client.DoGetAsync("games/{0}", gameId).Result;
             Assert.AreEqual(OK, e.Status);
         }
@@ -290,22 +308,10 @@ namespace Boggle
             game.UserToken = r.Data["UserToken"];
             game.TimeLimit = "30";
             Response f = client.DoPostAsync("games", game).Result;
-            Assert.AreEqual(Accepted, f.Status);
+            Assert.AreEqual(Created, f.Status);
 
-            // Register a User
-            UserInfo user2 = new UserInfo();
-            user2.Nickname = "test2";
-            Response r2 = client.DoPostAsync("users", user2).Result;
-            Assert.AreEqual(OK, r2.Status);
 
-            // Join Game
-            PostingGame game2 = new PostingGame();
-            game2.UserToken = r2.Data["UserToken"];
-            game2.TimeLimit = "30";
-            Response f2 = client.DoPostAsync("games", game2).Result;
-            Assert.AreEqual(Created, f2.Status);
-
-            string gameID = f2.Data["GameID"];
+            string gameID = f.Data["GameID"];
 
             // Do Game Status
             Response e = client.DoGetAsync("games/{0}?Brief={1}", gameID, "no").Result; ;
