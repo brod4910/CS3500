@@ -136,8 +136,6 @@ namespace Boggle
 
             int time;
 
-            System.Threading.Thread.Sleep(3000);
-
             Response f3 = client.DoGetAsync("games/{0}?Brief={1}", GameID, "no").Result;
 
             string timeleft = f3.Data["TimeLeft"];
@@ -364,7 +362,8 @@ namespace Boggle
             PlayedWord word = new PlayedWord();
             word.UserToken = r.Data["UserToken"];
             word.Word = "word";
-            Response e = client.DoPutAsync(word, "games" + f.Data["GameID"]).Result;
+            string gameID = f.Data["GameID"];
+            Response e = client.DoPutAsync(word, "games/" + gameID).Result;
             Assert.AreEqual(OK, e.Status);
         }
 
@@ -391,7 +390,8 @@ namespace Boggle
             PlayedWord word = new PlayedWord();
             word.UserToken = ""; // Missing usertoken
             word.Word = "word";
-            Response e = client.DoPutAsync(word, "games" + f.Data["GameID"]).Result;
+            string gameID = f.Data["GameID"];
+            Response e = client.DoPutAsync(word, "games" + gameID).Result;
             Assert.AreEqual(Forbidden, e.Status);
         }
 

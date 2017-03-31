@@ -120,6 +120,9 @@ namespace Boggle
 
         [DataMember]
         public SecondPlayer Player2 = new SecondPlayer();
+
+        [IgnoreDataMember]
+        public DateTime datetime { get; set; }
     }
 
     [DataContract]
