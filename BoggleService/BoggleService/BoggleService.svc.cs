@@ -317,12 +317,6 @@ namespace Boggle
                     SetStatus(OK);
                     return;
                 }
-                else if(token != null && token.UserToken.Equals(game.Player2Token))
-                {
-                    game.Player2Token = null;
-                    SetStatus(OK);
-                    return;
-                }
             }
             SetStatus(Forbidden);
             return;
@@ -364,11 +358,6 @@ namespace Boggle
                 return null;
             }
 
-            if(!status.GameState.Equals("active"))
-            {
-                SetStatus(Conflict);
-                return null;
-            }
             else
             {
                 if(new BoggleBoard(status.Board).CanBeFormed(word.Word.Trim()))
