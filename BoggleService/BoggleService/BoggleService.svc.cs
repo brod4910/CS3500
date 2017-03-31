@@ -154,11 +154,14 @@ namespace Boggle
                 }
 
                 //Creates a new game and adds it to the list of games
-                PendingGame g = new PendingGame();
-                g.GameState = "pending";
-                g.GameId =  "" + gameid++;
+                if (PendingGames.Count == 0)
+                {
+                    PendingGame g = new PendingGame();
+                    g.GameState = "pending";
+                    g.GameId = "" + gameid++;
 
-                PendingGames.Add(g);
+                    PendingGames.Add(g);
+                }
 
                 //adds a new player to a game
                 foreach (PendingGame pendingGame in PendingGames)
@@ -240,17 +243,11 @@ namespace Boggle
                 {
                     timer.Change(Timeout.Infinite, 0);
                     timer.Dispose();
+                    status.GameState = "completed";
                 }
 
                 activeGames[ID.GameID] = status;
             }
-        }
-
-        private string CalculateTimeLeft(DateTime dt)
-        {
-
-
-            return null;
         }
 
         /// <summary>
