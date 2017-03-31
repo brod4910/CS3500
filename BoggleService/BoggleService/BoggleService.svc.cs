@@ -389,38 +389,42 @@ namespace Boggle
                 {
                     if(status.Player1.NickName.Equals(userInfo.Nickname))
                     {
-                        foreach(var Word in status.Player1.WordsPlayed)
+                        foreach(var Word in status.Player1Words)
                         {
-                            if(Word.Word.Equals(word.Word))
+                            if(Word.Word.Equals(word.Word.Trim()))
                             {
                                 wordScore.Score = "0";
+                                status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
                                 SetStatus(OK);
                                 return wordScore;
                             }
                         }
                         wordScore.Score = "1";
+                        status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim()});
                         SetStatus(OK);
                         return wordScore;
                     }
                     else
                     {
-                        foreach (var Word in status.Player2.WordsPlayed)
+                        foreach (var Word in status.Player2Words)
                         {
                             if (Word.Word.Equals(word.Word))
                             {
                                 wordScore.Score = "0";
+                                status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
                                 SetStatus(OK);
                                 return wordScore;
                             }
                         }
                         wordScore.Score = "1";
+                        status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
                         SetStatus(OK);
                         return wordScore;
                     }
                 }
                 else
                 {
-                    wordScore.Score = "0";
+                    wordScore.Score = "-1";
                     SetStatus(OK);
                     return wordScore;
                 }

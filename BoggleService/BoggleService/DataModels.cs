@@ -123,6 +123,12 @@ namespace Boggle
 
         [IgnoreDataMember]
         public DateTime datetime { get; set; }
+
+        [IgnoreDataMember]
+        public List<AlreadyPlayedWord> Player1Words;
+
+        [IgnoreDataMember]
+        public List<AlreadyPlayedWord> Player2Words;
     }
 
     [DataContract]
