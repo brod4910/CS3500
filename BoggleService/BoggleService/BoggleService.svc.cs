@@ -52,7 +52,7 @@ namespace Boggle
         {
             lock (sync)
             {
-                if (user != null && user.Nickname.Equals("boardtest"))
+                if (user.Nickname != null && user.Nickname.Equals("boardtest"))
                 {
                     board = true;
                 }
@@ -212,8 +212,8 @@ namespace Boggle
             status.GameState = "active";
             status.Player1.NickName = GetUserInfo(pendingGame, null);
             status.Player2.NickName = GetUserInfo(null, postGame);
-            status.Player1.Score = "0";
-            status.Player2.Score = "0";
+            status.Player1.Score = 0;
+            status.Player2.Score = 0;
             status.TimeLeft = status.TimeLimit;
             status.datetime = DateTime.Now;
             return status;
@@ -340,7 +340,7 @@ namespace Boggle
             UserInfo userInfo;
             WordScore wordScore = new WordScore();
 
-            if(word.Word == null || word.Word.Trim().Length == 0 || word.UserToken == null || !tokenIsValid(word.UserToken)
+            if (word.Word == null || word.Word.Trim().Length == 0 || word.UserToken == null || !tokenIsValid(word.UserToken)
                 || !activeGames.ContainsKey(GameID) || GameID == null)
             {
                 SetStatus(Forbidden);
@@ -349,24 +349,23 @@ namespace Boggle
 
 
             activeGames.TryGetValue(GameID, out status);
-           users.TryGetValue(word.UserToken, out userInfo);
+            users.TryGetValue(word.UserToken, out userInfo);
 
 
-            if(status.Player1.NickName.Equals(userInfo.Nickname) && status.Player2.NickName.Equals(userInfo.Nickname))
+            if (status.Player1.NickName.Equals(userInfo.Nickname) && status.Player2.NickName.Equals(userInfo.Nickname))
             {
                 SetStatus(Forbidden);
                 return null;
             }
-
             else
             {
-                if(new BoggleBoard(status.Board).CanBeFormed(word.Word.Trim()))
+                if (new BoggleBoard(status.Board).CanBeFormed(word.Word.Trim()))
                 {
-                    if(status.Player1.NickName.Equals(userInfo.Nickname))
+                    if (status.Player1.NickName.Equals(userInfo.Nickname))
                     {
-                        foreach(var Word in status.Player1Words)
+                        foreach (var Word in status.Player1Words)
                         {
-                            if(Word.Word.Equals(word.Word.Trim()))
+                            if (Word.Word.Equals(word.Word.Trim()))
                             {
                                 wordScore.Score = 0;
                                 status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
@@ -446,7 +445,7 @@ namespace Boggle
                     {
                         foreach (var Word in status.Player2Words)
                         {
-                            if (Word.Word.Equals(word.Word))
+                            if (Word.Word.Equals(word.Word.Trim()))
                             {
                                 wordScore.Score = 0;
                                 status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });

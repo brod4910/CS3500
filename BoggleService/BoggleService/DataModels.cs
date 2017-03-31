@@ -138,7 +138,7 @@ namespace Boggle
         public string NickName { get; set; }
 
         [DataMember]
-        public string Score { get; set; }
+        public int Score { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
         public List<AlreadyPlayedWord> WordsPlayed;
@@ -151,7 +151,7 @@ namespace Boggle
         public string NickName { get; set; }
 
         [DataMember]
-        public string Score { get; set; }
+        public int Score { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
         public List<AlreadyPlayedWord> WordsPlayed;
