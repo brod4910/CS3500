@@ -232,7 +232,7 @@ namespace Boggle
             Response g = client.DoPutAsync(cancel, "games").Result;
             Assert.AreEqual(OK, g.Status);
         }
-
+    
         [TestMethod]
         public void TestCancelGameForbidden()
         {
@@ -592,33 +592,6 @@ namespace Boggle
 
         }
 
-        [TestMethod]
-        public void TestPlayWordNotActive()
-        {
-            client = new RestTestClient("http://localhost:60000/BoggleService.svc/");
-            // Register a User
-            UserInfo user = new UserInfo();
-            user.Nickname = "test";
-            Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
-
-            // Join Game
-            PostingGame game = new PostingGame();
-            game.UserToken = r.Data["UserToken"];
-            game.TimeLimit = "100";
-            Response f = client.DoPostAsync("games", game).Result;
-            Assert.AreEqual(Accepted, f.Status);
-            string gameID = f.Data["GameData"];
-
-            // Do Play Word
-            PlayedWord word = new PlayedWord();
-            word.UserToken = r.Data["UserToken"];
-            word.Word = "abs";
-            string url = String.Format("games/{0}", gameID);
-            Response g = client.DoPutAsync(word, url).Result;
-            Assert.AreEqual(Forbidden, g.Status);
-
-        }
 
         [TestMethod]
         public void TestPlayedWordMultipleTimes()
