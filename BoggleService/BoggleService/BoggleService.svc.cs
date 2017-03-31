@@ -68,12 +68,11 @@ namespace Boggle
         /// <summary>
         /// Demo.  You can delete this.
         /// </summary>
-        public string WordAtIndex(int n)
+        private bool wordIsValid(string word)
         {
-            if (n < 0)
+            if (word == null || word.Trim().Length == 0)
             {
-                SetStatus(Forbidden);
-                return null;
+                return false;
             }
 
             string line;
@@ -81,22 +80,14 @@ namespace Boggle
             {
                 while ((line = file.ReadLine()) != null)
                 {
-                    if (n == 0) break;
-                    n--;
+                    if(line.Equals(word))
+                    {
+                        return true;
+                    }
                 }
             }
-
-            if (n == 0)
-            {
-                SetStatus(OK);
-                return line;
-            }
-            else
-            {
-                SetStatus(Forbidden);
-                return null;
-            }
-            }
+            return false;
+        }
 
         /// <summary>
         /// Joins a game/Creates a new game
@@ -390,11 +381,22 @@ namespace Boggle
                                 return wordScore;
                             }
                         }
-                        wordScore.Score = 1;
-                        status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim()});
-                        status.Player1.Score += 1;
-                        SetStatus(OK);
-                        return wordScore;
+                        if (wordIsValid(word.Word))
+                        {
+                            wordScore.Score = 1;
+                            status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                            status.Player1.Score += 1;
+                            SetStatus(OK);
+                            return wordScore;
+                        }
+                        else
+                        {
+                            wordScore.Score = -1;
+                            status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                            status.Player1.Score += -1;
+                            SetStatus(OK);
+                            return wordScore;
+                        }
                     }
                     else
                     {
@@ -408,15 +410,57 @@ namespace Boggle
                                 return wordScore;
                             }
                         }
-                        wordScore.Score = 1;
-                        status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
-                        status.Player2.Score += 1;
-                        SetStatus(OK);
-                        return wordScore;
+                        if (wordIsValid(word.Word))
+                        {
+                            wordScore.Score = 1;
+                            status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                            status.Player2.Score += 1;
+                            SetStatus(OK);
+                            return wordScore;
+                        }
+                        else
+                        {
+                            wordScore.Score = -1;
+                            status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                            status.Player2.Score += -1;
+                            SetStatus(OK);
+                            return wordScore;
+                        }
                     }
                 }
                 else
                 {
+                    if (status.Player1.NickName.Equals(userInfo.Nickname))
+                    {
+                        foreach (var Word in status.Player1Words)
+                        {
+                            if (Word.Word.Equals(word.Word.Trim()))
+                            {
+                                wordScore.Score = 0;
+                                status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                                SetStatus(OK);
+                                return wordScore;
+                            }
+                        }
+
+                        status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                        status.Player1.Score += -1;
+                    }
+                    else
+                    {
+                        foreach (var Word in status.Player2Words)
+                        {
+                            if (Word.Word.Equals(word.Word))
+                            {
+                                wordScore.Score = 0;
+                                status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                                SetStatus(OK);
+                                return wordScore;
+                            }
+                        }
+                        status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                        status.Player2.Score += -1;
+                    }
                     wordScore.Score = -1;
                     SetStatus(OK);
                     return wordScore;
