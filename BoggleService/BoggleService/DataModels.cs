@@ -74,7 +74,7 @@ namespace Boggle
     /// </summary>
     public class WordScore
     {
-        public string Score { get; set; }
+        public int Score { get; set; }
     }
 
     /// <summary>
@@ -94,7 +94,7 @@ namespace Boggle
     {
         public string Word { get; set; }
 
-        public string Score { get; set; }
+        public int Score { get; set; }
     }
 
     /// <summary>

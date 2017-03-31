@@ -245,7 +245,7 @@ namespace Boggle
         /// </summary>
         /// <param name="status"></param>
         /// <returns></returns>
-        private string CalculateTimeLeft(Status status)
+        private int CalculateTimeLeft(Status status)
         {
             int timeLimit;
             int.TryParse(status.TimeLimit, out timeLimit);
@@ -256,7 +256,7 @@ namespace Boggle
 
             int timeElapsed = (int) now.Subtract(start).TotalSeconds;
 
-            return timeLimit - timeElapsed + "";
+            return timeLimit - timeElapsed;
         }
 
         /// <summary>
@@ -388,14 +388,15 @@ namespace Boggle
                         {
                             if(Word.Word.Equals(word.Word.Trim()))
                             {
-                                wordScore.Score = "0";
+                                wordScore.Score = 0;
                                 status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
                                 SetStatus(OK);
                                 return wordScore;
                             }
                         }
-                        wordScore.Score = "1";
+                        wordScore.Score = 1;
                         status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim()});
+                        status.Player1.Score += 1;
                         SetStatus(OK);
                         return wordScore;
                     }
@@ -405,21 +406,22 @@ namespace Boggle
                         {
                             if (Word.Word.Equals(word.Word))
                             {
-                                wordScore.Score = "0";
+                                wordScore.Score = 0;
                                 status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
                                 SetStatus(OK);
                                 return wordScore;
                             }
                         }
-                        wordScore.Score = "1";
+                        wordScore.Score = 1;
                         status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                        status.Player2.Score += 1;
                         SetStatus(OK);
                         return wordScore;
                     }
                 }
                 else
                 {
-                    wordScore.Score = "-1";
+                    wordScore.Score = -1;
                     SetStatus(OK);
                     return wordScore;
                 }
@@ -440,33 +442,60 @@ namespace Boggle
         /// <returns></returns>
         public Status Gamestatus(string GameID, string Option)
         {
-                int enteredID;
-                // Check If It parses correctly
-                if (!int.TryParse(GameID, out enteredID))
+            int enteredID;
+            // Check If It parses correctly
+            if (!int.TryParse(GameID, out enteredID))
+            {
+                SetStatus(Forbidden);
+                return null;
+            }
+            foreach (PendingGame game in PendingGames)
+            {
+                if (game.GameId.Equals(GameID))
                 {
-                    SetStatus(Forbidden);
-                    return null;
+                    SetStatus(OK);
+                    Status pending = new Status();
+                    pending.GameState = game.GameState;
+                    return pending;
                 }
-                foreach (PendingGame game in PendingGames)
+            }
+            foreach (var game in activeGames)
+            {
+                if (game.Key.Equals(GameID))
                 {
-                    if (game.GameId.Equals(GameID))
+                    SetStatus(OK);
+                    Status active = new Status();
+
+                    if (CalculateTimeLeft(game.Value) <= 0)
                     {
-                        SetStatus(OK);
-                        Status pending = new Status();
-                        pending.GameState = game.GameState;
-                        return pending;
-                    }
-                }
-                foreach (var game in activeGames)
-                {
-                    if (game.Key.Equals(GameID))
-                    {
-                        SetStatus(OK);
-                        Status active = new Status();
-                        active.GameState = game.Value.GameState;
-                        if (Option == "yes")
+                        if (Option != null && Option.Equals("yes"))
                         {
-                            active.TimeLeft = CalculateTimeLeft(game.Value);
+                            active.GameState = "completed";
+                            active.TimeLeft = "0";
+                            active.Player1.NickName = game.Value.Player1.NickName;
+                            active.Player1.Score = game.Value.Player1.Score;
+                            active.Player2.NickName = game.Value.Player2.NickName;
+                            active.Player2.Score = game.Value.Player2.Score;
+                        }
+                        else
+                        {
+                            active.GameState = "completed";
+                            active.Board = game.Value.Board;
+                            active.TimeLeft = "0";
+                            active.Player1.NickName = game.Value.Player1.NickName;
+                            active.Player1.WordsPlayed = game.Value.Player1Words;
+                            active.Player1.Score = game.Value.Player1.Score;
+                            active.Player2.NickName = game.Value.Player2.NickName;
+                            active.Player2.WordsPlayed = game.Value.Player2Words;
+                            active.Player2.Score = game.Value.Player2.Score;
+                        }
+                    }
+                    else
+                    {
+                        active.GameState = game.Value.GameState;
+                        if (Option != null && Option.Equals("yes"))
+                        {
+                            active.TimeLeft = CalculateTimeLeft(game.Value) + "";
                             active.Player1.NickName = game.Value.Player1.NickName;
                             active.Player1.Score = game.Value.Player1.Score;
                             active.Player2.NickName = game.Value.Player2.NickName;
@@ -475,7 +504,7 @@ namespace Boggle
                         }
                         else
                         {
-                            active.TimeLeft = CalculateTimeLeft(game.Value);
+                            active.TimeLeft = CalculateTimeLeft(game.Value) + "";
                             active.Player1.NickName = game.Value.Player1.NickName;
                             active.Player1.Score = game.Value.Player1.Score;
                             active.Player2.NickName = game.Value.Player2.NickName;
@@ -485,8 +514,9 @@ namespace Boggle
                             return active;
                         }
                     }
-                    // Add a completed game option
                 }
+                // Add a completed game option
+            }
 
             SetStatus(Forbidden);
             return null;
