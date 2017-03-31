@@ -348,19 +348,19 @@ namespace Boggle
             activeGames.TryGetValue(GameID, out status);
            users.TryGetValue(word.UserToken, out userInfo);
 
-            if(userInfo.Nickname.Trim() == "")
+            if(userInfo.Nickname.Trim().Equals(""))
             {
                 SetStatus(Forbidden);
                 return null;
             }
 
-            if(status.Player1.NickName != userInfo.Nickname && status.Player2.NickName != userInfo.Nickname)
+            if(status.Player1.NickName.Equals(userInfo.Nickname) && status.Player2.NickName.Equals(userInfo.Nickname))
             {
                 SetStatus(Forbidden);
                 return null;
             }
 
-            if(status.GameState != "active")
+            if(!status.GameState.Equals("active"))
             {
                 SetStatus(Conflict);
                 return null;
