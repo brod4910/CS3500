@@ -311,13 +311,32 @@ namespace Boggle
         /// <returns></returns>
         private bool tokenIsValid(string token)
         {
-            if(users.ContainsKey(token))
+            //Set up connection
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
             {
-                return true;
-            }
-            else
-            {
-                return false;
+                conn.Open();
+
+                //set up transaction
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    //Check to see if the player posting the game is in a pending game
+                    using (SqlCommand command = new SqlCommand("Select UserID from Users where UserID = @UserID", conn, trans))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            if(reader.HasRows)
+                            {
+                                trans.Commit();
+                                return true;
+                            }
+                            else
+                            {
+                                trans.Commit();
+                                return false;
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -329,17 +348,50 @@ namespace Boggle
         /// <param name="token"></param>
         public void CancelJoin(Token token)
         {
-            foreach(PendingGame game in PendingGames)
+            if(!tokenIsValid(token.UserToken))
             {
-                if(token != null && token.UserToken.Equals(game.Player1Token))
+                SetStatus(Forbidden);
+                return;
+            }
+
+            //Set up connection
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+
+                //set up transaction
+                using (SqlTransaction trans = conn.BeginTransaction())
                 {
-                    game.Player1Token = null;
-                    SetStatus(OK);
-                    return;
+                    //Check to see if the player in a pending game
+                    using (SqlCommand command = new SqlCommand("Select Player1, Player2 from Games where Player1 = @UserID and Player2 IS NULL", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@UserID", token.UserToken);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            if(!reader.HasRows)
+                            {
+                                SetStatus(Forbidden);
+                                trans.Commit();
+                                return;
+                            }
+                        }
+                    }
+
+                    using (SqlCommand command = new SqlCommand("Delete from Games where Player1 = @UserID and Player2 IS NULL"))
+                    {
+                        command.Parameters.AddWithValue("@UserID", token.UserToken);
+
+                        if(command.ExecuteNonQuery() == 0)
+                        {
+                            command.ExecuteNonQuery();
+                        }
+                        trans.Commit();
+                        return;
+                    }
                 }
             }
-            SetStatus(Forbidden);
-            return;
+
         }
 
         /// <summary>

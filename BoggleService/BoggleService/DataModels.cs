@@ -115,11 +115,11 @@ namespace Boggle
         [DataMember]
         public string TimeLeft { get; set; }
 
-        [DataMember]
-        public FirstPlayer Player1 = new FirstPlayer();
+        [DataMember(EmitDefaultValue = false)]
+        public FirstPlayer Player1;
 
-        [DataMember]
-        public SecondPlayer Player2 = new SecondPlayer();
+        [DataMember(EmitDefaultValue = false)]
+        public SecondPlayer Player2;
 
         [IgnoreDataMember]
         public DateTime datetime { get; set; }
