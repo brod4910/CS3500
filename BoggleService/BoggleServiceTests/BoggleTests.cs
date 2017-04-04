@@ -72,7 +72,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "testRegister";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
         }
 
         [TestMethod]
@@ -102,7 +102,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "testJoinGame1";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -115,7 +115,7 @@ namespace Boggle
             UserInfo user2 = new UserInfo();
             user2.Nickname = "testJoinGame2";
             Response r2 = client.DoPostAsync("users", user2).Result;
-            Assert.AreEqual(OK, r2.Status);
+            Assert.AreEqual(Created, r2.Status);
 
             // Join Game
             PostingGame game2 = new PostingGame();
@@ -151,7 +151,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "testJoinGameTimeError";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game with forbidden timelimit
             PostingGame game = new PostingGame();
@@ -173,7 +173,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "testJoinGameMultiple";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -214,7 +214,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "testCancelGame";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -241,7 +241,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "testCancelGame";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -269,7 +269,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "testGameStatus";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -289,7 +289,7 @@ namespace Boggle
             UserInfo user2 = new UserInfo();
             user2.Nickname = "test2";
             Response r2 = client.DoPostAsync("users", user2).Result;
-            Assert.AreEqual(OK, r2.Status);
+            Assert.AreEqual(Created, r2.Status);
 
             // Join Game
             PostingGame game2 = new PostingGame();
@@ -312,7 +312,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "testGameStatus";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -342,7 +342,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "testGameStatus";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -362,7 +362,7 @@ namespace Boggle
             UserInfo user2 = new UserInfo();
             user2.Nickname = "test2";
             Response r2 = client.DoPostAsync("users", user2).Result;
-            Assert.AreEqual(OK, r2.Status);
+            Assert.AreEqual(Created, r2.Status);
 
             // Join Game
             PostingGame game2 = new PostingGame();
@@ -385,7 +385,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "testGameStatusBreif";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -401,7 +401,7 @@ namespace Boggle
             UserInfo user2 = new UserInfo();
             user2.Nickname = "test2";
             Response r2 = client.DoPostAsync("users", user2).Result;
-            Assert.AreEqual(OK, r2.Status);
+            Assert.AreEqual(Created, r2.Status);
 
             // Join Game
             PostingGame game2 = new PostingGame();
@@ -430,7 +430,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "testGameStatusBreif";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -446,7 +446,7 @@ namespace Boggle
             UserInfo user2 = new UserInfo();
             user2.Nickname = "test2";
             Response r2 = client.DoPostAsync("users", user2).Result;
-            Assert.AreEqual(OK, r2.Status);
+            Assert.AreEqual(Created, r2.Status);
 
             // Join Game
             PostingGame game2 = new PostingGame();
@@ -482,7 +482,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "testGameStatusBreif";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -498,7 +498,7 @@ namespace Boggle
             UserInfo user2 = new UserInfo();
             user2.Nickname = "test2";
             Response r2 = client.DoPostAsync("users", user2).Result;
-            Assert.AreEqual(OK, r2.Status);
+            Assert.AreEqual(Created, r2.Status);
 
             // Join Game
             PostingGame game2 = new PostingGame();
@@ -537,7 +537,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "testGameStatusForbidden";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -562,7 +562,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "testGameStatusOutput";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -622,7 +622,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "test";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -635,7 +635,7 @@ namespace Boggle
             UserInfo user2 = new UserInfo();
             user2.Nickname = "test2";
             Response r2 = client.DoPostAsync("users", user2).Result;
-            Assert.AreEqual(OK, r2.Status);
+            Assert.AreEqual(Created, r2.Status);
 
             // Join Game
             PostingGame game2 = new PostingGame();
@@ -687,7 +687,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "test";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -700,7 +700,7 @@ namespace Boggle
             UserInfo user2 = new UserInfo();
             user2.Nickname = "boardtest";
             Response r2 = client.DoPostAsync("users", user2).Result;
-            Assert.AreEqual(OK, r2.Status);
+            Assert.AreEqual(Created, r2.Status);
 
             // Join Game
             PostingGame game2 = new PostingGame();
@@ -765,7 +765,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "test";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -778,7 +778,7 @@ namespace Boggle
             UserInfo user2 = new UserInfo();
             user2.Nickname = "boardtest";
             Response r2 = client.DoPostAsync("users", user2).Result;
-            Assert.AreEqual(OK, r2.Status);
+            Assert.AreEqual(Created, r2.Status);
 
             // Join Game
             PostingGame game2 = new PostingGame();
@@ -839,7 +839,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "test";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -852,7 +852,7 @@ namespace Boggle
             UserInfo user2 = new UserInfo();
             user2.Nickname = "boardtest";
             Response r2 = client.DoPostAsync("users", user2).Result;
-            Assert.AreEqual(OK, r2.Status);
+            Assert.AreEqual(Created, r2.Status);
 
             // Join Game
             PostingGame game2 = new PostingGame();
@@ -903,7 +903,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "test";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -916,7 +916,7 @@ namespace Boggle
             UserInfo user2 = new UserInfo();
             user2.Nickname = "boardtest";
             Response r2 = client.DoPostAsync("users", user2).Result;
-            Assert.AreEqual(OK, r2.Status);
+            Assert.AreEqual(Created, r2.Status);
 
             // Join Game
             PostingGame game2 = new PostingGame();
@@ -967,7 +967,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "test";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -980,7 +980,7 @@ namespace Boggle
             UserInfo user2 = new UserInfo();
             user2.Nickname = "test";
             Response r2 = client.DoPostAsync("users", user2).Result;
-            Assert.AreEqual(OK, r2.Status);
+            Assert.AreEqual(Created, r2.Status);
 
             // Join Game
             PostingGame game2 = new PostingGame();
@@ -1032,7 +1032,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "test";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -1045,7 +1045,7 @@ namespace Boggle
             UserInfo user2 = new UserInfo();
             user2.Nickname = "test2";
             Response r2 = client.DoPostAsync("users", user2).Result;
-            Assert.AreEqual(OK, r2.Status);
+            Assert.AreEqual(Created, r2.Status);
 
             // Join Game
             PostingGame game2 = new PostingGame();
@@ -1103,7 +1103,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "test";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -1116,7 +1116,7 @@ namespace Boggle
             UserInfo user2 = new UserInfo();
             user2.Nickname = "test2";
             Response r2 = client.DoPostAsync("users", user2).Result;
-            Assert.AreEqual(OK, r2.Status);
+            Assert.AreEqual(Created, r2.Status);
 
             // Join Game
             PostingGame game2 = new PostingGame();
@@ -1154,7 +1154,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "test";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();
@@ -1183,7 +1183,7 @@ namespace Boggle
             UserInfo user = new UserInfo();
             user.Nickname = "test";
             Response r = client.DoPostAsync("users", user).Result;
-            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(Created, r.Status);
 
             // Join Game
             PostingGame game = new PostingGame();

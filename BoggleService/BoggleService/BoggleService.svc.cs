@@ -23,7 +23,7 @@ namespace Boggle
         // The connection string to the DB
         private static string BoggleDB;
 
-        static BogglService()
+        static BoggleService()
         {
             // Saves the connection string for the database.  A connection string contains the
             // information necessary to connect with the database server.  When you create a
@@ -173,6 +173,9 @@ namespace Boggle
         /// The active game's time limit is the integer average of the time limits requested by the two players. 
         /// Returns the new active game's GameID (which should be the same as the old pending game's GameID). 
         /// Responds with status 201 (Created).
+        /// Otherwise, adds UserToken as the first player of the pending game, 
+        /// and the TimeLimit as the pending game's requested time limit. 
+        /// Returns the pending game's GameID. Responds with status 202 (Accepted).
         /// </summary>
         /// <param name="postingGame"></param>
         /// <returns></returns>
@@ -189,10 +192,12 @@ namespace Boggle
                 return null;
             }
 
+            //Set up connection
             using (SqlConnection conn = new SqlConnection(BoggleDB))
             {
                 conn.Open();
 
+                //set up transaction
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
                     using (SqlCommand command = new SqlCommand("Select Player1, Player2 from Games where Player1 = @UserID and Player2 IS NULL", conn, trans))
@@ -236,7 +241,14 @@ namespace Boggle
 
                     using (SqlCommand command = new SqlCommand(query, conn, trans))
                     {
-                        if (GameId != -1)
+                        if (GameId == -1)
+                        {
+                            command.Parameters.AddWithValue("@Player1", postingGame.UserToken);
+                            command.Parameters.AddWithValue("@TimeLimit", postingGame.TimeLimit);
+                            ID = new GameId() { GameID = command.ExecuteScalar().ToString() };
+                            SetStatus(Accepted);
+                        }
+                        else
                         {
                             command.Parameters.AddWithValue("@Player2", postingGame.UserToken);
                             command.Parameters.AddWithValue("@TimeLimit", CalcTimeLimit(timeLimit, postingGame.TimeLimit));
@@ -245,13 +257,6 @@ namespace Boggle
                             command.Parameters.AddWithValue("@GameID", GameId);
                             ID = new GameId() { GameID = GameId + "" };
                             SetStatus(Created);
-                        }
-                        else
-                        {
-                            command.Parameters.AddWithValue("@Player1", postingGame.UserToken);
-                            command.Parameters.AddWithValue("@TimeLimit", postingGame.TimeLimit);
-                            ID = new GameId() { GameID = command.ExecuteScalar().ToString() };
-                            SetStatus(Accepted);
                         }
 
                         if (command.ExecuteNonQuery() == 0)
@@ -297,34 +302,6 @@ namespace Boggle
             int timeElapsed = (int) now.Subtract(start).TotalSeconds;
 
             return timeLimit - timeElapsed;
-        }
-
-        /// <summary>
-        /// Gets the Nickname of the player posting the
-        /// game
-        /// </summary>
-        /// <param name="game"></param>
-        /// <returns></returns>
-        private string GetUserInfo(PendingGame pengame, PostingGame posgame)
-        {
-            if (posgame != null)
-            {
-                UserInfo info;
-                Token tok = new Token();
-                tok.UserToken = posgame.UserToken;
-                users.TryGetValue(tok.UserToken, out info);
-
-                return info.Nickname;
-            }
-            else
-            {
-                UserInfo info;
-                Token tok = new Token();
-                tok.UserToken = pengame.Player1Token;
-                users.TryGetValue(tok.UserToken, out info);
-
-                return info.Nickname;
-            }
         }
 
         /// <summary>
