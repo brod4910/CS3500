@@ -199,6 +199,7 @@ namespace Boggle
                 //set up transaction
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
+                    //Check to see if the player posting the game is in a pending game
                     using (SqlCommand command = new SqlCommand("Select Player1, Player2 from Games where Player1 = @UserID and Player2 IS NULL", conn, trans))
                     {
                         command.Parameters.AddWithValue("@UserID", postingGame.UserToken);
@@ -255,11 +256,11 @@ namespace Boggle
                             command.Parameters.AddWithValue("@GameID", GameId);
                             ID = new GameId() { GameID = GameId + "" };
                             SetStatus(Created);
-                        }
 
-                        if (command.ExecuteNonQuery() == 0)
-                        {
-                            command.ExecuteNonQuery();
+                            if (command.ExecuteNonQuery() == 0)
+                            {
+                                command.ExecuteNonQuery();
+                            }
                         }
 
                         trans.Commit();
