@@ -17,7 +17,6 @@ namespace Boggle
         private readonly static Dictionary<string, Status> activeGames = new Dictionary<string, Status>();
         private readonly static HashSet<String> Dictionary = dictionary();
         private static readonly object sync = new object();
-        private static int gameid = 0;
         private static bool board = false;
 
         // The connection string to the DB
