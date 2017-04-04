@@ -251,7 +251,14 @@ namespace Boggle
                         {
                             command.Parameters.AddWithValue("@Player2", postingGame.UserToken);
                             command.Parameters.AddWithValue("@TimeLimit", CalcTimeLimit(timeLimit, postingGame.TimeLimit));
-                            command.Parameters.AddWithValue("@Board", new BoggleBoard().ToString());
+                            if (board)
+                            {
+                                command.Parameters.AddWithValue("@Board", new BoggleBoard("NAMEPAINRAINGAIN").ToString());
+                            }
+                            else
+                            {
+                                command.Parameters.AddWithValue("@Board", new BoggleBoard().ToString());
+                            }
                             command.Parameters.AddWithValue("@StartTime", DateTime.Now);
                             command.Parameters.AddWithValue("@GameID", GameId);
                             ID = new GameId() { GameID = GameId + "" };
