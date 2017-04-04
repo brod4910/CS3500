@@ -185,7 +185,7 @@ namespace Boggle
             int GameId = -1;
             GameId ID;
 
-            if (timeLimit < 5 || timeLimit > 120 || !tokenIsValid(postingGame.UserToken))
+            if (timeLimit < 5 || timeLimit > 120)
             {
                 SetStatus(Forbidden);
                 return null;
@@ -221,8 +221,7 @@ namespace Boggle
                             if(reader.Read())
                             {
                                 GameId = (int)reader["GameID"];
-                                int.TryParse((string)reader["TimeLimit"], out timeLimit);
-                                trans.Commit();
+                                timeLimit = (int)reader["TimeLimit"];
                             }
                         }
                     }
