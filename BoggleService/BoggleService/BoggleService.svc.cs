@@ -322,16 +322,16 @@ namespace Boggle
                     //Check to see if the player posting the game is in a pending game
                     using (SqlCommand command = new SqlCommand("Select UserID from Users where UserID = @UserID", conn, trans))
                     {
+                        command.Parameters.AddWithValue("@UserID", token);
+
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if(reader.HasRows)
                             {
-                                trans.Commit();
                                 return true;
                             }
                             else
                             {
-                                trans.Commit();
                                 return false;
                             }
                         }
@@ -369,6 +369,8 @@ namespace Boggle
 
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
+                            //If the reader does not have rows
+                            //user is not in a pending game
                             if(!reader.HasRows)
                             {
                                 SetStatus(Forbidden);
@@ -378,7 +380,7 @@ namespace Boggle
                         }
                     }
 
-                    using (SqlCommand command = new SqlCommand("Delete from Games where Player1 = @UserID and Player2 IS NULL"))
+                    using (SqlCommand command = new SqlCommand("Delete from Games where Player1 = @UserID and Player2 IS NULL", conn, trans))
                     {
                         command.Parameters.AddWithValue("@UserID", token.UserToken);
 
