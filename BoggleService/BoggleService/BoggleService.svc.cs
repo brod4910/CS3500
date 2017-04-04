@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Net;
 using System.ServiceModel.Web;
 using System.Threading;
 using static System.Net.HttpStatusCode;
+using System.Data.SqlClient;
 
 namespace Boggle
 {
@@ -13,9 +15,36 @@ namespace Boggle
         private readonly static Dictionary<string, UserInfo> users = new Dictionary<string, UserInfo>();
         private readonly static HashSet<PendingGame> PendingGames = new HashSet<PendingGame>();
         private readonly static Dictionary<string, Status> activeGames = new Dictionary<string, Status>();
+        private readonly static HashSet<String> Dictionary = dictionary();
         private static readonly object sync = new object();
         private static int gameid = 0;
         private static bool board = false;
+
+        // The connection string to the DB
+        private static string BoggleDB;
+
+        static BogglService()
+        {
+            // Saves the connection string for the database.  A connection string contains the
+            // information necessary to connect with the database server.  When you create a
+            // DB, there is generally a way to obtain the connection string.  From the Server
+            // Explorer pane, obtain the properties of DB to see the connection string.
+
+            // The connection string of my ToDoDB.mdf shows as
+            //
+            //    Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename="C:\Users\zachary\Source\CS 3500 S16\examples\ToDoList\ToDoListDB\App_Data\ToDoDB.mdf";Integrated Security=True
+            //
+            // Unfortunately, this is absolute pathname on my computer, which means that it
+            // won't work if the solution is moved.  Fortunately, it can be shorted to
+            //
+            //    Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename="|DataDirectory|\ToDoDB.mdf";Integrated Security=True
+            //
+            // You should shorten yours this way as well.
+            //
+            // Rather than build the connection string into the program, I store it in the Web.config
+            // file where it can be easily found and changed.  You should do that too.
+            BoggleDB = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
+        }
 
         /// <summary>
         /// The most recent call to SetStatus determines the response code used when
@@ -50,33 +79,49 @@ namespace Boggle
         /// <returns></returns>
         public Token Register(UserInfo user)
         {
-            lock (sync)
-            {
-                if (user.Nickname != null && user.Nickname.Equals("boardtest"))
-                {
-                    board = true;
-                }
-                else
-                {
-                    board = false;
-                }
 
-                if (user.Nickname == null || user.Nickname.Trim().Length == 0)
+            if (user.Nickname != null && user.Nickname.Equals("boardtest"))
+            {
+                board = true;
+            }
+            else
+            {
+                board = false;
+            }
+
+            if (user.Nickname == null || user.Nickname.Trim().Length == 0)
+            {
+                SetStatus(Forbidden);
+                return null;
+            }
+
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+
+                using (SqlTransaction trans = conn.BeginTransaction())
                 {
-                    SetStatus(Forbidden);
-                    return null;
-                }
-                else
-                {
-                    Token token = new Token();
-                    token.UserToken = Guid.NewGuid().ToString();
-                    users.Add(token.UserToken, user);
-                    return token;
+                    using (SqlCommand command = new SqlCommand("insert into Users (UserID, Nickname) values (@UserID, @Nickname)", conn, trans))
+                    {
+                        string UserID = Guid.NewGuid().ToString();
+
+                        command.Parameters.AddWithValue("@UserID", UserID);
+                        command.Parameters.AddWithValue("@Nickname", user.Nickname);
+
+                       if(command.ExecuteNonQuery() == 0)
+                       {
+                            command.ExecuteNonQuery();
+                       }
+
+                        SetStatus(Created);
+                        trans.Commit();
+                        return new Token() { UserToken = UserID };
+                    }
                 }
             }
         }
         /// <summary>
-        /// Demo.  You can delete this.
+        /// Checks to see if the word is valid in the dictionary
         /// </summary>
         private bool wordIsValid(string word)
         {
@@ -100,6 +145,26 @@ namespace Boggle
         }
 
         /// <summary>
+        /// Returns the hashset of the dictionary for word validation
+        /// </summary>
+        /// <returns></returns>
+        private static HashSet<String> dictionary()
+        {
+            HashSet<String> dict = new HashSet<string>();
+
+            string line;
+            using (StreamReader file = new System.IO.StreamReader(AppDomain.CurrentDomain.BaseDirectory + "dictionary.txt"))
+            {
+                while ((line = file.ReadLine()) != null)
+                {
+                    dict.Add(line);
+                }
+            }
+
+            return dict;
+        }
+
+        /// <summary>
         /// Joins a game/Creates a new game
         /// If UserToken is invalid, TimeLimit  5, or TimeLimit  120, responds with status 403 (Forbidden).
         /// Otherwise, if UserToken is already a player in the pending game, responds with status 409 (Conflict).
@@ -113,127 +178,106 @@ namespace Boggle
         /// <returns></returns>
         public GameId JoinGame(PostingGame postingGame)
         {
-            lock (sync)
+            int timeLimit;
+            int.TryParse(postingGame.TimeLimit, out timeLimit);
+            int GameId = -1;
+            GameId ID;
+
+            if (timeLimit < 5 || timeLimit > 120 || !tokenIsValid(postingGame.UserToken))
             {
-                int timeLimit;
-                GameId id = new GameId();
-                id.GameID = "" + gameid;
+                SetStatus(Forbidden);
+                return null;
+            }
 
-                int.TryParse(postingGame.TimeLimit, out timeLimit);
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
 
-                if (timeLimit < 5 || timeLimit > 120 || !tokenIsValid(postingGame.UserToken))
+                using (SqlTransaction trans = conn.BeginTransaction())
                 {
-                    SetStatus(Forbidden);
-                    return null;
-                }
-
-                //Check if a pending game contains the usertoken
-                foreach (PendingGame pendingGame in PendingGames)
-                {
-                    if (pendingGame.Player1Token != null)
+                    using (SqlCommand command = new SqlCommand("Select Player1, Player2 from Games where Player1 = @UserID and Player2 IS NULL", conn, trans))
                     {
-                        if (pendingGame.Player1Token.Equals(postingGame.UserToken))
+                        command.Parameters.AddWithValue("@UserID", postingGame.UserToken);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
                         {
-                            SetStatus(Conflict);
-                            return null;
+                            while(reader.HasRows)
+                            {
+                                SetStatus(Conflict);
+                                trans.Commit();
+                                return null;
+                            }
                         }
                     }
-                }
 
-                //Creates a new game and adds it to the list of games
-                if (PendingGames.Count == 0)
-                {
-                    PendingGame g = new PendingGame();
-                    g.GameState = "pending";
-                    g.GameId = "" + gameid++;
-
-                    PendingGames.Add(g);
-                }
-
-                //adds a new player to a game
-                foreach (PendingGame pendingGame in PendingGames)
-                {
-                    //if the player 1 token is is null add
-                    //the users information to the pending game
-                    if(pendingGame.Player1Token == null)
+                    using (SqlCommand command = new SqlCommand("Select Player2, GameID, TimeLimit from Games where Player2 IS NULL", conn, trans))
                     {
-                        pendingGame.Player1Token = postingGame.UserToken;
-                        pendingGame.TimeLimit = postingGame.TimeLimit;
-
-                        SetStatus(Accepted);
-                        break;
-                    }
-                    //if player 2 token is null prepare the game to be started
-                    //and add it to the list of active games
-                    else if(pendingGame.Player2Token == null)
-                    {
-                        pendingGame.Player2Token = postingGame.UserToken;
-                        SetStatus(Created);
-                       // SetStatus(OK);
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            if(reader.Read())
+                            {
+                                GameId = (int)reader["GameID"];
+                                int.TryParse((string)reader["TimeLimit"], out timeLimit);
+                                trans.Commit();
+                            }
+                        }
                     }
 
-                    //Make the pending game an active game
-                    if(pendingGame.Player1Token != null && pendingGame.Player2Token != null)
+                    string query;
+
+                    if(GameId == -1)
                     {
-                        Status status = createGame(pendingGame, postingGame, id);
+                        query = "insert into Games (Player1, TimeLimit) output inserted.GameID values(@Player1, @TimeLimit)";
+                    }
+                    else
+                    {
+                        query = "update Games set Player2=@Player2, TimeLimit=@TimeLimit, Board=@Board, StartTime=@StartTime where GameID=@GameID";
+                    }
 
-                        activeGames.Add(id.GameID, status);
+                    using (SqlCommand command = new SqlCommand(query, conn, trans))
+                    {
+                        if (GameId != -1)
+                        {
+                            command.Parameters.AddWithValue("@Player2", postingGame.UserToken);
+                            command.Parameters.AddWithValue("@TimeLimit", CalcTimeLimit(timeLimit, postingGame.TimeLimit));
+                            command.Parameters.AddWithValue("@Board", new BoggleBoard().ToString());
+                            command.Parameters.AddWithValue("@StartTime", DateTime.Now);
+                            command.Parameters.AddWithValue("@GameID", GameId);
+                            ID = new GameId() { GameID = GameId + "" };
+                            SetStatus(Created);
+                        }
+                        else
+                        {
+                            command.Parameters.AddWithValue("@Player1", postingGame.UserToken);
+                            command.Parameters.AddWithValue("@TimeLimit", postingGame.TimeLimit);
+                            ID = new GameId() { GameID = command.ExecuteScalar().ToString() };
+                            SetStatus(Accepted);
+                        }
 
-                        PendingGames.Remove(pendingGame);
-                        break;
+                        if (command.ExecuteNonQuery() == 0)
+                        {
+                            command.ExecuteNonQuery();
+                        }
+
+                        trans.Commit();
+                        return ID;
                     }
                 }
-
-                return id;
             }
         }
 
         /// <summary>
-        /// Creates the initial game status for the game
+        /// Calculates the time limit of the game
         /// </summary>
-        /// <param name="pendingGame"></param>
-        /// <param name="postGame"></param>
-        /// <param name="id"></param>
+        /// <param name="t1"></param>
+        /// <param name="t2unparsed"></param>
         /// <returns></returns>
-        private Status createGame(PendingGame pendingGame, PostingGame postGame, GameId id)
+        private int CalcTimeLimit(int t1, string t2unparsed)
         {
-            Status status = new Status();
-
-            if (board)
-            {
-                status.Board = new BoggleBoard("NAMEPAINGAINRAIN").ToString();
-            }
-            else
-            {
-                status.Board = new BoggleBoard().ToString();
-            }
-
-            status.TimeLimit = CalculateTimeLimit(pendingGame, postGame);
-            status.GameState = "active";
-            status.Player1.NickName = GetUserInfo(pendingGame, null);
-            status.Player2.NickName = GetUserInfo(null, postGame);
-            status.Player1.Score = 0;
-            status.Player2.Score = 0;
-            status.TimeLeft = status.TimeLimit;
-            status.datetime = DateTime.Now;
-            return status;
-        }
-
-        /// <summary>
-        /// Calculates the average time from status and t2
-        /// </summary>
-        /// <param name="status"></param>
-        /// <param name="t2"></param>
-        /// <returns></returns>
-        private string CalculateTimeLimit(PendingGame pengame, PostingGame posgame)
-        {
-            int t1;
             int t2;
+            int.TryParse(t2unparsed, out t2);
 
-            int.TryParse(pengame.TimeLimit, out t1);
-            int.TryParse(posgame.TimeLimit, out t2);
-
-            return ((t1 + t2) / 2) + "";
+            return (t1 + t2) / 2;
         }
 
         /// <summary>
@@ -350,7 +394,7 @@ namespace Boggle
 
             activeGames.TryGetValue(GameID, out status);
             users.TryGetValue(word.UserToken, out userInfo);
-
+            string normalizedWord = word.Word.Trim().ToLower();
 
             if (status.Player1.NickName.Equals(userInfo.Nickname) && status.Player2.NickName.Equals(userInfo.Nickname))
             {
@@ -365,10 +409,10 @@ namespace Boggle
                     {
                         foreach (var Word in status.Player1Words)
                         {
-                            if (Word.Word.Equals(word.Word.Trim()))
+                            if (Word.Word.Equals(normalizedWord))
                             {
                                 wordScore.Score = 0;
-                                status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                                status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
                                 SetStatus(OK);
                                 return wordScore;
                             }
@@ -376,7 +420,7 @@ namespace Boggle
                         if (wordIsValid(word.Word))
                         {
                             wordScore.Score = 1;
-                            status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                            status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
                             status.Player1.Score += 1;
                             SetStatus(OK);
                             return wordScore;
@@ -384,7 +428,7 @@ namespace Boggle
                         else
                         {
                             wordScore.Score = -1;
-                            status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                            status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
                             status.Player1.Score += -1;
                             SetStatus(OK);
                             return wordScore;
@@ -394,10 +438,10 @@ namespace Boggle
                     {
                         foreach (var Word in status.Player2Words)
                         {
-                            if (Word.Word.Equals(word.Word))
+                            if (Word.Word.Equals(normalizedWord))
                             {
                                 wordScore.Score = 0;
-                                status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                                status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
                                 SetStatus(OK);
                                 return wordScore;
                             }
@@ -405,7 +449,7 @@ namespace Boggle
                         if (wordIsValid(word.Word))
                         {
                             wordScore.Score = 1;
-                            status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                            status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
                             status.Player2.Score += 1;
                             SetStatus(OK);
                             return wordScore;
@@ -413,7 +457,7 @@ namespace Boggle
                         else
                         {
                             wordScore.Score = -1;
-                            status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                            status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
                             status.Player2.Score += -1;
                             SetStatus(OK);
                             return wordScore;
@@ -426,16 +470,16 @@ namespace Boggle
                     {
                         foreach (var Word in status.Player1Words)
                         {
-                            if (Word.Word.Equals(word.Word.Trim()))
+                            if (Word.Word.Equals(normalizedWord))
                             {
                                 wordScore.Score = 0;
-                                status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                                status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
                                 SetStatus(OK);
                                 return wordScore;
                             }
                         }
 
-                        status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                        status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
                         status.Player1.Score += -1;
                         wordScore.Score = -1;
                         SetStatus(OK);
@@ -445,15 +489,15 @@ namespace Boggle
                     {
                         foreach (var Word in status.Player2Words)
                         {
-                            if (Word.Word.Equals(word.Word.Trim()))
+                            if (Word.Word.Equals(normalizedWord))
                             {
                                 wordScore.Score = 0;
-                                status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                                status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
                                 SetStatus(OK);
                                 return wordScore;
                             }
                         }
-                        status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = word.Word.Trim() });
+                        status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
                         status.Player2.Score += -1;
                         wordScore.Score = -1;
                         SetStatus(OK);

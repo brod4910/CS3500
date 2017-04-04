@@ -42,7 +42,7 @@ namespace Boggle
         [DataMember]
         public string GameID { get; set; }
 
-        [DataMember(EmitDefaultValue = false)]
+        [IgnoreDataMember]
         public string TimeLimit { get; set; }
     }
 
