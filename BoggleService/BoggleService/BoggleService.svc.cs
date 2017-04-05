@@ -318,6 +318,11 @@ namespace Boggle
         /// <returns></returns>
         private bool tokenIsValid(string token)
         {
+            if(token == null)
+            {
+                return false;
+            }
+
             //Set up connection
             using (SqlConnection conn = new SqlConnection(BoggleDB))
             {
@@ -404,6 +409,139 @@ namespace Boggle
         }
 
         /// <summary>
+        /// Checks to see if GameID is valid in our database
+        /// </summary>
+        /// <param name="GameID"></param>
+        /// <returns></returns>
+        private bool gameidIsValid(string GameID)
+        {
+            if(GameID == null)
+            {
+                return false;
+            }
+
+            int gameid;
+            int.TryParse(GameID, out gameid);
+
+            //Set up connection
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+                //set up transaction
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    //Check to see if the player is in the game
+                    using (SqlCommand command = new SqlCommand("Select GameID from Games where GameID=@GameID", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@GameID", GameID);
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            if(reader.HasRows)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+        private bool wordIsValid(PlayedWord word)
+        {
+            if (word.Word.Trim().Length == 0 || word.Word == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Checks to see if the user exists in the game
+        /// </summary>
+        /// <param name="GameID"></param>
+        /// <param name="word"></param>
+        /// <returns></returns>
+        private bool userIsinGame(string GameID, PlayedWord word)
+        {
+            //Set up connection
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+                //set up transaction
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    //Check to see if the player is in the game
+                    using (SqlCommand command = new SqlCommand("Select GameID, Player1, Player2 from Games where GameID=@GameID and (Player1=@UserID || Player2=@UserID)", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@GameID", GameID);
+                        command.Parameters.AddWithValue("@UserID", word.UserToken);
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            if (reader.HasRows)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Calculates the time left in any given game
+        /// true == active game
+        /// false == completed game
+        /// </summary>
+        /// <param name="GameID"></param>
+        /// <returns></returns>
+        private int CalcTimeLeft(string GameID)
+        {
+            DateTime gameStart;
+            int timeLimit;
+
+            //Set up connection
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+                //set up transaction
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    //Check to see if the player is in the game
+                    using (SqlCommand command = new SqlCommand("Select GameID from Games where GameID=@GameID", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@GameID", GameID);
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            gameStart = (DateTime)reader["StartTime"];
+                            timeLimit = (int)reader["TimeLimit"];
+                        }
+                    }
+                }
+            }
+
+
+            DateTime now = DateTime.Now;
+
+            int timeElapsed = (int)now.Subtract(gameStart).TotalSeconds;
+
+            return timeLimit - timeElapsed;
+
+        }
+
+
+        /// <summary>
         /// Play a word in a game.
         /// If Word is null or empty when trimmed, or if GameID or UserToken is missing or invalid, or 
         /// if UserToken is not a player in the game identified by GameID, responds with response code 403 (Forbidden).
@@ -418,130 +556,20 @@ namespace Boggle
         public WordScore PlayWord(string GameID, PlayedWord word)
         {
             Status status;
-            UserInfo userInfo;
-            WordScore wordScore = new WordScore();
 
-            if (word.Word == null || word.Word.Trim().Length == 0 || word.UserToken == null || !tokenIsValid(word.UserToken)
-                || !activeGames.ContainsKey(GameID) || GameID == null)
+            if(!wordIsValid(word) || !tokenIsValid(word.UserToken) || !gameidIsValid(GameID) || !userIsinGame(GameID, word))
             {
                 SetStatus(Forbidden);
                 return null;
             }
 
-
-            activeGames.TryGetValue(GameID, out status);
-            users.TryGetValue(word.UserToken, out userInfo);
-            string normalizedWord = word.Word.Trim().ToLower();
-
-            if (status.Player1.NickName.Equals(userInfo.Nickname) && status.Player2.NickName.Equals(userInfo.Nickname))
+            if(CalcTimeLeft(GameID) <= 0)
             {
-                SetStatus(Forbidden);
+                SetStatus(Conflict);
                 return null;
             }
-            else
-            {
-                if (new BoggleBoard(status.Board).CanBeFormed(word.Word.Trim()))
-                {
-                    if (status.Player1.NickName.Equals(userInfo.Nickname))
-                    {
-                        foreach (var Word in status.Player1Words)
-                        {
-                            if (Word.Word.Equals(normalizedWord))
-                            {
-                                wordScore.Score = 0;
-                                status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
-                                SetStatus(OK);
-                                return wordScore;
-                            }
-                        }
-                        if (wordIsValid(word.Word))
-                        {
-                            wordScore.Score = 1;
-                            status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
-                            status.Player1.Score += 1;
-                            SetStatus(OK);
-                            return wordScore;
-                        }
-                        else
-                        {
-                            wordScore.Score = -1;
-                            status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
-                            status.Player1.Score += -1;
-                            SetStatus(OK);
-                            return wordScore;
-                        }
-                    }
-                    else
-                    {
-                        foreach (var Word in status.Player2Words)
-                        {
-                            if (Word.Word.Equals(normalizedWord))
-                            {
-                                wordScore.Score = 0;
-                                status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
-                                SetStatus(OK);
-                                return wordScore;
-                            }
-                        }
-                        if (wordIsValid(word.Word))
-                        {
-                            wordScore.Score = 1;
-                            status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
-                            status.Player2.Score += 1;
-                            SetStatus(OK);
-                            return wordScore;
-                        }
-                        else
-                        {
-                            wordScore.Score = -1;
-                            status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
-                            status.Player2.Score += -1;
-                            SetStatus(OK);
-                            return wordScore;
-                        }
-                    }
-                }
-                else
-                {
-                    if (status.Player1.NickName.Equals(userInfo.Nickname))
-                    {
-                        foreach (var Word in status.Player1Words)
-                        {
-                            if (Word.Word.Equals(normalizedWord))
-                            {
-                                wordScore.Score = 0;
-                                status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
-                                SetStatus(OK);
-                                return wordScore;
-                            }
-                        }
 
-                        status.Player1Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
-                        status.Player1.Score += -1;
-                        wordScore.Score = -1;
-                        SetStatus(OK);
-                        return wordScore;
-                    }
-                    else
-                    {
-                        foreach (var Word in status.Player2Words)
-                        {
-                            if (Word.Word.Equals(normalizedWord))
-                            {
-                                wordScore.Score = 0;
-                                status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
-                                SetStatus(OK);
-                                return wordScore;
-                            }
-                        }
-                        status.Player2Words.Add(new AlreadyPlayedWord() { Score = wordScore.Score, Word = normalizedWord });
-                        status.Player2.Score += -1;
-                        wordScore.Score = -1;
-                        SetStatus(OK);
-                        return wordScore;
-                    }
-                }
-            }
+
         }
 
         /// <summary>
