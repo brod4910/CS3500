@@ -45,6 +45,27 @@ namespace Boggle
             BoggleDB = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
         }
 
+
+        /// <summary>
+        /// Returns the hashset of the dictionary for word validation
+        /// </summary>
+        /// <returns></returns>
+        private static HashSet<String> dictionary()
+        {
+            HashSet<String> dict = new HashSet<string>();
+
+            string line;
+            using (StreamReader file = new System.IO.StreamReader(AppDomain.CurrentDomain.BaseDirectory + "dictionary.txt"))
+            {
+                while ((line = file.ReadLine()) != null)
+                {
+                    dict.Add(line);
+                }
+            }
+
+            return dict;
+        }
+
         /// <summary>
         /// The most recent call to SetStatus determines the response code used when
         /// an http response is sent.
@@ -107,10 +128,10 @@ namespace Boggle
                         command.Parameters.AddWithValue("@UserID", UserID);
                         command.Parameters.AddWithValue("@Nickname", user.Nickname);
 
-                       if(command.ExecuteNonQuery() == 0)
-                       {
+                        if (command.ExecuteNonQuery() == 0)
+                        {
                             command.ExecuteNonQuery();
-                       }
+                        }
 
                         SetStatus(Created);
                         trans.Commit();
@@ -118,49 +139,6 @@ namespace Boggle
                     }
                 }
             }
-        }
-        /// <summary>
-        /// Checks to see if the word is valid in the dictionary
-        /// </summary>
-        private bool wordIsValid(string word)
-        {
-            if (word == null || word.Trim().Length == 0)
-            {
-                return false;
-            }
-
-            string line;
-            using (StreamReader file = new System.IO.StreamReader(AppDomain.CurrentDomain.BaseDirectory + "dictionary.txt"))
-            {
-                while ((line = file.ReadLine()) != null)
-                {
-                    if(line.Equals(word.Trim().ToUpper()))
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Returns the hashset of the dictionary for word validation
-        /// </summary>
-        /// <returns></returns>
-        private static HashSet<String> dictionary()
-        {
-            HashSet<String> dict = new HashSet<string>();
-
-            string line;
-            using (StreamReader file = new System.IO.StreamReader(AppDomain.CurrentDomain.BaseDirectory + "dictionary.txt"))
-            {
-                while ((line = file.ReadLine()) != null)
-                {
-                    dict.Add(line);
-                }
-            }
-
-            return dict;
         }
 
         /// <summary>
@@ -206,7 +184,7 @@ namespace Boggle
 
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
-                            while(reader.HasRows)
+                            while (reader.HasRows)
                             {
                                 SetStatus(Conflict);
                                 trans.Commit();
@@ -219,7 +197,7 @@ namespace Boggle
                     {
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
-                            if(reader.Read())
+                            if (reader.Read())
                             {
                                 GameId = (int)reader["GameID"];
                                 timeLimit = (int)reader["TimeLimit"];
@@ -229,7 +207,7 @@ namespace Boggle
 
                     string query;
 
-                    if(GameId == -1)
+                    if (GameId == -1)
                     {
                         query = "insert into Games (Player1, TimeLimit) output inserted.GameID values(@Player1, @TimeLimit)";
                     }
@@ -278,20 +256,6 @@ namespace Boggle
         }
 
         /// <summary>
-        /// Calculates the time limit of the game
-        /// </summary>
-        /// <param name="t1"></param>
-        /// <param name="t2unparsed"></param>
-        /// <returns></returns>
-        private int CalcTimeLimit(int t1, string t2unparsed)
-        {
-            int t2;
-            int.TryParse(t2unparsed, out t2);
-
-            return (t1 + t2) / 2;
-        }
-
-        /// <summary>
         /// Calculates the time left of the game
         /// </summary>
         /// <param name="status"></param>
@@ -305,51 +269,9 @@ namespace Boggle
 
             DateTime now = DateTime.Now;
 
-            int timeElapsed = (int) now.Subtract(start).TotalSeconds;
+            int timeElapsed = (int)now.Subtract(start).TotalSeconds;
 
             return timeLimit - timeElapsed;
-        }
-
-        /// <summary>
-        /// Checks to see if the token is a valid
-        /// user token.
-        /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        private bool tokenIsValid(string token)
-        {
-            if(token == null)
-            {
-                return false;
-            }
-
-            //Set up connection
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
-            {
-                conn.Open();
-
-                //set up transaction
-                using (SqlTransaction trans = conn.BeginTransaction())
-                {
-                    //Check to see if the player posting the game is in a pending game
-                    using (SqlCommand command = new SqlCommand("Select UserID from Users where UserID = @UserID", conn, trans))
-                    {
-                        command.Parameters.AddWithValue("@UserID", token);
-
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            if(reader.HasRows)
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -360,7 +282,7 @@ namespace Boggle
         /// <param name="token"></param>
         public void CancelJoin(Token token)
         {
-            if(!tokenIsValid(token.UserToken))
+            if (!tokenIsValid(token.UserToken))
             {
                 SetStatus(Forbidden);
                 return;
@@ -383,7 +305,7 @@ namespace Boggle
                         {
                             //If the reader does not have rows
                             //user is not in a pending game
-                            if(!reader.HasRows)
+                            if (!reader.HasRows)
                             {
                                 SetStatus(Forbidden);
                                 trans.Commit();
@@ -396,7 +318,7 @@ namespace Boggle
                     {
                         command.Parameters.AddWithValue("@UserID", token.UserToken);
 
-                        if(command.ExecuteNonQuery() == 0)
+                        if (command.ExecuteNonQuery() == 0)
                         {
                             command.ExecuteNonQuery();
                         }
@@ -407,139 +329,6 @@ namespace Boggle
             }
 
         }
-
-        /// <summary>
-        /// Checks to see if GameID is valid in our database
-        /// </summary>
-        /// <param name="GameID"></param>
-        /// <returns></returns>
-        private bool gameidIsValid(string GameID)
-        {
-            if(GameID == null)
-            {
-                return false;
-            }
-
-            int gameid;
-            int.TryParse(GameID, out gameid);
-
-            //Set up connection
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
-            {
-                conn.Open();
-                //set up transaction
-                using (SqlTransaction trans = conn.BeginTransaction())
-                {
-                    //Check to see if the player is in the game
-                    using (SqlCommand command = new SqlCommand("Select GameID from Games where GameID=@GameID", conn, trans))
-                    {
-                        command.Parameters.AddWithValue("@GameID", GameID);
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            if(reader.HasRows)
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                }
-            }
-
-        }
-
-        private bool wordIsValid(PlayedWord word)
-        {
-            if (word.Word.Trim().Length == 0 || word.Word == null)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Checks to see if the user exists in the game
-        /// </summary>
-        /// <param name="GameID"></param>
-        /// <param name="word"></param>
-        /// <returns></returns>
-        private bool userIsinGame(string GameID, PlayedWord word)
-        {
-            //Set up connection
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
-            {
-                conn.Open();
-                //set up transaction
-                using (SqlTransaction trans = conn.BeginTransaction())
-                {
-                    //Check to see if the player is in the game
-                    using (SqlCommand command = new SqlCommand("Select GameID, Player1, Player2 from Games where GameID=@GameID and (Player1=@UserID || Player2=@UserID)", conn, trans))
-                    {
-                        command.Parameters.AddWithValue("@GameID", GameID);
-                        command.Parameters.AddWithValue("@UserID", word.UserToken);
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            if (reader.HasRows)
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Calculates the time left in any given game
-        /// true == active game
-        /// false == completed game
-        /// </summary>
-        /// <param name="GameID"></param>
-        /// <returns></returns>
-        private int CalcTimeLeft(string GameID)
-        {
-            DateTime gameStart;
-            int timeLimit;
-
-            //Set up connection
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
-            {
-                conn.Open();
-                //set up transaction
-                using (SqlTransaction trans = conn.BeginTransaction())
-                {
-                    //Check to see if the player is in the game
-                    using (SqlCommand command = new SqlCommand("Select GameID from Games where GameID=@GameID", conn, trans))
-                    {
-                        command.Parameters.AddWithValue("@GameID", GameID);
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            gameStart = (DateTime)reader["StartTime"];
-                            timeLimit = (int)reader["TimeLimit"];
-                        }
-                    }
-                }
-            }
-
-
-            DateTime now = DateTime.Now;
-
-            int timeElapsed = (int)now.Subtract(gameStart).TotalSeconds;
-
-            return timeLimit - timeElapsed;
-
-        }
-
 
         /// <summary>
         /// Play a word in a game.
@@ -557,19 +346,19 @@ namespace Boggle
         {
             Status status;
 
-            if(!wordIsValid(word) || !tokenIsValid(word.UserToken) || !gameidIsValid(GameID) || !userIsinGame(GameID, word))
+            if (!wordIsValid(word) || !tokenIsValid(word.UserToken) || !gameidIsValid(GameID) || !userIsinGame(GameID, word))
             {
                 SetStatus(Forbidden);
                 return null;
             }
 
-            if(CalcTimeLeft(GameID) <= 0)
+            if (CalcTimeLeft(GameID) <= 0)
             {
                 SetStatus(Conflict);
                 return null;
             }
 
-
+            return null;
         }
 
         /// <summary>
@@ -668,6 +457,210 @@ namespace Boggle
 
             SetStatus(Forbidden);
             return null;
+
+        }
+
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////        Start of helper methods        //////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Calculates the time limit of the game
+        /// </summary>
+        /// <param name="t1"></param>
+        /// <param name="t2unparsed"></param>
+        /// <returns></returns>
+        private int CalcTimeLimit(int t1, string t2unparsed)
+        {
+            int t2;
+            int.TryParse(t2unparsed, out t2);
+
+            return (t1 + t2) / 2;
+        }
+
+        /// <summary>
+        /// Checks to see if the token is a valid
+        /// user token.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        private bool tokenIsValid(string token)
+        {
+            if (token == null)
+            {
+                return false;
+            }
+
+            //Set up connection
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+
+                //set up transaction
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    //Check to see if the player posting the game is in a pending game
+                    using (SqlCommand command = new SqlCommand("Select UserID from Users where UserID = @UserID", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@UserID", token);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            if (reader.HasRows)
+                            {
+                                trans.Commit();
+                                return true;
+                            }
+                            else
+                            {
+                                trans.Commit();
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks to see if GameID is valid in our database
+        /// </summary>
+        /// <param name="GameID"></param>
+        /// <returns></returns>
+        private bool gameidIsValid(string GameID)
+        {
+            if (GameID == null)
+            {
+                return false;
+            }
+
+            int gameid;
+            int.TryParse(GameID, out gameid);
+
+            //Set up connection
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+                //set up transaction
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    //Check to see if the player is in the game
+                    using (SqlCommand command = new SqlCommand("Select GameID from Games where GameID=@GameID", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@GameID", GameID);
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            if (reader.HasRows)
+                            {
+                                trans.Commit();
+                                return true;
+                            }
+                            else
+                            {
+                                trans.Commit();
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// Checks to see if the word is valid
+        /// </summary>
+        /// <param name="word"></param>
+        /// <returns></returns>
+        private bool wordIsValid(PlayedWord word)
+        {
+            if (word.Word.Trim().Length == 0 || word.Word == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Checks to see if the user exists in the game
+        /// </summary>
+        /// <param name="GameID"></param>
+        /// <param name="word"></param>
+        /// <returns></returns>
+        private bool userIsinGame(string GameID, PlayedWord word)
+        {
+            //Set up connection
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+                //set up transaction
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    //Check to see if the player is in the game
+                    using (SqlCommand command = new SqlCommand("Select GameID, Player1, Player2 from Games where GameID=@GameID and (Player1=@UserID || Player2=@UserID)", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@GameID", GameID);
+                        command.Parameters.AddWithValue("@UserID", word.UserToken);
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            if (reader.HasRows)
+                            {
+                                trans.Commit();
+                                return true;
+                            }
+                            else
+                            {
+                                trans.Commit();
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Calculates the time left in any given game
+        /// true == active game
+        /// false == completed game
+        /// </summary>
+        /// <param name="GameID"></param>
+        /// <returns></returns>
+        private int CalcTimeLeft(string GameID)
+        {
+            DateTime gameStart;
+            int timeLimit;
+
+            //Set up connection
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+                //set up transaction
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    //Check to see if the player is in the game
+                    using (SqlCommand command = new SqlCommand("Select GameID from Games where GameID=@GameID", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@GameID", GameID);
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            gameStart = (DateTime)reader["StartTime"];
+                            timeLimit = (int)reader["TimeLimit"];
+                        }
+                        trans.Commit();
+                    }
+                }
+            }
+
+            DateTime now = DateTime.Now;
+
+            int timeElapsed = (int)now.Subtract(gameStart).TotalSeconds;
+
+            return timeLimit - timeElapsed;
 
         }
     }
