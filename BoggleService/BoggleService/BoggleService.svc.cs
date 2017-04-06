@@ -798,7 +798,7 @@ namespace Boggle
                             return 0;
                         }
                         sum = Convert.ToInt32(value);
-                        /*
+                        
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             while(reader.Read())
