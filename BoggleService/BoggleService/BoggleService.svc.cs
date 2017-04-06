@@ -12,11 +12,8 @@ namespace Boggle
 {
     public class BoggleService : IBoggleService
     {
-        private readonly static Dictionary<string, UserInfo> users = new Dictionary<string, UserInfo>();
-        private readonly static HashSet<PendingGame> PendingGames = new HashSet<PendingGame>();
-        private readonly static Dictionary<string, Status> activeGames = new Dictionary<string, Status>();
         private readonly static HashSet<String> Dictionary = dictionary();
-        private static readonly object sync = new object();
+        //for testing purposes
         private static bool board = false;
 
         // The connection string to the DB
