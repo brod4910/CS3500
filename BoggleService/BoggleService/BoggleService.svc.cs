@@ -160,9 +160,15 @@ namespace Boggle
             int GameId = -1;
             GameId ID;
 
-            if (timeLimit < 5 || timeLimit > 120)
+            if (timeLimit < 5 || timeLimit > 120 || !tokenIsValid(postingGame.UserToken))
             {
                 SetStatus(Forbidden);
+                return null;
+            }
+
+            if (userInPendingGame(new Token() { UserToken = postingGame.UserToken}))
+            {
+                SetStatus(Conflict);
                 return null;
             }
 
@@ -174,27 +180,11 @@ namespace Boggle
                 //set up transaction
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
-                    //Check to see if the player posting the game is in a pending game
-                    using (SqlCommand command = new SqlCommand("Select Player1, Player2 from Games where Player1 = @UserID and Player2 IS NULL", conn, trans))
-                    {
-                        command.Parameters.AddWithValue("@UserID", postingGame.UserToken);
-
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.HasRows)
-                            {
-                                SetStatus(Conflict);
-                                trans.Commit();
-                                return null;
-                            }
-                        }
-                    }
-
                     using (SqlCommand command = new SqlCommand("Select Player2, GameID, TimeLimit from Games where Player2 IS NULL", conn, trans))
                     {
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
-                            if (reader.Read())
+                            while (reader.Read())
                             {
                                 GameId = (int)reader["GameID"];
                                 timeLimit = (int)reader["TimeLimit"];
@@ -210,7 +200,7 @@ namespace Boggle
                     }
                     else
                     {
-                        query = "update Games set Player1=Player1, Player2=@Player2, TimeLimit=@TimeLimit, Board=@Board, StartTime=@StartTime where GameID=@GameID";
+                        query = "update Games set Player2=@Player2, TimeLimit=@TimeLimit, Board=@Board, StartTime=@StartTime where GameID=@GameID";
                     }
 
                     using (SqlCommand command = new SqlCommand(query, conn, trans))
@@ -239,11 +229,6 @@ namespace Boggle
                             command.Parameters.AddWithValue("@GameID", GameId);
                             ID = new GameId() { GameID = GameId + "" };
                             SetStatus(Created);
-
-                            if (command.ExecuteNonQuery() == 0)
-                            {
-                                command.ExecuteNonQuery();
-                            }
                         }
 
                         trans.Commit();
@@ -261,7 +246,7 @@ namespace Boggle
         /// <param name="token"></param>
         public void CancelJoin(Token token)
         {
-            if (!tokenIsValid(token.UserToken))
+            if (!tokenIsValid(token.UserToken) || !userInPendingGame(token))
             {
                 SetStatus(Forbidden);
                 return;
@@ -275,32 +260,11 @@ namespace Boggle
                 //set up transaction
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
-                    //Check to see if the player in a pending game
-                    using (SqlCommand command = new SqlCommand("Select Player1, Player2 from Games where Player1 = @UserID and Player2 IS NULL", conn, trans))
-                    {
-                        command.Parameters.AddWithValue("@UserID", token.UserToken);
-
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            //If the reader does not have rows
-                            //user is not in a pending game
-                            if (!reader.HasRows)
-                            {
-                                SetStatus(Forbidden);
-                                return;
-                            }
-                        }
-                        trans.Commit();
-                    }
-
                     using (SqlCommand command = new SqlCommand("Delete from Games where Player1 = @UserID and Player2 IS NULL", conn, trans))
                     {
                         command.Parameters.AddWithValue("@UserID", token.UserToken);
 
-                        if (command.ExecuteNonQuery() == 0)
-                        {
-                            command.ExecuteNonQuery();
-                        }
+                        SetStatus(OK);
                         trans.Commit();
                         return;
                     }
@@ -329,7 +293,7 @@ namespace Boggle
                 return null;
             }
 
-            if (CalcTimeLeft(GameID) <= 0)
+            if (userInPendingGame(new Token() { UserToken = word.UserToken }) || CalcTimeLeft(GameID) <= 0)
             {
                 SetStatus(Conflict);
                 return null;
@@ -362,10 +326,10 @@ namespace Boggle
                                 {
                                     if (reader.HasRows)
                                     {
+                                        trans.Commit();
                                         return new WordScore { Score = 0 };
                                     }
                                 }
-                                trans.Commit();
                             }
 
                             using (SqlCommand command = new SqlCommand("insert into Words (Player, GameID, Word, Score) values (@UserID, @GameID, @Word, @Score)", conn, trans))
@@ -527,6 +491,38 @@ namespace Boggle
         //////////////////////////////////////////        Start of helper methods        //////////////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+        private bool userInPendingGame(Token token)
+        {
+            //Set up connection
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+
+                //set up transaction
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    //Check to see if the player in a pending game
+                    using (SqlCommand command = new SqlCommand("Select Player1, Player2 from Games where Player1 = @UserID and Player2 IS NULL", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@UserID", token.UserToken);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            if (reader.HasRows)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Checks to se if the boggle board can form the word
         /// </summary>
@@ -547,7 +543,6 @@ namespace Boggle
                 //set up transaction
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
-                    //Check to see if the player in a pending game
                     using (SqlCommand command = new SqlCommand("Select Board from Games where GameID=@GameID", conn, trans))
                     {
                         command.Parameters.AddWithValue("@GameID", gameid);
@@ -597,7 +592,7 @@ namespace Boggle
         /// <returns></returns>
         private bool tokenIsValid(string token)
         {
-            if (token == null)
+            if (token == null || token.Length != 36)
             {
                 return false;
             }
@@ -610,7 +605,6 @@ namespace Boggle
                 //set up transaction
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
-                    //Check to see if the player posting the game is in a pending game
                     using (SqlCommand command = new SqlCommand("Select UserID from Users where UserID = @UserID", conn, trans))
                     {
                         command.Parameters.AddWithValue("@UserID", token);
@@ -755,20 +749,15 @@ namespace Boggle
 
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
-                            if (reader.Read())
+                            if(reader.Read())
                             {
                                 timeLimit = (int)reader["TimeLimit"];
-                                gameStart = (DateTime)reader["StartTime"];
+                                gameStart = reader.GetDateTime(1);
                             }
                         }
                         trans.Commit();
                     }
                 }
-            }
-
-            if (timeLimit == 0 || gameStart == DateTime.MaxValue)
-            {
-                throw new Exception();
             }
 
             DateTime now = DateTime.Now;
@@ -799,13 +788,13 @@ namespace Boggle
                         command.Parameters.AddWithValue("@UserID", userID);
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
-                            if (reader.Read())
+                            while(reader.Read())
                             {
                                 sum = (int)reader["Total"];
                             }
                         }
-                        trans.Commit();
                     }
+                    trans.Commit();
                 }
             }
             return sum;
@@ -872,8 +861,8 @@ namespace Boggle
                                 words.Add(played);
                             }
                         }
-                        trans.Commit();
                     }
+                    trans.Commit();
                 }
             }
             return words;
