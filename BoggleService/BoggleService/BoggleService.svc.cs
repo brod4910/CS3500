@@ -210,7 +210,7 @@ namespace Boggle
                     }
                     else
                     {
-                        query = "update Games set Player2=@Player2, TimeLimit=@TimeLimit, Board=@Board, StartTime=@StartTime where GameID=@GameID";
+                        query = "update Games set Player1=Player1, Player2=@Player2, TimeLimit=@TimeLimit, Board=@Board, StartTime=@StartTime where GameID=@GameID";
                     }
 
                     using (SqlCommand command = new SqlCommand(query, conn, trans))
@@ -287,7 +287,6 @@ namespace Boggle
                             if (!reader.HasRows)
                             {
                                 SetStatus(Forbidden);
-                                trans.Commit();
                                 return;
                             }
                         }
@@ -708,7 +707,7 @@ namespace Boggle
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
                     //Check to see if the player is in the game
-                    using (SqlCommand command = new SqlCommand("Select GameID, Player1, Player2 from Games where GameID=@GameID and (Player1=@UserID || Player2=@UserID)", conn, trans))
+                    using (SqlCommand command = new SqlCommand("Select GameID, Player1, Player2 from Games where GameID=@GameID and (Player1=@UserID or Player2=@UserID)", conn, trans))
                     {
                         command.Parameters.AddWithValue("@GameID", GameID);
                         command.Parameters.AddWithValue("@UserID", word.UserToken);
