@@ -159,7 +159,11 @@ namespace Boggle
             int.TryParse(postingGame.TimeLimit, out timeLimit);
             int GameId = -1;
             GameId ID;
-
+            if (!tokenIsValid(postingGame.UserToken))
+            {
+                SetStatus(Forbidden);
+                return null;
+            }
             if (timeLimit < 5 || timeLimit > 120)
             {
                 SetStatus(Forbidden);

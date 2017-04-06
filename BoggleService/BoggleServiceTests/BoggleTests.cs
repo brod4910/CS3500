@@ -317,7 +317,7 @@ namespace Boggle
             // Join Game
             PostingGame game = new PostingGame();
             game.UserToken = r.Data["UserToken"];
-            game.TimeLimit = "30";
+            game.TimeLimit = "115";
             Response f = client.DoPostAsync("games", game).Result;
             if (f.Status == OK || f.Status == Accepted || f.Status == Created)
             {
