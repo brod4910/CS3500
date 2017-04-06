@@ -344,8 +344,6 @@ namespace Boggle
         /// <returns></returns>
         public WordScore PlayWord(string GameID, PlayedWord word)
         {
-            Status status;
-
             if (!wordIsValid(word) || !tokenIsValid(word.UserToken) || !gameidIsValid(GameID) || !userIsinGame(GameID, word))
             {
                 SetStatus(Forbidden);
@@ -358,7 +356,90 @@ namespace Boggle
                 return null;
             }
 
-            return null;
+            int gameid;
+            int.TryParse(GameID, out gameid);
+            string normWord = word.Word.ToUpper().Trim();
+            WordScore score;
+
+            if (canBeFormed(GameID, normWord))
+            {
+                if (Dictionary.Contains(word.Word) || !(normWord.Length <= 2))
+                {
+                    //Set up connection
+                    using (SqlConnection conn = new SqlConnection(BoggleDB))
+                    {
+                        conn.Open();
+
+                        //set up transaction
+                        using (SqlTransaction trans = conn.BeginTransaction())
+                        {
+                            //Check to see if the player in a pending game
+                            using (SqlCommand command = new SqlCommand("Select Player, Word from Words where Player=@UserID and Word=@Word", conn, trans))
+                            {
+                                command.Parameters.AddWithValue("@UserID", word.UserToken);
+                                command.Parameters.AddWithValue("@Word", normWord);
+
+                                using (SqlDataReader reader = command.ExecuteReader())
+                                {
+                                    if (reader.HasRows)
+                                    {
+                                        return new WordScore { Score = 0 };
+                                    }
+                                }
+                                trans.Commit();
+                            }
+
+                            using (SqlCommand command = new SqlCommand("insert into Words (Player, GameID, Word, Score) values (@UserID, @GameID, @Word, @Score)", conn, trans))
+                            {
+                                command.Parameters.AddWithValue("@UserID", word.UserToken);
+                                command.Parameters.AddWithValue("@GameID", gameid);
+                                command.Parameters.AddWithValue("@Word", normWord);
+                                if (normWord.Length == 3 || normWord.Length == 4)
+                                {
+                                    command.Parameters.AddWithValue("@Score", 1);
+                                    score = new WordScore { Score = 1 };
+                                }
+                                else if (normWord.Length == 5)
+                                {
+                                    command.Parameters.AddWithValue("@Score", 2);
+                                    score = new WordScore { Score = 1 };
+                                }
+                                else if (normWord.Length == 6)
+                                {
+                                    command.Parameters.AddWithValue("@Score", 3);
+                                    score = new WordScore { Score = 3 };
+                                }
+                                else if (normWord.Length == 7)
+                                {
+                                    command.Parameters.AddWithValue("@Score", 5);
+                                    score = new WordScore { Score = 5 };
+                                }
+                                else
+                                {
+                                    command.Parameters.AddWithValue("@Score", 11);
+                                    score = new WordScore { Score = 11 };
+                                }
+
+                                if(command.ExecuteNonQuery() == 0)
+                                {
+                                    command.ExecuteNonQuery();
+                                }
+
+                                trans.Commit();
+                                return score;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    return new WordScore { Score = 0 };
+                }
+            }
+            else
+            {
+                return new WordScore { Score = -1 };
+            }
         }
 
         /// <summary>
@@ -462,6 +543,51 @@ namespace Boggle
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////        Start of helper methods        //////////////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Checks to se if the boggle board can form the word
+        /// </summary>
+        /// <param name="GameID"></param>
+        /// <param name="word"></param>
+        /// <returns></returns>
+        private bool canBeFormed(string GameID, string word)
+        {
+            string board;
+            int gameid;
+            int.TryParse(GameID, out gameid);
+
+            //Set up connection
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+
+                //set up transaction
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    //Check to see if the player in a pending game
+                    using (SqlCommand command = new SqlCommand("Select Board from Games where GameID=@GameID", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@GameID", gameid);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            board = (String)reader["Board"];
+                        }
+                        trans.Commit();
+                    }
+                }
+            }
+
+            if(new BoggleBoard(board).CanBeFormed(word))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
 
         /// <summary>
         /// Calculates the time limit of the game
