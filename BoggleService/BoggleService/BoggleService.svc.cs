@@ -159,8 +159,12 @@ namespace Boggle
             int.TryParse(postingGame.TimeLimit, out timeLimit);
             int GameId = -1;
             GameId ID;
-
-            if (timeLimit < 5 || timeLimit > 120 || !tokenIsValid(postingGame.UserToken))
+            if (!tokenIsValid(postingGame.UserToken))
+            {
+                SetStatus(Forbidden);
+                return null;
+            }
+            if (timeLimit < 5 || timeLimit > 120)
             {
                 SetStatus(Forbidden);
                 return null;
@@ -451,8 +455,10 @@ namespace Boggle
                                     active.Player2.Score = SumScore((string)reader["Player2"]);
                                     if (Option == null || Option == "no")
                                     {
-                                        active.Player1.WordsPlayed = GetWordsPlayed((string)reader["Player1"]);
-                                        active.Player2.WordsPlayed = GetWordsPlayed((string)reader["Player2"]);
+                                        List<AlreadyPlayedWord> player1 = GetWordsPlayed((string)reader["Player1"]);
+                                        List<AlreadyPlayedWord> player2 = GetWordsPlayed((string)reader["Player2"]);
+                                        active.Player1.WordsPlayed = player1;
+                                        active.Player2.WordsPlayed = player2;
                                         active.TimeLeft = "0";
                                     }
                                     return active;
@@ -783,14 +789,21 @@ namespace Boggle
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
                     //Check to see if the player is in the game
-                    using (SqlCommand command = new SqlCommand("Select SUM(Score) As Total from Words where Player=@UserID", conn, trans))
+                    using (SqlCommand command = new SqlCommand("Select SUM(Score) from Words where Player=@UserID", conn, trans))
                     {
                         command.Parameters.AddWithValue("@UserID", userID);
+                        object value = command.ExecuteScalar();
+                        if (value.ToString() == "")
+                        {
+                            return 0;
+                        }
+                        sum = Convert.ToInt32(value);
+                        /*
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             while(reader.Read())
                             {
-                                sum = (int)reader["Total"];
+                                sum = (int)command.ExecuteScalar();
                             }
                         }
                     }
@@ -861,9 +874,13 @@ namespace Boggle
                                 words.Add(played);
                             }
                         }
+                        trans.Commit();
                     }
-                    trans.Commit();
                 }
+            }
+            if(words.Count == 0)
+            {
+                return null;
             }
             return words;
         }
