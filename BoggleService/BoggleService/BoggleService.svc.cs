@@ -229,6 +229,7 @@ namespace Boggle
                         {
                             command.Parameters.AddWithValue("@Player2", postingGame.UserToken);
                             command.Parameters.AddWithValue("@TimeLimit", CalcTimeLimit(timeLimit, postingGame.TimeLimit));
+                            //for testing purposes
                             if (board)
                             {
                                 command.Parameters.AddWithValue("@Board", new BoggleBoard("NAMEPAINRAINGAIN").ToString());
@@ -253,25 +254,6 @@ namespace Boggle
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Calculates the time left of the game
-        /// </summary>
-        /// <param name="status"></param>
-        /// <returns></returns>
-        private int CalculateTimeLeft(Status status)
-        {
-            int timeLimit;
-            int.TryParse(status.TimeLimit, out timeLimit);
-
-            DateTime start = status.datetime;
-
-            DateTime now = DateTime.Now;
-
-            int timeElapsed = (int)now.Subtract(start).TotalSeconds;
-
-            return timeLimit - timeElapsed;
         }
 
         /// <summary>
@@ -481,7 +463,7 @@ namespace Boggle
                     //Check to see if the player posting the game is in a pending game
                     using (SqlCommand command = new SqlCommand("Select * from Games where GameID = @GameID", conn, trans))
                     {
-                        command.Parameters.AddWithValue("@GameID", GameID);
+                        command.Parameters.AddWithValue("@GameID", enteredID);
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if (reader.Read())
@@ -500,6 +482,8 @@ namespace Boggle
                                     SetStatus(OK);
                                     Status active = new Status();
                                     active.GameState = "completed";
+                                    active.Player1 = new FirstPlayer();
+                                    active.Player2 = new SecondPlayer();
                                     active.Board = (string)reader["Board"];
                                     active.Player1.NickName = GetNickname((string)reader["Player1"]);
                                     active.Player2.NickName = GetNickname((string)reader["Player2"]);
@@ -519,6 +503,8 @@ namespace Boggle
                                     SetStatus(OK);
                                     Status active = new Status();
                                     active.GameState = "active";
+                                    active.Player1 = new FirstPlayer();
+                                    active.Player2 = new SecondPlayer();
                                     active.Player1.NickName = GetNickname((string)reader["Player1"]);
                                     active.Player2.NickName = GetNickname((string)reader["Player2"]);
                                     active.Player1.Score = SumScore((string)reader["Player1"]);
@@ -553,7 +539,7 @@ namespace Boggle
         /// <returns></returns>
         private bool canBeFormed(string GameID, string word)
         {
-            string board;
+            string board = null;
             int gameid;
             int.TryParse(GameID, out gameid);
 
@@ -572,7 +558,10 @@ namespace Boggle
 
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
-                            board = (String)reader["Board"];
+                            if (reader.Read())
+                            {
+                                board = (String)reader["Board"];
+                            }
                         }
                         trans.Commit();
                     }
@@ -634,12 +623,10 @@ namespace Boggle
                         {
                             if (reader.HasRows)
                             {
-                               trans.Commit();
                                 return true;
                             }
                             else
                             {
-                                trans.Commit();
                                 return false;
                             }
                         }
@@ -673,7 +660,7 @@ namespace Boggle
                     //Check to see if the player is in the game
                     using (SqlCommand command = new SqlCommand("Select GameID from Games where GameID=@GameID", conn, trans))
                     {
-                        command.Parameters.AddWithValue("@GameID", GameID);
+                        command.Parameters.AddWithValue("@GameID", gameid);
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if (reader.HasRows)
@@ -686,7 +673,6 @@ namespace Boggle
                             }
                         }
                     }
-                    trans.Commit();
                 }
             }
 
@@ -733,12 +719,10 @@ namespace Boggle
                         {
                             if (reader.HasRows)
                             {
-                                trans.Commit();
                                 return true;
                             }
                             else
                             {
-                                trans.Commit();
                                 return false;
                             }
                         }
@@ -756,8 +740,10 @@ namespace Boggle
         /// <returns></returns>
         private int CalcTimeLeft(string GameID)
         {
-            DateTime gameStart;
-            int timeLimit;
+            DateTime gameStart = DateTime.MaxValue;
+            int timeLimit = 0;
+            int gameid;
+            int.TryParse(GameID, out gameid);
 
             //Set up connection
             using (SqlConnection conn = new SqlConnection(BoggleDB))
@@ -767,17 +753,26 @@ namespace Boggle
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
                     //Check to see if the player is in the game
-                    using (SqlCommand command = new SqlCommand("Select * from Games where GameID=@GameID", conn, trans))
+                    using (SqlCommand command = new SqlCommand("Select StartTime, TimeLimit from Games where GameID=@GameID", conn, trans))
                     {
-                        command.Parameters.AddWithValue("@GameID", GameID);
+                        command.Parameters.AddWithValue("@GameID", gameid);
+
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
-                            gameStart = (DateTime)reader["StartTime"];
-                            timeLimit = (int)reader["TimeLimit"];
+                            if (reader.Read())
+                            {
+                                timeLimit = (int)reader["TimeLimit"];
+                                gameStart = (DateTime)reader["StartTime"];
+                            }
                         }
                         trans.Commit();
                     }
                 }
+            }
+
+            if (timeLimit == 0 || gameStart == DateTime.MaxValue)
+            {
+                throw new Exception();
             }
 
             DateTime now = DateTime.Now;
@@ -803,12 +798,15 @@ namespace Boggle
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
                     //Check to see if the player is in the game
-                    using (SqlCommand command = new SqlCommand("Select SUM(Score) As Total from Words where UserID=@UserID", conn, trans))
+                    using (SqlCommand command = new SqlCommand("Select SUM(Score) As Total from Words where Player=@UserID", conn, trans))
                     {
                         command.Parameters.AddWithValue("@UserID", userID);
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
-                            sum = (int)reader["Total"];
+                            if (reader.Read())
+                            {
+                                sum = (int)reader["Total"];
+                            }
                         }
                         trans.Commit();
                     }
@@ -865,7 +863,7 @@ namespace Boggle
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
                     //Check to see if the player is in the game
-                    using (SqlCommand command = new SqlCommand("Select Word, score from Words where UserID=@UserID", conn, trans))
+                    using (SqlCommand command = new SqlCommand("Select Word, score from Words where Player=@UserID", conn, trans))
                     {
                         command.Parameters.AddWithValue("@UserID", userID);
                         using (SqlDataReader reader = command.ExecuteReader())
