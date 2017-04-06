@@ -382,82 +382,80 @@ namespace Boggle
                 SetStatus(Forbidden);
                 return null;
             }
-            foreach (PendingGame game in PendingGames)
+            if (!gameidIsValid(GameID))
             {
-                if (game.GameId.Equals(GameID))
+                SetStatus(Forbidden);
+                return null;
+            }
+            // Get the game
+            // SQL check gamestate
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+
+                //set up transaction
+                using (SqlTransaction trans = conn.BeginTransaction())
                 {
-                    SetStatus(OK);
-                    Status pending = new Status();
-                    pending.GameState = game.GameState;
-                    return pending;
+                    //Check to see if the player posting the game is in a pending game
+                    using (SqlCommand command = new SqlCommand("Select * from Games where GameID = @GameID", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@GameID", GameID);
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                // Game is Pending
+                                if (reader["Player2"] == null)
+                                {
+                                    SetStatus(OK);
+                                    Status pending = new Status();
+                                    pending.GameState = "pending";
+                                    return pending;
+                                }
+                                // Game is Completed
+                                else if (CalcTimeLeft(GameID) <= 0)
+                                {
+                                    SetStatus(OK);
+                                    Status active = new Status();
+                                    active.GameState = "completed";
+                                    active.Board = (string)reader["Board"];
+                                    active.Player1.NickName = GetNickname((string)reader["Player1"]);
+                                    active.Player2.NickName = GetNickname((string)reader["Player2"]);
+                                    active.Player1.Score = SumScore((string)reader["Player1"]);
+                                    active.Player2.Score = SumScore((string)reader["Player2"]);
+                                    if (Option == null || Option == "no")
+                                    {
+                                        active.Player1.WordsPlayed = GetWordsPlayed((string)reader["Player1"]);
+                                        active.Player2.WordsPlayed = GetWordsPlayed((string)reader["Player2"]);
+                                        active.TimeLeft = "0";
+                                    }
+                                    return active;
+                                }
+                                // Game is Active
+                                else
+                                {
+                                    SetStatus(OK);
+                                    Status active = new Status();
+                                    active.GameState = "active";
+                                    active.Player1.NickName = GetNickname((string)reader["Player1"]);
+                                    active.Player2.NickName = GetNickname((string)reader["Player2"]);
+                                    active.Player1.Score = SumScore((string)reader["Player1"]);
+                                    active.Player2.Score = SumScore((string)reader["Player2"]);
+                                    // If brief was not an option
+                                    if (Option == null || Option == "no")
+                                    {
+                                        active.Board = (string)reader["Board"];
+                                        active.TimeLimit = (string)reader["TimeLimit"];
+                                    }
+                                    return active;
+                                }
+                            }
+                        }
+                        SetStatus(Forbidden);
+                        return null;
+                    }
                 }
             }
-            foreach (var game in activeGames)
-            {
-                if (game.Key.Equals(GameID))
-                {
-                    SetStatus(OK);
-                    Status active = new Status();
-
-                    if (CalculateTimeLeft(game.Value) <= 0)
-                    {
-                        if (Option != null && Option.Equals("yes"))
-                        {
-                            active.GameState = "completed";
-                            active.TimeLeft = "0";
-                            active.Player1.NickName = game.Value.Player1.NickName;
-                            active.Player1.Score = game.Value.Player1.Score;
-                            active.Player2.NickName = game.Value.Player2.NickName;
-                            active.Player2.Score = game.Value.Player2.Score;
-                            SetStatus(OK);
-                            return active;
-                        }
-                        else
-                        {
-                            active.GameState = "completed";
-                            active.Board = game.Value.Board;
-                            active.TimeLeft = "0";
-                            active.Player1.NickName = game.Value.Player1.NickName;
-                            active.Player1.WordsPlayed = game.Value.Player1Words;
-                            active.Player1.Score = game.Value.Player1.Score;
-                            active.Player2.NickName = game.Value.Player2.NickName;
-                            active.Player2.WordsPlayed = game.Value.Player2Words;
-                            active.Player2.Score = game.Value.Player2.Score;
-                            SetStatus(OK);
-                            return active;
-                        }
-                    }
-                    else
-                    {
-                        active.GameState = game.Value.GameState;
-                        if (Option != null && Option.Equals("yes"))
-                        {
-                            active.TimeLeft = CalculateTimeLeft(game.Value) + "";
-                            active.Player1.NickName = game.Value.Player1.NickName;
-                            active.Player1.Score = game.Value.Player1.Score;
-                            active.Player2.NickName = game.Value.Player2.NickName;
-                            active.Player2.Score = game.Value.Player2.Score;
-                            return active;
-                        }
-                        else
-                        {
-                            active.TimeLeft = CalculateTimeLeft(game.Value) + "";
-                            active.Player1.NickName = game.Value.Player1.NickName;
-                            active.Player1.Score = game.Value.Player1.Score;
-                            active.Player2.NickName = game.Value.Player2.NickName;
-                            active.Player2.Score = game.Value.Player2.Score;
-                            active.Board = game.Value.Board;
-                            active.TimeLimit = game.Value.TimeLimit;
-                            return active;
-                        }
-                    }
-                }
-                // Add a completed game option
-            }
-
-            SetStatus(Forbidden);
-            return null;
-
         }
 
 
@@ -662,6 +660,100 @@ namespace Boggle
 
             return timeLimit - timeElapsed;
 
+        }
+        /// <summary>
+        /// Makes SQL call to sum the score of all words played by "userID"
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns></returns>
+        private int SumScore(string userID)
+        {
+            int sum = 0;
+            //Set up connection
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+                //set up transaction
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    //Check to see if the player is in the game
+                    using (SqlCommand command = new SqlCommand("Select SUM(Score) As Total from Words where UserID=@UserID", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@UserID", userID);
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            sum = (int)reader["Total"];
+                        }
+                        trans.Commit();
+                    }
+                }
+            }
+            return sum;
+        }
+        /// <summary>
+        /// SQL to retrieve nickname of "userID" from Users table 
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns></returns>
+        private string GetNickname(string userID)
+        {
+            string name = null;
+            //Set up connection
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+                //set up transaction
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    //Check to see if the player is in the game
+                    using (SqlCommand command = new SqlCommand("Select Nickname from Users where UserID=@UserID", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@UserID", userID);
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            name = (string)reader["Nickname"];
+                        }
+                        trans.Commit();
+                    }
+                }
+            }
+            return name;
+        }
+
+        /// <summary>
+        /// SQL Call to retrieve all the words played by "userID"
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns></returns>
+        private List<AlreadyPlayedWord> GetWordsPlayed(string userID)
+        {
+            List<AlreadyPlayedWord> words = new List<AlreadyPlayedWord>();
+            //Set up connection
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+                //set up transaction
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    //Check to see if the player is in the game
+                    using (SqlCommand command = new SqlCommand("Select Word, score from Words where UserID=@UserID", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@UserID", userID);
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while(reader.Read())
+                            {
+                                AlreadyPlayedWord played = new AlreadyPlayedWord();
+                                played.Score = (int)reader["Score"];
+                                played.Word = (string)reader["Word"];
+                                words.Add(played);
+                            }
+                        }
+                        trans.Commit();
+                    }
+                }
+            }
+            return words;
         }
     }
 }
