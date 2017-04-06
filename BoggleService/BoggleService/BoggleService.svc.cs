@@ -130,7 +130,7 @@ namespace Boggle
 
                         if (command.ExecuteNonQuery() == 0)
                         {
-                            command.ExecuteNonQuery();
+                           command.ExecuteNonQuery();
                         }
 
                         SetStatus(Created);
@@ -312,6 +312,7 @@ namespace Boggle
                                 return;
                             }
                         }
+                        trans.Commit();
                     }
 
                     using (SqlCommand command = new SqlCommand("Delete from Games where Player1 = @UserID and Player2 IS NULL", conn, trans))
@@ -633,7 +634,7 @@ namespace Boggle
                         {
                             if (reader.HasRows)
                             {
-                                trans.Commit();
+                               trans.Commit();
                                 return true;
                             }
                             else
@@ -677,16 +678,15 @@ namespace Boggle
                         {
                             if (reader.HasRows)
                             {
-                                trans.Commit();
                                 return true;
                             }
                             else
                             {
-                                trans.Commit();
                                 return false;
                             }
                         }
                     }
+                    trans.Commit();
                 }
             }
 
@@ -767,7 +767,7 @@ namespace Boggle
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
                     //Check to see if the player is in the game
-                    using (SqlCommand command = new SqlCommand("Select GameID from Games where GameID=@GameID", conn, trans))
+                    using (SqlCommand command = new SqlCommand("Select * from Games where GameID=@GameID", conn, trans))
                     {
                         command.Parameters.AddWithValue("@GameID", GameID);
                         using (SqlDataReader reader = command.ExecuteReader())
@@ -832,15 +832,18 @@ namespace Boggle
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
                     //Check to see if the player is in the game
-                    using (SqlCommand command = new SqlCommand("Select Nickname from Users where UserID=@UserID", conn, trans))
+                    using (SqlCommand command = new SqlCommand("Select NickName from Users where UserID=@UserID", conn, trans))
                     {
                         command.Parameters.AddWithValue("@UserID", userID);
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
-                            name = (string)reader["Nickname"];
+                            while (reader.Read())
+                            {
+                                name = reader.GetString(0);
+                            }
                         }
-                        trans.Commit();
                     }
+                    trans.Commit();
                 }
             }
             return name;

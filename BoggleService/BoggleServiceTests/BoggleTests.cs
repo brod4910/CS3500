@@ -296,11 +296,11 @@ namespace Boggle
             game2.UserToken = r2.Data["UserToken"];
             game2.TimeLimit = "30";
             Response f2 = client.DoPostAsync("games", game2).Result;
-            Assert.AreEqual(Accepted, f2.Status);
+            Assert.AreEqual(Created, f2.Status);
 
             // Do Game Status
             string gameId = f.Data["GameID"];
-            Response e = client.DoGetAsync("games/{0}", gameId).Result;
+            Response e = client.DoGetAsync("games/{0}?Brief=yes", gameId).Result;
             Assert.AreEqual(OK, e.Status);
         }
 
