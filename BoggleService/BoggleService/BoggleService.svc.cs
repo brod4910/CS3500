@@ -159,6 +159,7 @@ namespace Boggle
             int.TryParse(postingGame.TimeLimit, out timeLimit);
             int GameId = -1;
             GameId ID;
+
             if (!tokenIsValid(postingGame.UserToken))
             {
                 SetStatus(Forbidden);
@@ -233,6 +234,11 @@ namespace Boggle
                             command.Parameters.AddWithValue("@GameID", GameId);
                             ID = new GameId() { GameID = GameId + "" };
                             SetStatus(Created);
+
+                            if(command.ExecuteNonQuery() == 0)
+                            {
+                                command.ExecuteNonQuery();
+                            }
                         }
 
                         trans.Commit();
@@ -306,87 +312,8 @@ namespace Boggle
             int gameid;
             int.TryParse(GameID, out gameid);
             string normWord = word.Word.ToUpper().Trim();
-            WordScore score;
 
-            if (canBeFormed(GameID, normWord))
-            {
-                if (Dictionary.Contains(word.Word) || !(normWord.Length <= 2))
-                {
-                    //Set up connection
-                    using (SqlConnection conn = new SqlConnection(BoggleDB))
-                    {
-                        conn.Open();
-
-                        //set up transaction
-                        using (SqlTransaction trans = conn.BeginTransaction())
-                        {
-                            //Check to see if the player in a pending game
-                            using (SqlCommand command = new SqlCommand("Select Player, Word from Words where Player=@UserID and Word=@Word", conn, trans))
-                            {
-                                command.Parameters.AddWithValue("@UserID", word.UserToken);
-                                command.Parameters.AddWithValue("@Word", normWord);
-
-                                using (SqlDataReader reader = command.ExecuteReader())
-                                {
-                                    if (reader.HasRows)
-                                    {
-                                        trans.Commit();
-                                        return new WordScore { Score = 0 };
-                                    }
-                                }
-                            }
-
-                            using (SqlCommand command = new SqlCommand("insert into Words (Player, GameID, Word, Score) values (@UserID, @GameID, @Word, @Score)", conn, trans))
-                            {
-                                command.Parameters.AddWithValue("@UserID", word.UserToken);
-                                command.Parameters.AddWithValue("@GameID", gameid);
-                                command.Parameters.AddWithValue("@Word", normWord);
-                                if (normWord.Length == 3 || normWord.Length == 4)
-                                {
-                                    command.Parameters.AddWithValue("@Score", 1);
-                                    score = new WordScore { Score = 1 };
-                                }
-                                else if (normWord.Length == 5)
-                                {
-                                    command.Parameters.AddWithValue("@Score", 2);
-                                    score = new WordScore { Score = 1 };
-                                }
-                                else if (normWord.Length == 6)
-                                {
-                                    command.Parameters.AddWithValue("@Score", 3);
-                                    score = new WordScore { Score = 3 };
-                                }
-                                else if (normWord.Length == 7)
-                                {
-                                    command.Parameters.AddWithValue("@Score", 5);
-                                    score = new WordScore { Score = 5 };
-                                }
-                                else
-                                {
-                                    command.Parameters.AddWithValue("@Score", 11);
-                                    score = new WordScore { Score = 11 };
-                                }
-
-                                if(command.ExecuteNonQuery() == 0)
-                                {
-                                    command.ExecuteNonQuery();
-                                }
-
-                                trans.Commit();
-                                return score;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    return new WordScore { Score = 0 };
-                }
-            }
-            else
-            {
-                return new WordScore { Score = -1 };
-            }
+            return playtheword(gameid, word, normWord);
         }
 
         /// <summary>
@@ -433,7 +360,7 @@ namespace Boggle
                             if (reader.Read())
                             {
                                 // Game is Pending
-                                if (reader["Player2"] == null)
+                                if (userInPendingGame(new Token { UserToken = (string)reader["Player1"]}))
                                 {
                                     SetStatus(OK);
                                     Status pending = new Status();
@@ -479,7 +406,7 @@ namespace Boggle
                                     if (Option == null || Option == "no")
                                     {
                                         active.Board = (string)reader["Board"];
-                                        active.TimeLimit = (string)reader["TimeLimit"];
+                                        active.TimeLimit = (int)reader["TimeLimit"] + "";
                                     }
                                     return active;
                                 }
@@ -497,6 +424,131 @@ namespace Boggle
         //////////////////////////////////////////        Start of helper methods        //////////////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Plays the word
+        /// </summary>
+        /// <param name="gameid"></param>
+        /// <param name="word"></param>
+        /// <param name="normWord"></param>
+        /// <returns></returns>
+
+        private WordScore playtheword(int gameid, PlayedWord word, string normWord)
+        {
+            WordScore score = new WordScore();
+            string tokenp2 = "";
+
+            //Set up connection
+            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            {
+                conn.Open();
+
+                //set up transaction
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+
+                    using (SqlCommand command = new SqlCommand("Select Player2 from Games where GameID=@GameID", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@GameID", gameid);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                tokenp2 = (string)reader["Player2"];
+                            }
+                        }
+                    }
+
+                    using (SqlCommand command = new SqlCommand("Select Word from Words where Player=@Player1 or Player=@Player2 order by Word", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@Player1", word.UserToken);
+                        command.Parameters.AddWithValue("@Player2", tokenp2);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                if (((string)reader["Word"]).Equals(normWord))
+                                {
+                                    return new WordScore { Score = 0 };
+                                }
+                            }
+                        }
+                    }
+
+                    using (SqlCommand command = new SqlCommand("insert into Words (Player, GameID, Word, Score) values (@UserID, @GameID, @Word, @Score)", conn, trans))
+                    {
+                        command.Parameters.AddWithValue("@UserID", word.UserToken);
+                        command.Parameters.AddWithValue("@GameID", gameid);
+                        command.Parameters.AddWithValue("@Word", normWord);
+
+                        if (canBeFormed(gameid + "", normWord))
+                        {
+                            if (Dictionary.Contains(word.Word) && normWord.Length > 2)
+                            {
+                                if (normWord.Length == 3 || normWord.Length == 4)
+                                {
+                                    command.Parameters.AddWithValue("@Score", 1);
+                                    score = new WordScore { Score = 1 };
+                                }
+                                else if (normWord.Length == 5)
+                                {
+                                    command.Parameters.AddWithValue("@Score", 2);
+                                    score = new WordScore { Score = 1 };
+                                }
+                                else if (normWord.Length == 6)
+                                {
+                                    command.Parameters.AddWithValue("@Score", 3);
+                                    score = new WordScore { Score = 3 };
+                                }
+                                else if (normWord.Length == 7)
+                                {
+                                    command.Parameters.AddWithValue("@Score", 5);
+                                    score = new WordScore { Score = 5 };
+                                }
+                                else
+                                {
+                                    command.Parameters.AddWithValue("@Score", 11);
+                                    score = new WordScore { Score = 11 };
+                                }
+                            }
+                            else
+                            {
+                                command.Parameters.AddWithValue("@Score", 0);
+                                score = new WordScore { Score = 0 };
+                            }
+                        }
+                        else if (normWord.Length <= 2)
+                        {
+                            command.Parameters.AddWithValue("@Score", 0);
+                            score = new WordScore { Score = 0 };
+                        }
+                        else
+                        {
+                            command.Parameters.AddWithValue("@Score", -1);
+                            score = new WordScore { Score = -1 };
+                        }
+
+
+                        if (command.ExecuteNonQuery() == 0)
+                        {
+                            command.ExecuteNonQuery();
+                        }
+
+                        trans.Commit();
+                        return score;
+                    }
+
+                }
+            }
+        }
+        
+
+        /// <summary>
+        /// Checks to see if a user is a pending game
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
 
         private bool userInPendingGame(Token token)
         {
@@ -736,7 +788,7 @@ namespace Boggle
         /// <returns></returns>
         private int CalcTimeLeft(string GameID)
         {
-            DateTime gameStart = DateTime.MaxValue;
+            DateTime gameStart = DateTime.Now;
             int timeLimit = 0;
             int gameid;
             int.TryParse(GameID, out gameid);
@@ -749,7 +801,7 @@ namespace Boggle
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
                     //Check to see if the player is in the game
-                    using (SqlCommand command = new SqlCommand("Select StartTime, TimeLimit from Games where GameID=@GameID", conn, trans))
+                    using (SqlCommand command = new SqlCommand("SELECT TimeLimit, StartTime  from Games where GameID=@GameID", conn, trans))
                     {
                         command.Parameters.AddWithValue("@GameID", gameid);
 
@@ -759,6 +811,7 @@ namespace Boggle
                             {
                                 timeLimit = (int)reader["TimeLimit"];
                                 gameStart = reader.GetDateTime(1);
+                                //DateTime.TryParse((string)reader["TimeStart"], out gameStart);
                             }
                         }
                         trans.Commit();
@@ -789,21 +842,22 @@ namespace Boggle
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
                     //Check to see if the player is in the game
-                    using (SqlCommand command = new SqlCommand("Select SUM(Score) from Words where Player=@UserID", conn, trans))
+                    using (SqlCommand command = new SqlCommand("Select convert(varchar(30),SUM(Score)) as TotalScore from Words where Player=@UserID", conn, trans))
                     {
                         command.Parameters.AddWithValue("@UserID", userID);
-                        object value = command.ExecuteScalar();
-                        if (value.ToString() == "")
-                        {
-                            return 0;
-                        }
-                        sum = Convert.ToInt32(value);
                         
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             while(reader.Read())
                             {
-                                sum = (int)command.ExecuteScalar();
+                                if (reader.IsDBNull(0) )
+                                {
+                                    return 0;
+                                }
+                                else
+                                {
+                                    int.TryParse((string)reader["TotalScore"], out sum);
+                                }
                             }
                         }
                     }
