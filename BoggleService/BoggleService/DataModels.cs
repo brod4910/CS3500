@@ -110,10 +110,10 @@ namespace Boggle
         public string Board { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
-        public string TimeLimit { get; set; }
+        public int TimeLimit { get; set; }
 
         [DataMember]
-        public string TimeLeft { get; set; }
+        public int TimeLeft { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
         public FirstPlayer Player1;
@@ -135,7 +135,7 @@ namespace Boggle
     public class FirstPlayer
     {
         [DataMember(EmitDefaultValue = false)]
-        public string NickName { get; set; }
+        public string Nickname { get; set; }
 
         [DataMember]
         public int Score { get; set; }
@@ -148,7 +148,7 @@ namespace Boggle
     public class SecondPlayer
     {
         [DataMember(EmitDefaultValue = false)]
-        public string NickName { get; set; }
+        public string Nickname { get; set; }
 
         [DataMember]
         public int Score { get; set; }

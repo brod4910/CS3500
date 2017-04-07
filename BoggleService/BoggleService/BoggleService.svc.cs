@@ -274,6 +274,11 @@ namespace Boggle
                     {
                         command.Parameters.AddWithValue("@UserID", token.UserToken);
 
+                        if (command.ExecuteNonQuery() == 0)
+                        {
+                            command.ExecuteNonQuery();
+                        }
+
                         SetStatus(OK);
                         trans.Commit();
                         return;
@@ -376,17 +381,18 @@ namespace Boggle
                                     active.Player1 = new FirstPlayer();
                                     active.Player2 = new SecondPlayer();
                                     active.Board = (string)reader["Board"];
-                                    active.Player1.NickName = GetNickname((string)reader["Player1"]);
-                                    active.Player2.NickName = GetNickname((string)reader["Player2"]);
+                                    active.Player1.Nickname = GetNickname((string)reader["Player1"]);
+                                    active.Player2.Nickname = GetNickname((string)reader["Player2"]);
                                     active.Player1.Score = SumScore((string)reader["Player1"]);
                                     active.Player2.Score = SumScore((string)reader["Player2"]);
+                                    active.TimeLimit = (int)reader["TimeLimit"];
                                     if (Option == null || Option == "no")
                                     {
                                         List<AlreadyPlayedWord> player1 = GetWordsPlayed((string)reader["Player1"]);
                                         List<AlreadyPlayedWord> player2 = GetWordsPlayed((string)reader["Player2"]);
                                         active.Player1.WordsPlayed = player1;
                                         active.Player2.WordsPlayed = player2;
-                                        active.TimeLeft = "0";
+                                        active.TimeLeft = 0;
                                     }
                                     return active;
                                 }
@@ -396,17 +402,18 @@ namespace Boggle
                                     SetStatus(OK);
                                     Status active = new Status();
                                     active.GameState = "active";
+                                    active.TimeLeft = CalcTimeLeft(GameID);
                                     active.Player1 = new FirstPlayer();
                                     active.Player2 = new SecondPlayer();
-                                    active.Player1.NickName = GetNickname((string)reader["Player1"]);
-                                    active.Player2.NickName = GetNickname((string)reader["Player2"]);
+                                    active.Player1.Nickname = GetNickname((string)reader["Player1"]);
+                                    active.Player2.Nickname = GetNickname((string)reader["Player2"]);
                                     active.Player1.Score = SumScore((string)reader["Player1"]);
                                     active.Player2.Score = SumScore((string)reader["Player2"]);
                                     // If brief was not an option
                                     if (Option == null || Option == "no")
                                     {
                                         active.Board = (string)reader["Board"];
-                                        active.TimeLimit = (int)reader["TimeLimit"] + "";
+                                        active.TimeLimit = (int)reader["TimeLimit"];
                                     }
                                     return active;
                                 }
