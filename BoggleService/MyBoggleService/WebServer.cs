@@ -44,7 +44,7 @@ namespace Boggle
         {
             Socket s = server.EndAcceptSocket(result);
             server.BeginAcceptSocket(ConnectionRequested, null);
-            // Another line or lines here. but not sure what.
+            new SocketClient(s);
         }
     }
 }
