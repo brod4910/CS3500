@@ -9,14 +9,14 @@ namespace BoggleGame
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             HttpStatusCode status;
             UserInfo name = new UserInfo { Nickname = "Joe" };
             BoggleService service = new BoggleService();
-            Token user = service.Register(name);
+            Token user = service.Register(name, out status);
             Console.WriteLine(user.UserToken);
-            //Console.WriteLine(status.ToString());
+            Console.WriteLine(status.ToString());
 
             // This is our way of preventing the main thread from
             // exiting while the server is in use

@@ -10,14 +10,13 @@ namespace BoggleGame
 {
     public class BoggleService
     {
-        private readonly static HashSet<String> Dictionary = dictionary();
+        private static HashSet<String> Dictionary = dictionary();
         //for testing purposes
         private static bool board = false;
 
         // The connection string to the DB
         private static string BoggleDB;
 
-        private static HttpStatusCode server_status;
         private static TcpListener server;
 
         static BoggleService()
@@ -56,7 +55,7 @@ namespace BoggleGame
             HashSet<String> dict = new HashSet<string>();
 
             string line;
-            using (StreamReader file = new System.IO.StreamReader("dictionary.txt"))
+            using (StreamReader file = new System.IO.StreamReader(AppDomain.CurrentDomain.BaseDirectory + "dictionary.txt"))
             {
                 while ((line = file.ReadLine()) != null)
                 {

@@ -19,7 +19,7 @@ namespace BoggleGame
         /// Launches a Webserver on Port 600000. Keeps the main
         /// thread active so we can send output to console.
         /// </summary>
-        public static void Main()
+        public static void Mainx()
         {
             new WebServer();
             Console.Read();
