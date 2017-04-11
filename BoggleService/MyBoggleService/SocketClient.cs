@@ -161,6 +161,20 @@ namespace BoggleGame
 
                 int lastNewline = -1;
                 int start = 0;
+                for(int i = 0; i < incoming.Length; i++)
+                {
+                    if(incoming[i] == '\n')
+                    {
+                        String line = incoming.ToString(start, i + 1 - start);
+                        // MOST OF THE WORK WILL BEGIN HERE.
+                        // PARSE MESSAGE AND DISPATCH TO SERVICE METHOD
+                        
+                    
+                        SendMessage(line.ToUpper());
+                        lastNewline = 1;
+                        start = i + 1;
+                    }
+                }
                 incoming.Remove(0, lastNewline + 1);
 
                 // Ask for some more data
