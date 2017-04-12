@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace BoggleGame
@@ -135,6 +136,31 @@ namespace BoggleGame
         }
 
         /// <summary>
+        /// Sends a string to the client
+        /// </summary>
+        private void SendMessage(string lines)
+        {
+            // Get exclusive access to send mechanism
+            lock (sendSync)
+            {
+                // Append the message to the outgoing lines
+                outgoing.Append(lines);
+
+                // If there's not a send ongoing, start one.
+                if (!sendIsOngoing)
+                {
+                    Console.WriteLine("Appending a " + lines.Length + " char line, starting send mechanism");
+                    sendIsOngoing = true;
+                    SendBytes();
+                }
+                else
+                {
+                    Console.WriteLine("\tAppending a " + lines.Length + " char line, send mechanism already running");
+                }
+            }
+        }
+
+        /// <summary>
         /// Called when some data has been received.
         /// </summary>
         private void MessageReceived(IAsyncResult result)
@@ -156,6 +182,8 @@ namespace BoggleGame
                 // Convert the bytes into characters and appending to incoming
                 int charsRead = decoder.GetChars(incomingBytes, 0, bytesRead, incomingChars, 0, false);
                 incoming.Append(incomingChars, 0, charsRead);
+                Regex r = new Regex(@"^(\S+)\s+(\S+)");
+                Regex gameidnum = new Regex(@"(\/[0-9]+)");
                 //Console.WriteLine(incoming);
 
 
@@ -168,10 +196,32 @@ namespace BoggleGame
                         String line = incoming.ToString(start, i + 1 - start);
                         // MOST OF THE WORK WILL BEGIN HERE.
                         // PARSE MESSAGE AND DISPATCH TO SERVICE METHOD
-                        
-                    
-                        SendMessage(line.ToUpper());
-                        lastNewline = 1;
+                        Match m = r.Match(line);
+                        string method = m.Groups[1].Value;
+                        string url = m.Groups[2].Value;
+                        if (method == "GET" && url.Contains("/BoggleService.svc/games/"))
+                        {
+                            // Do GET games call
+                        }
+                        else if(method == "POST" && url.Contains("/BoggleService.svc/users"))
+                        {
+                            // Do register user
+                        }
+                        else if (method == "PUT" && url == ("/BoggleService.svc/games"))
+                        {
+                            // Do cancel game
+                        }
+                        else if (method == "PUT" && url.Contains("/BoggleService.svc/games/"))
+                        {
+                            // Do Playword
+                        }
+                        else if (method == "GET" && url.Contains("/BoggleService.svc/games/"))
+                        {
+                            // Do GetStatus
+                        }
+
+                            // SendMessage(line.ToUpper());
+                            lastNewline = 1;
                         start = i + 1;
                     }
                 }
