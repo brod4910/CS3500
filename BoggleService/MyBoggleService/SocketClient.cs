@@ -172,10 +172,9 @@ namespace BoggleGame
         {
             // Figure out how many bytes have come in
             int bytesRead = socket.EndReceive(result);
-            bool isRequestBody = false;
             string requestType = null;
             int gameid;
-            object requestParam;
+            object requestParam = null;
 
             // If no bytes were received, it means the client closed its side of the socket.
             // Report that to the console and close our socket.
@@ -197,18 +196,10 @@ namespace BoggleGame
                 int start = 0;
                 for(int i = 0; i < incoming.Length; i++)
                 {
-                    if(isRequestBody)
-                    {
-
-                    }
-                    else if(incoming[i] == '\n')
+                    if(incoming[i] == '\n')
                     {
                         String line = incoming.ToString(start, i + 1 - start);
 
-                        if (nextIsRequestBody(line))
-                        {
-                            isRequestBody = true;
-                        }
                         else if(requestType == null)
                         {
                             requestParam = parseData(line, out requestType);
@@ -226,9 +217,6 @@ namespace BoggleGame
                                 }
                             }
                         }
-                        //parseData(line);
-
-                        // SendMessage(line.ToUpper());
                         lastNewline = i;
                         start = i + 1;
                     }
@@ -321,13 +309,13 @@ namespace BoggleGame
             //must be done on the line Etc.
             Regex r;
             Match m;
-            string regexString = @"^/BoggleService.svc/";
+            string regexString = @"(?:(/BoggleService.svc/))";
 
             if (isHttpRequest(line, out requestType))
             {
                 if (requestType == "GET")
                 {
-                    if ((m = (r = new Regex(regexString + @"games/(\d+)")).Match(line)).Success)
+                    if ((m = (r = new Regex(regexString.Insert(23, "games/(\\d+)"))).Match(line)).Success)
                     {
                         int gameID;
 
@@ -338,11 +326,11 @@ namespace BoggleGame
                 }
                 else if (requestType == "PUT")
                 {
-                    if((m = (r = new Regex(regexString + "games")).Match(line)).Success)
+                    if((m = (r = new Regex(regexString.Insert(23, "games"))).Match(line)).Success)
                     {
                         return "cancel";
                     }
-                    else if ((m = (r = new Regex(regexString + @"games/(\d+)")).Match(line)).Success)
+                    else if ((m = (r = new Regex(regexString.Insert(23, "games/(\\d+)"))).Match(line)).Success)
                     {
                         int gameID;
 
@@ -354,11 +342,11 @@ namespace BoggleGame
                 //request type == POST
                 else
                 {
-                    if ((m = (r = new Regex(regexString + "users")).Match(line)).Success)
+                    if ((m = (r = new Regex(regexString.Insert(23,"users"))).Match(line)).Success)
                     {
                         return "users";
                     }
-                    else if((m = (r = new Regex(regexString + "games")).Match(line)).Success)
+                    else if((m = (r = new Regex(regexString.Insert(23, "games"))).Match(line)).Success)
                     {
                         return "games";
                     }
@@ -374,7 +362,7 @@ namespace BoggleGame
         /// <returns></returns>
         private bool nextIsRequestBody(string line)
         {
-            if(line[1].Equals('r') && line[3].Equals('n'))
+            if(line.Length == 4)
             {
                 return true;
             }
