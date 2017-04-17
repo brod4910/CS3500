@@ -172,6 +172,10 @@ namespace BoggleGame
         {
             // Figure out how many bytes have come in
             int bytesRead = socket.EndReceive(result);
+            bool isRequestBody = false;
+            string requestType = null;
+            int gameid;
+            object requestParam;
 
             // If no bytes were received, it means the client closed its side of the socket.
             // Report that to the console and close our socket.
@@ -188,42 +192,39 @@ namespace BoggleGame
                 int charsRead = decoder.GetChars(incomingBytes, 0, bytesRead, incomingChars, 0, false);
                 incoming.Append(incomingChars, 0, charsRead);
                 //Console.WriteLine(incoming);
-                Regex r = new Regex(@"^(\S+)\s+(\S+)");
-                Regex gameidnum = new Regex(@"([0-9]+)");
 
                 int lastNewline = -1;
                 int start = 0;
                 for(int i = 0; i < incoming.Length; i++)
                 {
-                    if(incoming[i] == '\n')
+                    if(isRequestBody)
+                    {
+
+                    }
+                    else if(incoming[i] == '\n')
                     {
                         String line = incoming.ToString(start, i + 1 - start);
-                        // MOST OF THE WORK WILL BEGIN HERE.
-                        // PARSE MESSAGE AND DISPATCH TO SERVICE METHOD
-                        Match m = r.Match(line);
-                        string method = m.Groups[1].Value;
-                        string url = m.Groups[2].Value;
-                        if (method == "GET" && url.Contains("/BoggleService.svc/games/"))
+
+                        if (nextIsRequestBody(line))
                         {
-                            // Do GET games call
-                            Match game = gameidnum.Match(line);
-                            GetGames(url, game.Groups[1].Value);
+                            isRequestBody = true;
                         }
-                        else if(method == "POST" && url.Contains("/BoggleService.svc/users"))
+                        else if(requestType == null)
                         {
-                            // Do register user
-                        }
-                        else if (method == "PUT" && url == ("/BoggleService.svc/games"))
-                        {
-                            // Do cancel game
-                        }
-                        else if (method == "PUT" && url.Contains("/BoggleService.svc/games/"))
-                        {
-                            // Do Playword
-                        }
-                        else if (method == "GET" && url.Contains("/BoggleService.svc/games/"))
-                        {
-                            // Do GetStatus
+                            requestParam = parseData(line, out requestType);
+
+                            if(requestParam is int)
+                            {
+                                if(requestType == "PUT")
+                                {
+                                    gameid = (int)requestParam;
+                                }
+                                //request type is GET status
+                                else
+                                {
+                                    GetGames(line, requestParam.ToString());
+                                }
+                            }
                         }
                        // parseData(line);
 
@@ -240,13 +241,11 @@ namespace BoggleGame
             }
         }
 
-        private void GetGames(string url, string game)
+        private void GetGames(string url, string gameid)
         {
             // Parse Regex
-            Regex r = new Regex(@"^/BoggleService.svc/games/(.*)?\?=(.*)$");
-            Regex r1 = new Regex(@"^/BoggleService.svc/games/(.*)$");
-            Match m = r1.Match(url);
-            //string game = m.Groups[1].Value;
+            Regex r = new Regex(@"^/BoggleService.svc/games/(\d+)Brief=(.*)?$");
+            Match m = r.Match(url);
             string isBrief = m.Groups[2].Value;
 
             Status gameStatus;
@@ -254,26 +253,24 @@ namespace BoggleGame
             // Make Call
             if (isBrief == "yes")
             {
-                gameStatus = service.Gamestatus(game, "yes", out  serviceStatus);
+                gameStatus = service.Gamestatus(gameid, "yes", out  serviceStatus);
             }
             else
             {
-                gameStatus = service.Gamestatus(game, "no", out serviceStatus);
+                gameStatus = service.Gamestatus(gameid, "no", out serviceStatus);
             }
             // Serialize
             String s = JsonConvert.SerializeObject(gameStatus, new JsonSerializerSettings
             { DefaultValueHandling = DefaultValueHandling.Ignore });
             // Send Back with appropriate headers
             SendMessage("HTTP/1.1 " + (int)serviceStatus + " " + serviceStatus.ToString() + "\r\n");
-            SendMessage("Content - Type: application / json\r\n");
+            SendMessage("Content-Type: application/json\r\n");
             SendMessage("Content-Length: " + s.Length + "\r\n");
             SendMessage("\r\n");
             SendMessage(s);
-            // Shutdown
-            Shutdown();
         }
 
-        private void parseData(String line)
+        private object parseData(String line, out string requestType)
         {
             //change this part. Make it general for all lines.
             //Maybe a more complex regex that is useful for every line. Determing what work
@@ -282,16 +279,97 @@ namespace BoggleGame
             Match m;
             string regexString = @"^/BoggleService.svc/";
 
-            if((m = (r = new Regex(regexString + "games/(\\d+)$")).Match(line)).Success)
+            if (isHttpRequest(line, out requestType))
             {
-                //identify if it is a post/get method
-                int gameID;
+                if (requestType == "GET")
+                {
+                    if ((m = (r = new Regex(regexString + @"games/(\d+)")).Match(line)).Success)
+                    {
+                        int gameID;
 
-                int.TryParse(m.Groups[1].Value, out gameID);
+                        int.TryParse(m.Groups[1].Value, out gameID);
+
+                        return gameID;
+                    }
+                }
+                else if (requestType == "PUT")
+                {
+                    if((m = (r = new Regex(regexString + "games")).Match(line)).Success)
+                    {
+                        return "cancel";
+                    }
+                    else if ((m = (r = new Regex(regexString + @"games/(\d+)")).Match(line)).Success)
+                    {
+                        int gameID;
+
+                        int.TryParse(m.Groups[1].Value, out gameID);
+
+                        return gameID;
+                    }
+                }
+                //request type == POST
+                else
+                {
+                    if ((m = (r = new Regex(regexString + "users")).Match(line)).Success)
+                    {
+                        return "users";
+                    }
+                    else if((m = (r = new Regex(regexString + "games")).Match(line)).Success)
+                    {
+                        return "games";
+                    }
+                }
             }
-            else if ((m = (r = new Regex(regexString + "users")).Match(line)).Success)
-            {
+            return null;
+        }
 
+        /// <summary>
+        /// Determines if the next incoming bytes is the request body
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
+        private bool nextIsRequestBody(string line)
+        {
+            if(line[1].Equals('r') && line[3].Equals('n'))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Checks to see if the line is an http request line
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="RequestType"></param>
+        /// <returns></returns>
+        private bool isHttpRequest(string line, out string RequestType)
+        {
+            if(line[0] == 'G')
+            {
+                RequestType = "GET";
+                return true;
+            }
+            else if(line[0] == 'P')
+            {
+                if(line[1] == 'U')
+                {
+                    RequestType = "PUT";
+                    return true;
+                }
+                else
+                {
+                    RequestType = "POST";
+                    return true;
+                }
+            }
+            else
+            {
+                RequestType = null;
+                return false;
             }
         }
     }

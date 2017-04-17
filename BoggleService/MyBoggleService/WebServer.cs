@@ -22,7 +22,7 @@ namespace BoggleGame
         public static void Main()
         {
             new WebServer();
-            Console.Read();
+            Console.ReadLine();
         }
 
         /// <summary>

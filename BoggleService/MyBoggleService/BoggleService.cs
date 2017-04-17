@@ -16,7 +16,7 @@ namespace BoggleGame
         private static bool board = false;
 
         // The connection string to the DB
-        private static string BoggleDB;
+        private static string connectionString;
 
        // private static TcpListener server;
 
@@ -42,9 +42,9 @@ namespace BoggleGame
             // file where it can be easily found and changed.  You should do that too.
             // BoggleDB = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
 
-           // BoggleDB = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\BoggleDB.mdf;Integrated Security=True;";
-            BoggleDB = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
-          //  server = new TcpListener(IPAddress.Any, 60000);
+            string dbFolder = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName;
+            connectionString = String.Format(@"Data Source = (LocalDB)\MSSQLLocalDB; AttachDbFilename = {0}\BoggleDB.mdf; Integrated Security = True", dbFolder);
+
         }
 
 
@@ -95,7 +95,7 @@ namespace BoggleGame
                 return null;
             }
 
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
 
@@ -161,7 +161,7 @@ namespace BoggleGame
             }
 
             //Set up connection
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
 
@@ -246,7 +246,7 @@ namespace BoggleGame
             }
 
             //Set up connection
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
 
@@ -327,7 +327,7 @@ namespace BoggleGame
             }
             // Get the game
             // SQL check gamestate
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
 
@@ -421,7 +421,7 @@ namespace BoggleGame
             string tokenp2 = "";
 
             //Set up connection
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
 
@@ -538,7 +538,7 @@ namespace BoggleGame
         private bool userInPendingGame(Token token)
         {
             //Set up connection
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
 
@@ -579,7 +579,7 @@ namespace BoggleGame
             int.TryParse(GameID, out gameid);
 
             //Set up connection
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
 
@@ -641,7 +641,7 @@ namespace BoggleGame
             }
 
             //Set up connection
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
 
@@ -684,7 +684,7 @@ namespace BoggleGame
             int.TryParse(GameID, out gameid);
 
             //Set up connection
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
                 //set up transaction
@@ -737,7 +737,7 @@ namespace BoggleGame
         private bool userIsinGame(string GameID, PlayedWord word)
         {
             //Set up connection
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
                 //set up transaction
@@ -779,7 +779,7 @@ namespace BoggleGame
             int.TryParse(GameID, out gameid);
 
             //Set up connection
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
                 //set up transaction
@@ -820,7 +820,7 @@ namespace BoggleGame
         {
             int sum = 0;
             //Set up connection
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
                 //set up transaction
@@ -860,7 +860,7 @@ namespace BoggleGame
         {
             string name = null;
             //Set up connection
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
                 //set up transaction
@@ -893,7 +893,7 @@ namespace BoggleGame
         {
             List<AlreadyPlayedWord> words = new List<AlreadyPlayedWord>();
             //Set up connection
-            using (SqlConnection conn = new SqlConnection(BoggleDB))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
                 //set up transaction
