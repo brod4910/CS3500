@@ -76,6 +76,7 @@
     <Compile Include="WebServer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="index.html" />
     <None Include="App.config" />
     <Content Include="App_Data\BoggleDB.mdf" />
     <Content Include="App_Data\BoggleDB_log.ldf">

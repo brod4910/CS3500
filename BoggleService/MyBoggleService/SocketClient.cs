@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -204,6 +205,7 @@ namespace BoggleGame
                     else if(incoming[i] == '\n')
                     {
                         String line = incoming.ToString(start, i + 1 - start);
+                        getAPIPage();
 
                         if (nextIsRequestBody(line))
                         {
@@ -270,6 +272,16 @@ namespace BoggleGame
             SendMessage(s);
         }
 
+        private void getAPIPage()
+        {
+            SendMessage("HTTP/1.1 200 OK\n");
+            var API = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "..\\index.html");
+            SendMessage("Content-Length: text/html\r\n");
+            SendMessage("\r\n");
+            SendMessage(API);
+        }
+
+
         private void CancelGame(string url)
         {
             HttpStatusCode serviceStatus;
@@ -312,6 +324,25 @@ namespace BoggleGame
             SendMessage("\r\n");
             SendMessage(s);
         }
+        
+        private void PlayWord(string url, string gameId)
+        {
+            HttpStatusCode serviceStatus;
+            PlayedWord user = JsonConvert.DeserializeObject<PlayedWord>(url);
+
+            WordScore gameStatus = service.PlayWord(gameId, user, out serviceStatus);
+
+            String s = JsonConvert.SerializeObject(gameStatus, new JsonSerializerSettings
+            { DefaultValueHandling = DefaultValueHandling.Ignore });
+
+            // Send Back with appropriate headers
+            SendMessage("HTTP/1.1 " + (int)serviceStatus + " " + serviceStatus.ToString() + "\r\n");
+            SendMessage("Content-Type: application/json\r\n");
+            SendMessage("Content-Length: " + s.Length + "\r\n");
+            SendMessage("\r\n");
+            SendMessage(s);
+        }
+
 
 
         private object parseData(String line, out string requestType)
