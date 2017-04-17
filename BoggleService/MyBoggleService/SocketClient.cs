@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -27,6 +29,8 @@ namespace BoggleGame
         // Text that needs to be sent to the client but which we have not yet started sending
         private StringBuilder outgoing;
 
+        private BoggleService service;
+
         // For decoding incoming UTF8-encoded byte streams.
         private Decoder decoder = encoding.GetDecoder();
 
@@ -49,6 +53,7 @@ namespace BoggleGame
         {
             // Record the socket and clear incoming
             socket = s;
+            service = new BoggleService();
             incoming = new StringBuilder();
             outgoing = new StringBuilder();
 
@@ -183,7 +188,8 @@ namespace BoggleGame
                 int charsRead = decoder.GetChars(incomingBytes, 0, bytesRead, incomingChars, 0, false);
                 incoming.Append(incomingChars, 0, charsRead);
                 //Console.WriteLine(incoming);
-
+                Regex r = new Regex(@"^(\S+)\s+(\S+)");
+                Regex gameidnum = new Regex(@"(\/[0-9]+)");
 
                 int lastNewline = -1;
                 int start = 0;
@@ -194,8 +200,31 @@ namespace BoggleGame
                         String line = incoming.ToString(start, i + 1 - start);
                         // MOST OF THE WORK WILL BEGIN HERE.
                         // PARSE MESSAGE AND DISPATCH TO SERVICE METHOD
-
-                        parseData(line);
+                        Match m = r.Match(line);
+                        string method = m.Groups[1].Value;
+                        string url = m.Groups[2].Value;
+                        if (method == "GET" && url.Contains("/BoggleService.svc/games/"))
+                        {
+                            // Do GET games call
+                            GetGames(url);
+                        }
+                        else if(method == "POST" && url.Contains("/BoggleService.svc/users"))
+                        {
+                            // Do register user
+                        }
+                        else if (method == "PUT" && url == ("/BoggleService.svc/games"))
+                        {
+                            // Do cancel game
+                        }
+                        else if (method == "PUT" && url.Contains("/BoggleService.svc/games/"))
+                        {
+                            // Do Playword
+                        }
+                        else if (method == "GET" && url.Contains("/BoggleService.svc/games/"))
+                        {
+                            // Do GetStatus
+                        }
+                       // parseData(line);
 
                         // SendMessage(line.ToUpper());
                         lastNewline = i;
@@ -208,6 +237,39 @@ namespace BoggleGame
                 socket.BeginReceive(incomingBytes, 0, incomingBytes.Length,
                     SocketFlags.None, MessageReceived, null);
             }
+        }
+
+        private void GetGames(string url)
+        {
+            // Parse Regex
+            Regex r = new Regex(@"^/BoggleService.svc/games/(.*)?\?=(.*)$");
+            Regex r1 = new Regex(@"^/BoggleService.svc/games/.*$");
+            Match m = r.Match(url);
+            string game = m.Groups[1].Value;
+            string isBrief = m.Groups[2].Value;
+
+            Status gameStatus;
+            HttpStatusCode serviceStatus;
+            // Make Call
+            if (isBrief == "yes")
+            {
+                gameStatus = service.Gamestatus(game, "yes", out  serviceStatus);
+            }
+            else
+            {
+                gameStatus = service.Gamestatus(game, "no", out serviceStatus);
+            }
+            // Serialize
+            String s = JsonConvert.SerializeObject(gameStatus, new JsonSerializerSettings
+            { DefaultValueHandling = DefaultValueHandling.Ignore });
+            // Send Back with appropriate headers
+            SendMessage("HTTP/1.1 " + (int)serviceStatus + " " + serviceStatus.ToString() + "\r\n");
+            SendMessage("Content - Type: application / json\r\n");
+            SendMessage("Content-Length: " + s.Length + "\r\n");
+            SendMessage("\r\n");
+            SendMessage(s);
+            // Shutdown
+            Shutdown();
         }
 
         private void parseData(String line)
