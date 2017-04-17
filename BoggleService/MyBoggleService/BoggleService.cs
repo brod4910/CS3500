@@ -41,7 +41,7 @@ namespace BoggleGame
             // file where it can be easily found and changed.  You should do that too.
             // BoggleDB = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
 
-            BoggleDB = @"(LocalDB)\MSSQLLocalDB; AttachDbFilename = |DataDirectory|\BoggleDB.mdf; Integrated Security = True;";
+            BoggleDB = @"Data Source = (LocalDB)\MSSQLLocalDB; AttachDbFilename = |DataDirectory|\BoggleDB.mdf; Integrated Security = True;";
             server = new TcpListener(IPAddress.Any, 60000);
         }
 
@@ -55,7 +55,7 @@ namespace BoggleGame
             HashSet<String> dict = new HashSet<string>();
 
             string line;
-            using (StreamReader file = new System.IO.StreamReader(AppDomain.CurrentDomain.BaseDirectory + "dictionary.txt"))
+            using (StreamReader file = new System.IO.StreamReader("dictionary.txt"))
             {
                 while ((line = file.ReadLine()) != null)
                 {

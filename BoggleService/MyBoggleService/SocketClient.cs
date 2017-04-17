@@ -182,8 +182,6 @@ namespace BoggleGame
                 // Convert the bytes into characters and appending to incoming
                 int charsRead = decoder.GetChars(incomingBytes, 0, bytesRead, incomingChars, 0, false);
                 incoming.Append(incomingChars, 0, charsRead);
-                Regex r = new Regex(@"^(\S+)\s+(\S+)");
-                Regex gameidnum = new Regex(@"(\/[0-9]+)");
                 //Console.WriteLine(incoming);
 
 
@@ -196,32 +194,11 @@ namespace BoggleGame
                         String line = incoming.ToString(start, i + 1 - start);
                         // MOST OF THE WORK WILL BEGIN HERE.
                         // PARSE MESSAGE AND DISPATCH TO SERVICE METHOD
-                        Match m = r.Match(line);
-                        string method = m.Groups[1].Value;
-                        string url = m.Groups[2].Value;
-                        if (method == "GET" && url.Contains("/BoggleService.svc/games/"))
-                        {
-                            // Do GET games call
-                        }
-                        else if(method == "POST" && url.Contains("/BoggleService.svc/users"))
-                        {
-                            // Do register user
-                        }
-                        else if (method == "PUT" && url == ("/BoggleService.svc/games"))
-                        {
-                            // Do cancel game
-                        }
-                        else if (method == "PUT" && url.Contains("/BoggleService.svc/games/"))
-                        {
-                            // Do Playword
-                        }
-                        else if (method == "GET" && url.Contains("/BoggleService.svc/games/"))
-                        {
-                            // Do GetStatus
-                        }
 
-                            // SendMessage(line.ToUpper());
-                            lastNewline = 1;
+                        parseData(line);
+
+                        // SendMessage(line.ToUpper());
+                        lastNewline = i;
                         start = i + 1;
                     }
                 }
@@ -230,6 +207,28 @@ namespace BoggleGame
                 // Ask for some more data
                 socket.BeginReceive(incomingBytes, 0, incomingBytes.Length,
                     SocketFlags.None, MessageReceived, null);
+            }
+        }
+
+        private void parseData(String line)
+        {
+            //change this part. Make it general for all lines.
+            //Maybe a more complex regex that is useful for every line. Determing what work
+            //must be done on the line Etc.
+            Regex r;
+            Match m;
+            string regexString = @"^/BoggleService.svc/";
+
+            if((m = (r = new Regex(regexString + "games/(\\d+)$")).Match(line)).Success)
+            {
+                //identify if it is a post/get method
+                int gameID;
+
+                int.TryParse(m.Groups[1].Value, out gameID);
+            }
+            else if ((m = (r = new Regex(regexString + "users")).Match(line)).Success)
+            {
+
             }
         }
     }
