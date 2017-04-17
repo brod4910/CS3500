@@ -189,7 +189,7 @@ namespace BoggleGame
                 incoming.Append(incomingChars, 0, charsRead);
                 //Console.WriteLine(incoming);
                 Regex r = new Regex(@"^(\S+)\s+(\S+)");
-                Regex gameidnum = new Regex(@"(\/[0-9]+)");
+                Regex gameidnum = new Regex(@"([0-9]+)");
 
                 int lastNewline = -1;
                 int start = 0;
@@ -206,7 +206,8 @@ namespace BoggleGame
                         if (method == "GET" && url.Contains("/BoggleService.svc/games/"))
                         {
                             // Do GET games call
-                            GetGames(url);
+                            Match game = gameidnum.Match(line);
+                            GetGames(url, game.Groups[1].Value);
                         }
                         else if(method == "POST" && url.Contains("/BoggleService.svc/users"))
                         {
@@ -239,13 +240,13 @@ namespace BoggleGame
             }
         }
 
-        private void GetGames(string url)
+        private void GetGames(string url, string game)
         {
             // Parse Regex
             Regex r = new Regex(@"^/BoggleService.svc/games/(.*)?\?=(.*)$");
-            Regex r1 = new Regex(@"^/BoggleService.svc/games/.*$");
-            Match m = r.Match(url);
-            string game = m.Groups[1].Value;
+            Regex r1 = new Regex(@"^/BoggleService.svc/games/(.*)$");
+            Match m = r1.Match(url);
+            //string game = m.Groups[1].Value;
             string isBrief = m.Groups[2].Value;
 
             Status gameStatus;
