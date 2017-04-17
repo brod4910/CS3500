@@ -226,7 +226,7 @@ namespace BoggleGame
                                 }
                             }
                         }
-                       // parseData(line);
+                        //parseData(line);
 
                         // SendMessage(line.ToUpper());
                         lastNewline = i;
@@ -269,6 +269,50 @@ namespace BoggleGame
             SendMessage("\r\n");
             SendMessage(s);
         }
+
+        private void CancelGame(string url)
+        {
+            HttpStatusCode serviceStatus;
+            Token token = JsonConvert.DeserializeObject<Token>(url);
+            this.service.CancelJoin(token, out serviceStatus);
+            SendMessage("HTTP/1.1 " + (int)serviceStatus + " " + serviceStatus.ToString() + "\r\n");
+            SendMessage("\r\n");
+        }
+
+        private void RegisterUser(string url)
+        {
+            HttpStatusCode serviceStatus;
+            UserInfo user = JsonConvert.DeserializeObject<UserInfo>(url);
+            Token gameStatus = service.Register(user, out serviceStatus);
+
+            String s = JsonConvert.SerializeObject(gameStatus, new JsonSerializerSettings
+            { DefaultValueHandling = DefaultValueHandling.Ignore });
+
+            // Send Back with appropriate headers
+            SendMessage("HTTP/1.1 " + (int)serviceStatus + " " + serviceStatus.ToString() + "\r\n");
+            SendMessage("Content-Type: application/json\r\n");
+            SendMessage("Content-Length: " + s.Length + "\r\n");
+            SendMessage("\r\n");
+            SendMessage(s);
+        }
+
+        private void JoinGame(string url)
+        {
+            HttpStatusCode serviceStatus;
+            PostingGame user = JsonConvert.DeserializeObject<PostingGame>(url);
+            GameId gameStatus = service.JoinGame(user, out serviceStatus);
+
+            String s = JsonConvert.SerializeObject(gameStatus, new JsonSerializerSettings
+            { DefaultValueHandling = DefaultValueHandling.Ignore });
+
+            // Send Back with appropriate headers
+            SendMessage("HTTP/1.1 " + (int)serviceStatus + " " + serviceStatus.ToString() + "\r\n");
+            SendMessage("Content-Type: application/json\r\n");
+            SendMessage("Content-Length: " + s.Length + "\r\n");
+            SendMessage("\r\n");
+            SendMessage(s);
+        }
+
 
         private object parseData(String line, out string requestType)
         {
