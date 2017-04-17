@@ -5,6 +5,7 @@ using System.Net;
 using static System.Net.HttpStatusCode;
 using System.Data.SqlClient;
 using System.Net.Sockets;
+using System.Configuration;
 
 namespace BoggleGame
 {
@@ -17,7 +18,7 @@ namespace BoggleGame
         // The connection string to the DB
         private static string BoggleDB;
 
-        private static TcpListener server;
+       // private static TcpListener server;
 
         static BoggleService()
         {
@@ -41,8 +42,9 @@ namespace BoggleGame
             // file where it can be easily found and changed.  You should do that too.
             // BoggleDB = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
 
-            BoggleDB = @"Data Source = (LocalDB)\MSSQLLocalDB; AttachDbFilename = |DataDirectory|\BoggleDB.mdf; Integrated Security = True;";
-            server = new TcpListener(IPAddress.Any, 60000);
+           // BoggleDB = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\BoggleDB.mdf;Integrated Security=True;";
+            BoggleDB = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
+          //  server = new TcpListener(IPAddress.Any, 60000);
         }
 
 
