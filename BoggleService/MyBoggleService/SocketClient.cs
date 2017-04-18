@@ -50,6 +50,15 @@ namespace BoggleGame
         private byte[] pendingBytes = new byte[0];
         private int pendingIndex = 0;
 
+        //array for request
+        //[0] = Request Type
+        //[1] = users || games
+        //[2] = params(gameid)
+        //[3] = params(Brief)
+        //[4] = content-length
+        //[5] = request body
+        private object[] requestParams = new object[6];
+
         public SocketClient(Socket s)
         {
             // Record the socket and clear incoming
@@ -61,21 +70,6 @@ namespace BoggleGame
             // Ask the socket to call MessageReceive as soon as up to 1024 bytes arrive.
             socket.BeginReceive(incomingBytes, 0, incomingBytes.Length,
                                 SocketFlags.None, MessageReceived, null);
-        }
-
-        /// <summary>
-        /// Closes the Socket
-        /// </summary>
-        public void Shutdown()
-        {
-            try
-            {
-                socket.Shutdown(SocketShutdown.Both);
-                socket.Close();
-            }
-            catch (Exception)
-            {
-            }
         }
 
         /// <summary>
@@ -173,14 +167,18 @@ namespace BoggleGame
         {
             // Figure out how many bytes have come in
             int bytesRead = socket.EndReceive(result);
-            string requestType = null;
-            int gameid;
-            object requestParam = null;
 
             // If no bytes were received, it means the client closed its side of the socket.
             // Report that to the console and close our socket.
             if (bytesRead == 0)
             {
+                ConfigureProperRequest();
+
+                for (int i = 0; i <= requestParams.Length;i++)
+                {
+                    requestParams[i] = null;
+                }
+
                 Console.WriteLine("Socket closed");
                 socket.Close();
             }
@@ -200,27 +198,17 @@ namespace BoggleGame
                     if(incoming[i] == '\n')
                     {
                         String line = incoming.ToString(start, i + 1 - start);
-                        getAPIPage();
 
-                        else if(requestType == null)
-                        {
-                            requestParam = parseData(line, out requestType);
-
-                            if(requestParam is int)
-                            {
-                                if(requestType == "PUT")
-                                {
-                                    gameid = (int)requestParam;
-                                }
-                                //request type is GET status
-                                else
-                                {
-                                    GetGames(line, requestParam.ToString());
-                                }
-                            }
-                        }
+                        parseData(line);
+                        
                         lastNewline = i;
                         start = i + 1;
+                    }
+                    if(incoming[i] == '}')
+                    {
+                        String line = incoming.ToString(start, i + 1 - start);
+
+                        parseData(line);
                     }
                 }
                 incoming.Remove(0, lastNewline + 1);
@@ -231,12 +219,44 @@ namespace BoggleGame
             }
         }
 
-        private void GetGames(string url, string gameid)
+        private void ConfigureProperRequest()
         {
-            // Parse Regex
-            Regex r = new Regex(@"^/BoggleService.svc/games/(\d+)Brief=(.*)?$");
-            Match m = r.Match(url);
-            string isBrief = m.Groups[2].Value;
+            if ((string)requestParams[0] == "POST")
+            {
+                if ((string)requestParams[1] == "games")
+                {
+                    JoinGame((string)requestParams[5]);
+                }
+                //else we are posting to users
+                else
+                {
+                    RegisterUser((string)requestParams[5]);
+                }
+            }
+            else if ((string)requestParams[1] == "PUT")
+            {
+                //Cancel game
+                if (requestParams[3] == null)
+                {
+                    CancelGame((string)requestParams[5]);
+                }
+                //else play word
+                else
+                {
+                    PlayWord((string)requestParams[5], (string)requestParams[2]);
+                }
+            }
+            //Else its a get Method
+            else
+            {
+                GetGames((string)requestParams[5], (string)requestParams[2]);
+            }
+
+        }
+
+        private void GetGames(string requestBody, string gameid)
+        {
+            string isBrief = (string)requestParams[3];
 
             Status gameStatus;
             HttpStatusCode serviceStatus;
@@ -270,22 +290,22 @@ namespace BoggleGame
         }
 
 
-        private void CancelGame(string url)
+        private void CancelGame(string requestBody)
         {
             HttpStatusCode serviceStatus;
-            Token token = JsonConvert.DeserializeObject<Token>(url);
+            Token token = JsonConvert.DeserializeObject<Token>(requestBody);
             this.service.CancelJoin(token, out serviceStatus);
             SendMessage("HTTP/1.1 " + (int)serviceStatus + " " + serviceStatus.ToString() + "\r\n");
             SendMessage("\r\n");
         }
 
-        private void RegisterUser(string url)
+        private void RegisterUser(string RequestBody)
         {
             HttpStatusCode serviceStatus;
-            UserInfo user = JsonConvert.DeserializeObject<UserInfo>(url);
-            Token gameStatus = service.Register(user, out serviceStatus);
+            UserInfo user = JsonConvert.DeserializeObject<UserInfo>(RequestBody);
+            Token token = service.Register(user, out serviceStatus);
 
-            String s = JsonConvert.SerializeObject(gameStatus, new JsonSerializerSettings
+            String s = JsonConvert.SerializeObject(token, new JsonSerializerSettings
             { DefaultValueHandling = DefaultValueHandling.Ignore });
 
             // Send Back with appropriate headers
@@ -296,13 +316,13 @@ namespace BoggleGame
             SendMessage(s);
         }
 
-        private void JoinGame(string url)
+        private void JoinGame(string requestBody)
         {
             HttpStatusCode serviceStatus;
-            PostingGame user = JsonConvert.DeserializeObject<PostingGame>(url);
-            GameId gameStatus = service.JoinGame(user, out serviceStatus);
+            PostingGame user = JsonConvert.DeserializeObject<PostingGame>(requestBody);
+            GameId gameID = service.JoinGame(user, out serviceStatus);
 
-            String s = JsonConvert.SerializeObject(gameStatus, new JsonSerializerSettings
+            String s = JsonConvert.SerializeObject(gameID, new JsonSerializerSettings
             { DefaultValueHandling = DefaultValueHandling.Ignore });
 
             // Send Back with appropriate headers
@@ -313,14 +333,14 @@ namespace BoggleGame
             SendMessage(s);
         }
         
-        private void PlayWord(string url, string gameId)
+        private void PlayWord(string requestBody, string gameId)
         {
             HttpStatusCode serviceStatus;
-            PlayedWord user = JsonConvert.DeserializeObject<PlayedWord>(url);
+            PlayedWord user = JsonConvert.DeserializeObject<PlayedWord>(requestBody);
 
-            WordScore gameStatus = service.PlayWord(gameId, user, out serviceStatus);
+            WordScore wordScore = service.PlayWord(gameId, user, out serviceStatus);
 
-            String s = JsonConvert.SerializeObject(gameStatus, new JsonSerializerSettings
+            String s = JsonConvert.SerializeObject(wordScore, new JsonSerializerSettings
             { DefaultValueHandling = DefaultValueHandling.Ignore });
 
             // Send Back with appropriate headers
@@ -331,9 +351,7 @@ namespace BoggleGame
             SendMessage(s);
         }
 
-
-
-        private object parseData(String line, out string requestType)
+        private void parseData(String line)
         {
             //change this part. Make it general for all lines.
             //Maybe a more complex regex that is useful for every line. Determing what work
@@ -341,33 +359,32 @@ namespace BoggleGame
             Regex r;
             Match m;
             string regexString = @"(?:(/BoggleService.svc/))";
+            string requestType;
 
             if (isHttpRequest(line, out requestType))
             {
                 if (requestType == "GET")
                 {
-                    if ((m = (r = new Regex(regexString.Insert(23, "games/(\\d+)"))).Match(line)).Success)
+                    if ((m = (r = new Regex(regexString.Insert(23, "games/(\\d+)?Brief=(.*)"))).Match(line)).Success)
                     {
-                        int gameID;
-
-                        int.TryParse(m.Groups[1].Value, out gameID);
-
-                        return gameID;
+                        requestParams[0] = "GET";
+                        requestParams[1] = "games";
+                        requestParams[2] = m.Groups[1].Value;
+                        requestParams[3] = m.Groups[2].Value;
                     }
                 }
                 else if (requestType == "PUT")
                 {
                     if((m = (r = new Regex(regexString.Insert(23, "games"))).Match(line)).Success)
                     {
-                        return "cancel";
+                        requestParams[0] = "PUT";
+                        requestParams[1] = "games";
                     }
                     else if ((m = (r = new Regex(regexString.Insert(23, "games/(\\d+)"))).Match(line)).Success)
                     {
-                        int gameID;
-
-                        int.TryParse(m.Groups[1].Value, out gameID);
-
-                        return gameID;
+                        requestParams[0] = "PUT";
+                        requestParams[1] = "games";
+                        requestParams[2] = m.Groups[1].Value;
                     }
                 }
                 //request type == POST
@@ -375,15 +392,61 @@ namespace BoggleGame
                 {
                     if ((m = (r = new Regex(regexString.Insert(23,"users"))).Match(line)).Success)
                     {
-                        return "users";
+                        requestParams[0] = "POST";
+                        requestParams[1] = "users";
                     }
                     else if((m = (r = new Regex(regexString.Insert(23, "games"))).Match(line)).Success)
                     {
-                        return "games";
+                        requestParams[0] = "POST";
+                        requestParams[1] = "games";
                     }
                 }
             }
-            return null;
+            else if(isContentLength(line))
+            {
+                string length = line.Substring(16);
+                requestParams[4] = int.Parse(length);
+            }
+            else if(isRequestBody(line))
+            {
+                requestParams[5] = line;
+            }
+        }
+
+        private bool isRequestBody(string line)
+        {
+            if(line[0] == '{')
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Determines if it is the content-length line
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
+        private bool isContentLength(string line)
+        {
+            if(line[0] == 'C')
+            {
+                if(line.Contains("Length"))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -393,7 +456,7 @@ namespace BoggleGame
         /// <returns></returns>
         private bool nextIsRequestBody(string line)
         {
-            if(line.Length == 4)
+            if(line.Length == 2)
             {
                 return true;
             }
