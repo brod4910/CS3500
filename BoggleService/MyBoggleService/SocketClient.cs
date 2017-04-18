@@ -172,13 +172,6 @@ namespace BoggleGame
             // Report that to the console and close our socket.
             if (bytesRead == 0)
             {
-                ConfigureProperRequest();
-
-                for (int i = 0; i < requestParams.Length; i++)
-                {
-                    requestParams[i] = null;
-                }
-
                 Console.WriteLine("Socket closed");
                 socket.Close();
             }
@@ -204,30 +197,20 @@ namespace BoggleGame
                         lastNewline = i;
                         start = i + 1;
                     }
-                    if (incoming[i] == '}')
+                    else if (incoming[i] == '}')
                     {
                         String line = incoming.ToString(start, i + 1 - start);
 
                         parseData(line);
-
+                        ConfigureProperRequest();
                         lastNewline = i;
                         start = i + 1;
                     }
                 }
                 incoming.Remove(0, lastNewline + 1);
 
-                // Ask for some more data
-                //IAsyncResult info = 
                 socket.BeginReceive(incomingBytes, 0, incomingBytes.Length,
                     SocketFlags.None, MessageReceived, null);
-
-                //if (info.IsCompleted)
-                //{
-                //    ConfigureProperRequest();
-
-                //    Console.WriteLine("Socket closed");
-                //    socket.Close();
-                //}
             }
         }
 
