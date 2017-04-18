@@ -718,7 +718,7 @@ namespace BoggleGame
         /// <returns></returns>
         private bool wordIsValid(PlayedWord word)
         {
-            if (word.Word.Trim().Length == 0 || word.Word == null)
+            if (word.Word == null  || word.Word.Trim().Length == 0 )
             {
                 return false;
             }

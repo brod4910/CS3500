@@ -233,7 +233,7 @@ namespace BoggleGame
                     RegisterUser((string)requestParams[5]);
                 }
             }
-            else if ((string)requestParams[1] == "PUT")
+            else if ((string)requestParams[0] == "PUT")
             {
                 //Cancel game
                 if ((string)requestParams[1] == "cancel")
@@ -367,22 +367,22 @@ namespace BoggleGame
                     {
                         requestParams[0] = "GET";
                         requestParams[1] = "games";
-                        requestParams[2] = m.Groups[1].Value;
-                        requestParams[3] = m.Groups[2].Value;
+                        requestParams[2] = m.Groups[2].Value;
+                        requestParams[3] = m.Groups[3].Value;
                     }
                 }
                 else if (requestType == "PUT")
                 {
-                    if((m = (r = new Regex(regexString.Insert(23, "games"))).Match(line)).Success)
+                    if ((m = (r = new Regex(regexString.Insert(23, "games/(\\d+)"))).Match(line)).Success)
                     {
                         requestParams[0] = "PUT";
                         requestParams[1] = "games";
+                        requestParams[2] = m.Groups[2].Value;
                     }
-                    else if ((m = (r = new Regex(regexString.Insert(23, "games/(\\d+)"))).Match(line)).Success)
+                    else if((m = (r = new Regex(regexString.Insert(23, "games"))).Match(line)).Success)
                     {
                         requestParams[0] = "PUT";
                         requestParams[1] = "games";
-                        requestParams[2] = m.Groups[1].Value;
                     }
                 }
                 //request type == POST
