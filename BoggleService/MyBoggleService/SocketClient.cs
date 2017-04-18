@@ -236,7 +236,7 @@ namespace BoggleGame
             else if ((string)requestParams[1] == "PUT")
             {
                 //Cancel game
-                if (requestParams[3] == null)
+                if ((string)requestParams[1] == "cancel")
                 {
                     CancelGame((string)requestParams[5]);
                 }
