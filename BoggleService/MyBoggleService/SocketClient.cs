@@ -174,7 +174,7 @@ namespace BoggleGame
             {
                 ConfigureProperRequest();
 
-                for (int i = 0; i <= requestParams.Length;i++)
+                for (int i = 0; i < requestParams.Length; i++)
                 {
                     requestParams[i] = null;
                 }
@@ -193,31 +193,48 @@ namespace BoggleGame
 
                 int lastNewline = -1;
                 int start = 0;
-                for(int i = 0; i < incoming.Length; i++)
+                for (int i = 0; i < incoming.Length; i++)
                 {
-                    if(incoming[i] == '\n')
+                    if (incoming[i] == '\n')
                     {
                         String line = incoming.ToString(start, i + 1 - start);
 
                         parseData(line);
-                        
+
                         lastNewline = i;
                         start = i + 1;
                     }
-                    if(incoming[i] == '}')
+                    if (incoming[i] == '}')
                     {
                         String line = incoming.ToString(start, i + 1 - start);
 
                         parseData(line);
+
+                        lastNewline = i;
+                        start = i + 1;
                     }
                 }
                 incoming.Remove(0, lastNewline + 1);
 
                 // Ask for some more data
+                //IAsyncResult info = 
                 socket.BeginReceive(incomingBytes, 0, incomingBytes.Length,
                     SocketFlags.None, MessageReceived, null);
+
+                //if (info.IsCompleted)
+                //{
+                //    ConfigureProperRequest();
+
+                //    Console.WriteLine("Socket closed");
+                //    socket.Close();
+                //}
             }
         }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////        Start of helper methods        //////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
         private void ConfigureProperRequest()
         {
