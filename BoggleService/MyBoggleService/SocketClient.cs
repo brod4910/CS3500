@@ -356,19 +356,19 @@ namespace BoggleGame
             //must be done on the line Etc.
             Regex r;
             Match m;
-            string regexString = @"(?:(/BoggleService.svc/))";
+            string regexString = "(?:(/BoggleService.svc/))";
             string requestType;
 
             if (isHttpRequest(line, out requestType))
             {
                 if (requestType == "GET")
                 {
-                    if ((m = (r = new Regex(regexString.Insert(23, "games/(\\d+)?Brief=(.*)"))).Match(line)).Success)
+                    if ((m = (r = new Regex(regexString.Insert(23, "games/(\\d+)\\?(B|b)rief=(.*) "))).Match(line)).Success)
                     {
                         requestParams[0] = "GET";
                         requestParams[1] = "games";
                         requestParams[2] = m.Groups[2].Value;
-                        requestParams[3] = m.Groups[3].Value;
+                        requestParams[3] = m.Groups[4].Value;
                     }
                 }
                 else if (requestType == "PUT")
