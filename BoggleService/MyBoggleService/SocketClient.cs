@@ -249,19 +249,17 @@ namespace BoggleGame
             //Else its a get Method
             else
             {
-                GetGames((string)requestParams[5], (string)requestParams[2]);
+                GetGames((string)requestParams[5], (string)requestParams[2], (string)requestParams[3]);
             }
 
         }
 
-        private void GetGames(string requestBody, string gameid)
+        private void GetGames(string requestBody, string gameid, string Brief)
         {
-            string isBrief = (string)requestParams[3];
-
             Status gameStatus;
             HttpStatusCode serviceStatus;
             // Make Call
-            if (isBrief == "yes")
+            if (Brief == "yes")
             {
                 gameStatus = service.Gamestatus(gameid, "yes", out  serviceStatus);
             }
