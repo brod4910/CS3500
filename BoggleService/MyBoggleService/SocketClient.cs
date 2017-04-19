@@ -187,7 +187,7 @@ namespace BoggleGame
             if (bytesRead == 0)
             {
                 Console.WriteLine("Socket closed");
-                socket.Close();
+               // socket.Close();
             }
 
             // Otherwise, decode and display the incoming bytes.  Then request more bytes.
@@ -263,7 +263,7 @@ namespace BoggleGame
             else if ((string)requestParams[0] == "PUT")
             {
                 //Cancel game
-                if ((string)requestParams[1] == "cancel")
+                if ((string)requestParams[1] == "games" && requestParams[2] == null)
                 {
                     CancelGame((string)requestParams[5]);
                 }
@@ -320,6 +320,7 @@ namespace BoggleGame
             Token token = JsonConvert.DeserializeObject<Token>(requestBody);
             this.service.CancelJoin(token, out serviceStatus);
             SendMessage("HTTP/1.1 " + (int)serviceStatus + " " + serviceStatus.ToString() + "\r\n");
+            SendMessage("Content-Length:0\r\n");
             SendMessage("\r\n");
         }
 
