@@ -137,7 +137,7 @@ namespace BoggleGame
     public class FirstPlayer
     {
         [DataMember(EmitDefaultValue = false)]
-        public string NickName { get; set; }
+        public string Nickname { get; set; }
 
         [DataMember]
         public int Score { get; set; }
@@ -150,7 +150,7 @@ namespace BoggleGame
     public class SecondPlayer
     {
         [DataMember(EmitDefaultValue = false)]
-        public string NickName { get; set; }
+        public string Nickname { get; set; }
 
         [DataMember]
         public int Score { get; set; }

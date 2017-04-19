@@ -257,10 +257,15 @@ namespace BoggleGame
                     {
                         command.Parameters.AddWithValue("@UserID", token.UserToken);
 
+                        if (command.ExecuteNonQuery() == 0)
+                        {
+                            command.ExecuteNonQuery();
+                        }
+
                         status = OK;
-                        trans.Commit();
-                        return;
                     }
+                    trans.Commit();
+                    return;
                 }
             }
 
@@ -359,8 +364,8 @@ namespace BoggleGame
                                     active.Player1 = new FirstPlayer();
                                     active.Player2 = new SecondPlayer();
                                     active.Board = (string)reader["Board"];
-                                    active.Player1.NickName = GetNickname((string)reader["Player1"]);
-                                    active.Player2.NickName = GetNickname((string)reader["Player2"]);
+                                    active.Player1.Nickname = GetNickname((string)reader["Player1"]);
+                                    active.Player2.Nickname = GetNickname((string)reader["Player2"]);
                                     active.Player1.Score = SumScore((string)reader["Player1"]);
                                     active.Player2.Score = SumScore((string)reader["Player2"]);
                                     active.TimeLimit = (int)reader["TimeLimit"] + "";
@@ -382,8 +387,8 @@ namespace BoggleGame
                                     active.GameState = "active";
                                     active.Player1 = new FirstPlayer();
                                     active.Player2 = new SecondPlayer();
-                                    active.Player1.NickName = GetNickname((string)reader["Player1"]);
-                                    active.Player2.NickName = GetNickname((string)reader["Player2"]);
+                                    active.Player1.Nickname = GetNickname((string)reader["Player1"]);
+                                    active.Player2.Nickname = GetNickname((string)reader["Player2"]);
                                     active.Player1.Score = SumScore((string)reader["Player1"]);
                                     active.Player2.Score = SumScore((string)reader["Player2"]);
                                     active.TimeLeft = CalcTimeLeft(GameID) + "";

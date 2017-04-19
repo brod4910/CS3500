@@ -318,7 +318,7 @@ namespace BoggleGame
         {
             HttpStatusCode serviceStatus;
             Token token = JsonConvert.DeserializeObject<Token>(requestBody);
-            this.service.CancelJoin(token, out serviceStatus);
+            service.CancelJoin(token, out serviceStatus);
             SendMessage("HTTP/1.1 " + (int)serviceStatus + " " + serviceStatus.ToString() + "\r\n");
             SendMessage("Content-Length:0\r\n");
             SendMessage("\r\n");
