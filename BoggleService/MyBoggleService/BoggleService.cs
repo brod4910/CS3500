@@ -363,6 +363,7 @@ namespace BoggleGame
                                     active.Player2.NickName = GetNickname((string)reader["Player2"]);
                                     active.Player1.Score = SumScore((string)reader["Player1"]);
                                     active.Player2.Score = SumScore((string)reader["Player2"]);
+                                    active.TimeLimit = (int)reader["TimeLimit"] + "";
                                     if (Option == null || Option == "no")
                                     {
                                         List<AlreadyPlayedWord> player1 = GetWordsPlayed((string)reader["Player1"]);
@@ -385,12 +386,14 @@ namespace BoggleGame
                                     active.Player2.NickName = GetNickname((string)reader["Player2"]);
                                     active.Player1.Score = SumScore((string)reader["Player1"]);
                                     active.Player2.Score = SumScore((string)reader["Player2"]);
+                                    active.TimeLeft = CalcTimeLeft(GameID) + "";
                                     // If brief was not an option
                                     if (Option == null || Option == "no")
                                     {
                                         active.Board = (string)reader["Board"];
                                         active.TimeLimit = (int)reader["TimeLimit"] + "";
                                     }
+                                    
                                     return active;
                                 }
                             }

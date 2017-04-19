@@ -82,21 +82,35 @@ namespace BoggleGame
             // keep doing that.
             if (pendingIndex < pendingBytes.Length)
             {
-                Console.WriteLine("\tSending " + (pendingBytes.Length - pendingIndex) + " bytes");
-                socket.BeginSend(pendingBytes, pendingIndex, pendingBytes.Length - pendingIndex,
-                                 SocketFlags.None, MessageSent, null);
+                try
+                {
+                    Console.WriteLine("\tSending " + (pendingBytes.Length - pendingIndex) + " bytes");
+                    socket.BeginSend(pendingBytes, pendingIndex, pendingBytes.Length - pendingIndex,
+                                     SocketFlags.None, MessageSent, null);
+                }
+                catch(ObjectDisposedException)
+                {
+
+                }
             }
 
             // If we're not currently dealing with a block of bytes, make a new block of bytes
             // out of outgoing and start sending that.
             else if (outgoing.Length > 0)
             {
-                pendingBytes = encoding.GetBytes(outgoing.ToString());
-                pendingIndex = 0;
-                Console.WriteLine("\tConverting " + outgoing.Length + " chars into " + pendingBytes.Length + " bytes, sending them");
-                outgoing.Clear();
-                socket.BeginSend(pendingBytes, 0, pendingBytes.Length,
-                                 SocketFlags.None, MessageSent, null);
+                try
+                {
+                    pendingBytes = encoding.GetBytes(outgoing.ToString());
+                    pendingIndex = 0;
+                    Console.WriteLine("\tConverting " + outgoing.Length + " chars into " + pendingBytes.Length + " bytes, sending them");
+                    outgoing.Clear();
+                    socket.BeginSend(pendingBytes, 0, pendingBytes.Length,
+                                     SocketFlags.None, MessageSent, null);
+                }
+                catch(ObjectDisposedException)
+                {
+
+                }
             }
 
             // If there's nothing to send, shut down for the time being.
@@ -196,6 +210,11 @@ namespace BoggleGame
 
                         lastNewline = i;
                         start = i + 1;
+
+                        if(line.Length == 2 && (string)requestParams[0] == "GET")
+                        {
+                            ConfigureProperRequest();
+                        }
                     }
                     else if (incoming[i] == '}')
                     {
@@ -207,10 +226,18 @@ namespace BoggleGame
                         start = i + 1;
                     }
                 }
+
                 incoming.Remove(0, lastNewline + 1);
 
-                socket.BeginReceive(incomingBytes, 0, incomingBytes.Length,
-                    SocketFlags.None, MessageReceived, null);
+                try
+                {
+                    socket.BeginReceive(incomingBytes, 0, incomingBytes.Length,
+                        SocketFlags.None, MessageReceived, null);
+                }
+                catch(ObjectDisposedException)
+                {
+
+                }
             }
         }
 
@@ -259,17 +286,16 @@ namespace BoggleGame
             Status gameStatus;
             HttpStatusCode serviceStatus;
             // Make Call
-            if (Brief == "yes")
+            if (Brief.Trim() == "yes")
             {
-                gameStatus = service.Gamestatus(gameid, "yes", out  serviceStatus);
+                gameStatus = service.Gamestatus(gameid, "yes", out serviceStatus);
             }
             else
             {
                 gameStatus = service.Gamestatus(gameid, "no", out serviceStatus);
             }
             // Serialize
-            String s = JsonConvert.SerializeObject(gameStatus, new JsonSerializerSettings
-            { DefaultValueHandling = DefaultValueHandling.Ignore });
+            String s = JsonConvert.SerializeObject(gameStatus);
             // Send Back with appropriate headers
             SendMessage("HTTP/1.1 " + (int)serviceStatus + " " + serviceStatus.ToString() + "\r\n");
             SendMessage("Content-Type: application/json\r\n");
@@ -334,12 +360,11 @@ namespace BoggleGame
         private void PlayWord(string requestBody, string gameId)
         {
             HttpStatusCode serviceStatus;
-            PlayedWord user = JsonConvert.DeserializeObject<PlayedWord>(requestBody);
+            PlayedWord word = JsonConvert.DeserializeObject<PlayedWord>(requestBody);
 
-            WordScore wordScore = service.PlayWord(gameId, user, out serviceStatus);
+            WordScore wordScore = service.PlayWord(gameId, word, out serviceStatus);
 
-            String s = JsonConvert.SerializeObject(wordScore, new JsonSerializerSettings
-            { DefaultValueHandling = DefaultValueHandling.Ignore });
+            String s = JsonConvert.SerializeObject(wordScore);
 
             // Send Back with appropriate headers
             SendMessage("HTTP/1.1 " + (int)serviceStatus + " " + serviceStatus.ToString() + "\r\n");
@@ -363,7 +388,7 @@ namespace BoggleGame
             {
                 if (requestType == "GET")
                 {
-                    if ((m = (r = new Regex(regexString.Insert(23, "games/(\\d+)\\?(B|b)rief=(.*) "))).Match(line)).Success)
+                    if ((m = (r = new Regex(regexString.Insert(23, "games/(.*)\\?(B|b)rief=(.*) "))).Match(line)).Success)
                     {
                         requestParams[0] = "GET";
                         requestParams[1] = "games";

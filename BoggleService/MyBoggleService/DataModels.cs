@@ -72,8 +72,10 @@ namespace BoggleGame
     /// <summary>
     /// Contains the score of the word played.
     /// </summary>
+    [DataContract]
     public class WordScore
     {
+        [DataMember]
         public int Score { get; set; }
     }
 
